@@ -1,21 +1,44 @@
 ﻿using BasvuruSistemi.Server.Domain.Abstractions;
-using BasvuruSistemi.Server.Domain.Employees;
+using BasvuruSistemi.Server.Domain.ApplicationFieldValues;
+using BasvuruSistemi.Server.Domain.ApplicationFormTemplates;
+using BasvuruSistemi.Server.Domain.Applications;
+using BasvuruSistemi.Server.Domain.Candidates;
+using BasvuruSistemi.Server.Domain.Employers;
+using BasvuruSistemi.Server.Domain.Entities;
+using BasvuruSistemi.Server.Domain.FormFieldDefinitions;
+using BasvuruSistemi.Server.Domain.JobPostings;
 using BasvuruSistemi.Server.Domain.Users;
 using GenericRepository;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace BasvuruSistemi.Server.Infrastructure.Context;
 
-internal sealed class ApplicationDbContext: IdentityDbContext<Appuser, IdentityRole<Guid>,Guid>, IUnitOfWork
+internal sealed class ApplicationDbContext: IdentityDbContext<AppUser, IdentityRole<Guid>,Guid>, IUnitOfWork
 {
-    public ApplicationDbContext(DbContextOptions options) : base(options)
+    private readonly IHttpContextAccessor _httpContextAccessor;
+    public ApplicationDbContext(DbContextOptions options, IHttpContextAccessor httpContextAccessor) : base(options)
     {
+        _httpContextAccessor = httpContextAccessor;
     }
 
-    public DbSet<Employee> Employees { get; set; }
+    public DbSet<Candidate> Candidates { get; set; }
+    public DbSet<Employer> Employers { get; set; }
+
+    public DbSet<Certification> Certifications { get; set; }
+    public DbSet<Education> Educations { get; set; }
+    public DbSet<Experience> Experiences { get; set; }
+    public DbSet<Skill> Skills { get; set; }
+
+    public DbSet<Domain.Applications.Application> Applications { get; set; }
+    public DbSet<JobPosting> JobPostings { get; set; }
+    public DbSet<ApplicationFieldValue> ApplicationFieldValues { get; set; }
+    public DbSet<ApplicationFormTemplate> ApplicationFormTemplates { get; set; }
+    public DbSet<FormFieldDefinition> FormFieldDefinitions { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -25,45 +48,91 @@ internal sealed class ApplicationDbContext: IdentityDbContext<Appuser, IdentityR
         modelBuilder.Ignore<IdentityUserLogin<Guid>>();
         modelBuilder.Ignore<IdentityUserToken<Guid>>();
         modelBuilder.Ignore<IdentityUserRole<Guid>>();
+        modelBuilder.Ignore<IdentityRole<Guid>>();
 
     }
 
     public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
     {
         var entries = ChangeTracker.Entries<Entity>();
+        var userEntries = ChangeTracker.Entries<AppUser>();
 
-        HttpContextAccessor httpContextAccessor = new();
-        string userIdString = httpContextAccessor.HttpContext!.User.Claims.First(p => p.Type == "user-id").Value;
-        Guid userId = Guid.Parse(userIdString);
+        var userId = GetCurrentUserId();
+
 
         foreach (var entry in entries)
         {
-            if(entry.State == EntityState.Added)
+            if (entry.State == EntityState.Added)
             {
                 entry.Property(p => p.CreatedAt).CurrentValue = DateTimeOffset.Now;
-                entry.Property(p => p.CreateUserId).CurrentValue = userId;
+                if (userId.HasValue)
+                    entry.Property(p => p.CreateUserId).CurrentValue = userId.Value;
             }
             if (entry.State == EntityState.Modified)
             {
-                if(entry.Property(p => p.IsDeleted).CurrentValue == true)
+                if (entry.Property(p => p.IsDeleted).CurrentValue == true)
                 {
                     entry.Property(p => p.DeleteAt).CurrentValue = DateTimeOffset.Now;
-                    entry.Property(p => p.DeleteUserId).CurrentValue = userId;
+                    if (userId.HasValue)
+                        entry.Property(p => p.DeleteUserId).CurrentValue = userId.Value;
+
                 }
                 else
                 {
                     entry.Property(p => p.UpdateAt).CurrentValue = DateTimeOffset.Now;
-                    entry.Property(p => p.UpdateUserId).CurrentValue = userId;
+                    if (userId.HasValue)
+                        entry.Property(p => p.UpdateUserId).CurrentValue = userId.Value;
                 }
-               
+
             }
-            if(entry.State == EntityState.Deleted)
+            if (entry.State == EntityState.Deleted)
+            {
+                throw new ArgumentException("Cannot delete directly from Db");
+            }
+        }
+        foreach (var entry in userEntries)
+        {
+            if (entry.State == EntityState.Added)
+            {
+                entry.Property(p => p.CreatedAt).CurrentValue = DateTimeOffset.Now;
+                if (userId.HasValue)
+                    entry.Property(p => p.CreateUserId).CurrentValue = userId.Value;
+            }
+            if (entry.State == EntityState.Modified)
+            {
+                if (entry.Property(p => p.IsDeleted).CurrentValue == true)
+                {
+                    entry.Property(p => p.DeleteAt).CurrentValue = DateTimeOffset.Now;
+                    if (userId.HasValue)
+                        entry.Property(p => p.DeleteUserId).CurrentValue = userId.Value;
+                }
+                else
+                {
+                    entry.Property(p => p.UpdateAt).CurrentValue = DateTimeOffset.Now;
+                    if (userId.HasValue)
+                        entry.Property(p => p.UpdateUserId).CurrentValue = userId.Value;
+                }
+            }
+            if (entry.State == EntityState.Deleted)
             {
                 throw new ArgumentException("Cannot delete directly from Db");
             }
         }
 
         return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+    }
+    private Guid? GetCurrentUserId()
+    {
+        var user = _httpContextAccessor.HttpContext?.User;
+        if (user?.Identity?.IsAuthenticated == true)
+        {
+            var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim != null && Guid.TryParse(userIdClaim.Value, out Guid userId))
+            {
+                return userId;
+            }
+        }
+        return null;
     }
 }
 

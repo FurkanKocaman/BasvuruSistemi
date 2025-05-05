@@ -4,5 +4,5 @@ namespace BasvuruSistemi.Server.Application.Services;
 
 public interface IJwtProvider
 {
-    public Task<string> CreateTokenAsync(Appuser user, CancellationToken cancellationToken = default);
+    public Task<string> CreateTokenAsync(AppUser user, CancellationToken cancellationToken = default);
 }

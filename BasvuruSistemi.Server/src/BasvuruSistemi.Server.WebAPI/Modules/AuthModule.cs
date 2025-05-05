@@ -1,5 +1,4 @@
 ﻿using BasvuruSistemi.Server.Application.Auth;
-using BasvuruSistemi.Server.Application.Employees;
 using MediatR;
 using TS.Result;
 

@@ -1,6 +1,4 @@
-﻿using BasvuruSistemi.Server.Application.Employees;
-using MediatR;
-using Microsoft.AspNetCore.Authorization;
+﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Query;
 using Microsoft.AspNetCore.OData.Routing.Controllers;
@@ -20,17 +18,17 @@ public class AppODataController(
     {
         ODataConventionModelBuilder builder = new();
         builder.EnableLowerCamelCase();
-        builder.EntitySet<EmployeeGetAllQueryResponse>("employees");
+        //builder.EntitySet<EmployeeGetAllQueryResponse>("employees");
         return builder.GetEdmModel();
     }
 
-    [HttpGet("employees")]
+    //[HttpGet("employees")]
 
-    public async Task<IQueryable<EmployeeGetAllQueryResponse>> GetAllEmployees(CancellationToken cancellationToken)
-    {
-        var response = await sender.Send(new EmployeeGetAllQuery(),cancellationToken);
+    //public async Task<IQueryable<EmployeeGetAllQueryResponse>> GetAllEmployees(CancellationToken cancellationToken)
+    //{
+    //    var response = await sender.Send(new EmployeeGetAllQuery(),cancellationToken);
 
-        return response;
-    }
+    //    return response;
+    //}
 }
 

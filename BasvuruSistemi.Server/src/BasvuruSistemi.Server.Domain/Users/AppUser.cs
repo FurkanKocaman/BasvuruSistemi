@@ -2,15 +2,12 @@
 
 namespace BasvuruSistemi.Server.Domain.Users;
 
-public sealed class Appuser : IdentityUser<Guid>
+public sealed class AppUser : IdentityUser<Guid>
 {
-    public Appuser()
+    public AppUser()
     {
         Id = Guid.CreateVersion7();
     }
-    public string FirstName { get; set; } = default!;
-    public string LastName { get; set; } = default!;
-    public string FullName => $"${FirstName} {LastName}";
 
     #region Audit Log
     public DateTimeOffset CreatedAt { get; set; }
