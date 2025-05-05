@@ -1,4 +1,6 @@
-# .NET Core ve C# ile ilgili dosyalar
+############################################
+# .NET Core / ASP.NET Core
+############################################
 bin/
 obj/
 *.dll
@@ -6,37 +8,89 @@ obj/
 *.pdb
 *.cache
 *.log
-*.vs/
-.vscode/
-*.user
+*.db
+*.db-journal
 *.suo
-*.plist
+*.user
+*.userosscache
+*.sln.docstates
+*.swp
+*.orig
 
-# Paket bağımlılıkları
+# Rider / ReSharper / VS
+.vs/
+.idea/
+.vscode/
+
+# ASP.NET config dosyaları (prod hariç)
+**/appsettings.Development.json
+**/appsettings.*.json
+!**/appsettings.json
+
+# EF Core Migrations
+**/Migrations/
+
+# wwwroot statik derlenmiş içerik
+**/wwwroot/
+
+# Logs, test output, temp
+logs/
+*.log
+temp/
+TestResults/
+
+############################################
+# Node.js / Vue.js / Vite
+############################################
 node_modules/
 npm-debug.log*
-yarn.lock
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 package-lock.json
+yarn.lock
+pnpm-lock.yaml
 
-# Çıktı dosyaları ve geçici dosyalar
+# Vite
+.vite/
+.vitepress/cache/
+
+# Vue CLI
+.vuepress/dist/
+
+# Nuxt
+.nuxt/
+output/
+
+# Dist / coverage
 dist/
 coverage/
-temp/
-logs/
-.DS_Store
-Thumbs.db
+build/
 
-# Çevresel yapılandırmalar ve gizli dosyalar
+# Env
 .env
 .env.local
 .env.*.local
-secrets.json
+*.env
 
-# Vue.js ile ilgili dosyalar
-.vuepress/dist/
-.vite/
-.vitepress/cache/
-.idea/
-PersonelYonetim.Server/src/PersonelYonetim.Server.WebAPI/appsettings.Development.json
-**/Migrations/
-**/wwwroot/
+# Others
+.DS_Store
+Thumbs.db
+
+############################################
+# OS ve Editor dosyaları
+############################################
+*.bak
+*.tmp
+*.temp
+*.sublime-workspace
+*.sublime-project
+*.code-workspace
+*.tgz
+
+############################################
+# Geliştirici ayar dosyaları
+############################################
+secrets.json
+*.plist
+BasvuruSistemi.Server/src/BasvuruSistemi.Server.WebAPI/appsettings.Development.json

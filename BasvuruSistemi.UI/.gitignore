@@ -1,30 +1,95 @@
-# Logs
-logs
+############################################
+# .NET Core / ASP.NET Core
+############################################
+bin/
+obj/
+*.dll
+*.exe
+*.pdb
+*.cache
 *.log
+*.db
+*.db-journal
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.swp
+*.orig
+
+# Rider / ReSharper / VS
+.vs/
+.idea/
+.vscode/
+
+# ASP.NET config dosyaları (prod hariç)
+**/appsettings.Development.json
+**/appsettings.*.json
+!**/appsettings.json
+
+# EF Core Migrations
+**/Migrations/
+
+# wwwroot statik derlenmiş içerik
+**/wwwroot/
+
+# Logs, test output, temp
+logs/
+*.log
+temp/
+TestResults/
+
+############################################
+# Node.js / Vue.js / Vite
+############################################
+node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-lerna-debug.log*
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
 
-node_modules
+# Vite
+.vite/
+.vitepress/cache/
+
+# Vue CLI
+.vuepress/dist/
+
+# Nuxt
+.nuxt/
+output/
+
+# Dist / coverage
+dist/
+coverage/
+build/
+
+# Env
+.env
+.env.local
+.env.*.local
+*.env
+
+# Others
 .DS_Store
-dist
-dist-ssr
-coverage
-*.local
+Thumbs.db
 
-/cypress/videos/
-/cypress/screenshots/
+############################################
+# OS ve Editor dosyaları
+############################################
+*.bak
+*.tmp
+*.temp
+*.sublime-workspace
+*.sublime-project
+*.code-workspace
+*.tgz
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-
-*.tsbuildinfo
+############################################
+# Geliştirici ayar dosyaları
+############################################
+secrets.json
+*.plist
