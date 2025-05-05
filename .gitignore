@@ -94,3 +94,4 @@ Thumbs.db
 secrets.json
 *.plist
 BasvuruSistemi.Server/src/BasvuruSistemi.Server.WebAPI/appsettings.Development.json
+BasvuruSistemi.Server/src/BasvuruSistemi.Server.WebAPI/appsettings.Development.json
