@@ -1,12 +1,12 @@
-﻿using BasvuruSistemi.Server.Domain.Candidates;
+﻿using BasvuruSistemi.Server.Domain.Users;
 
 namespace BasvuruSistemi.Server.Domain.Entities;
 public sealed class Experience
 {
     public Guid Id { get; set; }
 
-    public Guid CandidateId { get; private set; }
-    public Candidate Candidate { get; private set; } = default!;
+    public Guid UserId { get; private set; }
+    public AppUser User { get; private set; } = default!;
 
     public string CompanyName { get; private set; } = default!;
     public string Position { get; private set; } = default!;
@@ -15,12 +15,12 @@ public sealed class Experience
     public string? Responsibilities { get; private set; }
 
     private Experience() { }
-    public Experience(Guid candidateId, string company, string position, DateOnly start, DateOnly? end = null, string? resp = null)
+    public Experience(Guid userId, string company, string position, DateOnly start, DateOnly? end = null, string? resp = null)
     {
         if (end.HasValue && start > end.Value)
             throw new ArgumentException("StartDate must be before EndDate.");
         Id = Guid.CreateVersion7();
-        CandidateId = candidateId;
+        UserId = userId;
         CompanyName = company;
         Position = position;
         StartDate = start;

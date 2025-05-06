@@ -12,15 +12,15 @@ public static class ExtensionsMiddleware
             var userManager = scoped.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
             if(!userManager.Users.Any(p => p.UserName == "admin"))
             {
-                AppUser user = new()
-                {
-                    UserName = "admin",
-                    Email = "admin@admin.com",
-                    EmailConfirmed = true,
-                    CreatedAt = DateTimeOffset.Now,
-                };
-                user.CreateUserId = user.Id;
-                userManager.CreateAsync(user, "1").Wait();
+                //AppUser user = new()
+                //{
+                //    UserName = "admin",
+                //    Email = "admin@admin.com",
+                //    EmailConfirmed = true,
+                //    CreatedAt = DateTimeOffset.Now,
+                //};
+                //user.CreateUserId = user.Id;
+                //userManager.CreateAsync(user, "1").Wait();
             }
         }
     }

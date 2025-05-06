@@ -1,12 +1,12 @@
-﻿using BasvuruSistemi.Server.Domain.Candidates;
+﻿using BasvuruSistemi.Server.Domain.Users;
 
 namespace BasvuruSistemi.Server.Domain.Entities;
 public sealed class Certification
 {
     public Guid Id { get; set; }
 
-    public Guid CandidateId { get; private set; }
-    public Candidate Candidate { get; private set; } = default!;
+    public Guid UserId { get; private set; }
+    public AppUser User { get; private set; } = default!;
 
     public string Title { get; private set; } = default!;
     public string Issuer { get; private set; }= default!;
@@ -14,10 +14,10 @@ public sealed class Certification
     public DateOnly? ExpiryDate { get; private set; }
 
     private Certification() { }
-    public Certification(Guid candidateId, string title, string issuer, DateOnly received, DateOnly? expiry = null)
+    public Certification(Guid userId, string title, string issuer, DateOnly received, DateOnly? expiry = null)
     {
         Id = Guid.CreateVersion7();
-        CandidateId = candidateId;
+        UserId = userId;
         Title = title;
         Issuer = issuer;
         DateReceived = received;

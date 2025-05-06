@@ -1,12 +1,12 @@
 using BasvuruSistemi.Server.Application;
 using BasvuruSistemi.Server.Infrastructure;
-using BasvuruSistemi.Server.WebAPI.Controllers;
-using BasvuruSistemi.Server.WebAPI.Modules;
 using BasvuruSistemi.Server.WebAPI;
 using Microsoft.AspNetCore.OData;
 using Microsoft.AspNetCore.RateLimiting;
 using Scalar.AspNetCore;
 using System.Threading.RateLimiting;
+using BasvuruSistemi.Server.WebAPI.Controllers.v1;
+using BasvuruSistemi.Server.WebAPI.Modules;
 
 var builder = WebApplication.CreateBuilder(args);
 

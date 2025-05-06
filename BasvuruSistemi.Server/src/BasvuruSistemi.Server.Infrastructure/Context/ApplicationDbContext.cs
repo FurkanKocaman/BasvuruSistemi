@@ -1,12 +1,13 @@
 ﻿using BasvuruSistemi.Server.Domain.Abstractions;
 using BasvuruSistemi.Server.Domain.ApplicationFieldValues;
 using BasvuruSistemi.Server.Domain.ApplicationFormTemplates;
-using BasvuruSistemi.Server.Domain.Applications;
-using BasvuruSistemi.Server.Domain.Candidates;
-using BasvuruSistemi.Server.Domain.Employers;
+using BasvuruSistemi.Server.Domain.Companies;
+using BasvuruSistemi.Server.Domain.Departments;
 using BasvuruSistemi.Server.Domain.Entities;
 using BasvuruSistemi.Server.Domain.FormFieldDefinitions;
 using BasvuruSistemi.Server.Domain.JobPostings;
+using BasvuruSistemi.Server.Domain.Roles;
+using BasvuruSistemi.Server.Domain.UserRoles;
 using BasvuruSistemi.Server.Domain.Users;
 using GenericRepository;
 using Microsoft.AspNetCore.Http;
@@ -17,16 +18,15 @@ using System.Security.Claims;
 
 namespace BasvuruSistemi.Server.Infrastructure.Context;
 
-internal sealed class ApplicationDbContext: IdentityDbContext<AppUser, IdentityRole<Guid>,Guid>, IUnitOfWork
+internal sealed class ApplicationDbContext: IdentityDbContext<AppUser, AppRole,Guid>, IUnitOfWork
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
     public ApplicationDbContext(DbContextOptions options, IHttpContextAccessor httpContextAccessor) : base(options)
     {
         _httpContextAccessor = httpContextAccessor;
     }
-
-    public DbSet<Candidate> Candidates { get; set; }
-    public DbSet<Employer> Employers { get; set; }
+    public DbSet<Company> Companies { get; set; }
+    public DbSet<Department> Departments { get; set; }
 
     public DbSet<Certification> Certifications { get; set; }
     public DbSet<Education> Educations { get; set; }
@@ -39,6 +39,8 @@ internal sealed class ApplicationDbContext: IdentityDbContext<AppUser, IdentityR
     public DbSet<ApplicationFormTemplate> ApplicationFormTemplates { get; set; }
     public DbSet<FormFieldDefinition> FormFieldDefinitions { get; set; }
 
+    public DbSet<AppUserTenantRole> AppUserTenantRoles { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -48,8 +50,6 @@ internal sealed class ApplicationDbContext: IdentityDbContext<AppUser, IdentityR
         modelBuilder.Ignore<IdentityUserLogin<Guid>>();
         modelBuilder.Ignore<IdentityUserToken<Guid>>();
         modelBuilder.Ignore<IdentityUserRole<Guid>>();
-        modelBuilder.Ignore<IdentityRole<Guid>>();
-
     }
 
     public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)

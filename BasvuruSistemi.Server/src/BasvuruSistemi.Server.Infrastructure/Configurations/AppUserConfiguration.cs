@@ -11,5 +11,8 @@ internal sealed class AppUserConfiguration : IEntityTypeConfiguration<AppUser>
         builder.HasIndex(i => i.UserName).IsUnique();
         builder.Property(P => P.UserName).HasColumnType("varchar(20)");
         builder.Property(P => P.Email).HasColumnType("varchar(MAX)");
+
+        builder.OwnsOne(p => p.Address);
+        builder.OwnsOne(p => p.Contact);
     }
 }

@@ -7,12 +7,6 @@ internal sealed class ApplicationConfigurations : IEntityTypeConfiguration<Domai
     public void Configure(EntityTypeBuilder<Domain.Applications.Application> builder)
     {
        builder
-            .HasOne(p => p.Candidate)
-            .WithMany(p => p.Applications)
-            .HasForeignKey(p => p.CandidateId)
-            .OnDelete(DeleteBehavior.NoAction);
-
-       builder
             .HasOne(p => p.JobPosting)
             .WithMany(p => p.Applications)
             .HasForeignKey(p => p.JobPostingId)

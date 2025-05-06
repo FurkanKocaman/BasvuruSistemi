@@ -8,9 +8,9 @@ internal sealed class EducationConfiguration : IEntityTypeConfiguration<Educatio
     public void Configure(EntityTypeBuilder<Education> builder)
     {
         builder
-            .HasOne(p => p.Candidate)
+            .HasOne(p => p.User)
             .WithMany(p => p.EducationHistory)
-            .HasForeignKey(p => p.CandidateId)
+            .HasForeignKey(p => p.UserId)
             .OnDelete(DeleteBehavior.NoAction);
     }
 }

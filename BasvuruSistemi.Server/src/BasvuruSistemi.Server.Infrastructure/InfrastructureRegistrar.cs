@@ -1,6 +1,9 @@
-﻿using BasvuruSistemi.Server.Domain.Users;
+﻿using BasvuruSistemi.Server.Application.Services;
+using BasvuruSistemi.Server.Domain.Roles;
+using BasvuruSistemi.Server.Domain.Users;
 using BasvuruSistemi.Server.Infrastructure.Context;
 using BasvuruSistemi.Server.Infrastructure.Options;
+using BasvuruSistemi.Server.Infrastructure.Services;
 using GenericRepository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -23,8 +26,12 @@ public static class InfrastructureRegistrar
 
         services.AddScoped<IUnitOfWork>(srv => srv.GetRequiredService<ApplicationDbContext>());
 
+        services.AddScoped<IRoleSeedService, RoleSeedService>();
+
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
+
         services
-            .AddIdentity<AppUser, IdentityRole<Guid>>(opt =>
+            .AddIdentity<AppUser, AppRole>(opt =>
             {
                 opt.Password.RequiredLength = 1;
                 opt.Password.RequireNonAlphanumeric = false;

@@ -8,9 +8,9 @@ internal sealed class ExperienceConfiguration : IEntityTypeConfiguration<Experie
     public void Configure(EntityTypeBuilder<Experience> builder)
     {
         builder
-            .HasOne(p => p.Candidate)
+            .HasOne(p => p.User)
             .WithMany(p => p.WorkExperience)
-            .HasForeignKey(p => p.CandidateId)
+            .HasForeignKey(p => p.UserId)
             .OnDelete(DeleteBehavior.NoAction);
     }
 }

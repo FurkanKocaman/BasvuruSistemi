@@ -1,12 +1,13 @@
-﻿using BasvuruSistemi.Server.Domain.Candidates;
+﻿using BasvuruSistemi.Server.Domain.Users;
 
 namespace BasvuruSistemi.Server.Domain.Entities;
 public sealed class Education
 {
     public Guid Id { get; set; }
 
-    public Guid CandidateId { get; private set; }
-    public Candidate Candidate { get; private set; } = default!;
+    public Guid UserId { get; private set; }
+    public AppUser User { get; private set; } = default!;
+
     public string Institution { get; private set; } = default!;
     public string Department { get; private set; } = default!;
     public DateOnly StartDate { get; private set; }
@@ -14,11 +15,11 @@ public sealed class Education
     public double? GPA { get; private set; }
 
     private Education() { }
-    public Education(Guid candidateId, string institution, string department, DateOnly start, DateOnly grad, double? gpa = null)
+    public Education(Guid userId, string institution, string department, DateOnly start, DateOnly grad, double? gpa = null)
     {
         if (start > grad) throw new ArgumentException("StartDate must be before GraduationDate.");
         Id = Guid.CreateVersion7();
-        CandidateId = candidateId;
+        UserId = userId;
         Institution = institution;
         Department = department;
         StartDate = start;

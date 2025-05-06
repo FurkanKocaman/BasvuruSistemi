@@ -9,9 +9,9 @@ internal sealed class CertificationConfiguration : IEntityTypeConfiguration<Cert
     public void Configure(EntityTypeBuilder<Certification> builder)
     {
         builder
-            .HasOne(p => p.Candidate)
+            .HasOne(p => p.User)
             .WithMany(p => p.Certifications)
-            .HasForeignKey(p => p.CandidateId)
+            .HasForeignKey(p => p.UserId)
             .OnDelete(DeleteBehavior.NoAction);
     }
 }

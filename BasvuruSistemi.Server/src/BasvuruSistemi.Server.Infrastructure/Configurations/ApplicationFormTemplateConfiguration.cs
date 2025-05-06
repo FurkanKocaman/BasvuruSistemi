@@ -8,9 +8,9 @@ internal sealed class ApplicationFormTemplateConfiguration : IEntityTypeConfigur
     public void Configure(EntityTypeBuilder<ApplicationFormTemplate> builder)
     {
         builder
-            .HasOne(p => p.Employer)
+            .HasOne(p => p.Tenant)
             .WithMany()
-            .HasForeignKey(p => p.EmployerId)
+            .HasForeignKey(p => p.TenantId)
             .OnDelete(DeleteBehavior.NoAction);
     }
 }

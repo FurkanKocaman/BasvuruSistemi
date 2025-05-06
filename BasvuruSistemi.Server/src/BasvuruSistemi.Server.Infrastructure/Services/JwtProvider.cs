@@ -16,7 +16,7 @@ internal sealed class JwtProvider(
     {
         List<Claim> claims = new()
         {
-            new Claim("user-id",user.Id.ToString())
+            new Claim(ClaimTypes.NameIdentifier,user.Id.ToString()),
         };
 
         var expires = DateTime.Now.AddDays(1);
