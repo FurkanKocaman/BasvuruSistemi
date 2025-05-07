@@ -6,6 +6,7 @@ using BasvuruSistemi.Server.Domain.Departments;
 using BasvuruSistemi.Server.Domain.Entities;
 using BasvuruSistemi.Server.Domain.FormFieldDefinitions;
 using BasvuruSistemi.Server.Domain.JobPostings;
+using BasvuruSistemi.Server.Domain.PostingGroups;
 using BasvuruSistemi.Server.Domain.Roles;
 using BasvuruSistemi.Server.Domain.UserRoles;
 using BasvuruSistemi.Server.Domain.Users;
@@ -34,7 +35,10 @@ internal sealed class ApplicationDbContext: IdentityDbContext<AppUser, AppRole,G
     public DbSet<Skill> Skills { get; set; }
 
     public DbSet<Domain.Applications.Application> Applications { get; set; }
+
     public DbSet<JobPosting> JobPostings { get; set; }
+    public DbSet<PostingGroup> PostingGroups { get; set; }
+
     public DbSet<ApplicationFieldValue> ApplicationFieldValues { get; set; }
     public DbSet<ApplicationFormTemplate> ApplicationFormTemplates { get; set; }
     public DbSet<FormFieldDefinition> FormFieldDefinitions { get; set; }
