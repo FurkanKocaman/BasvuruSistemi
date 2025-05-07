@@ -60,14 +60,21 @@ public sealed class JobPosting : Entity
         Guid? postingGroupId = null,
         JobPostingStatus status = JobPostingStatus.Draft,
         bool isPublic = true,
-                             
+
+        DateTimeOffset? validFrom = null,
+        DateTimeOffset? validTo = null,
+
+        string? contactInfo = null,
+
         string? responsibilities = null,
         string? qualifications = null,
         string? locationText = null,
         bool isRemote = false,
         EmploymentType? employmentType = null,
         ExperienceLevel? experienceLevelRequired = null,
-        int? vacancyCount = null
+        int? vacancyCount = null,
+        string? salaryRange = null,
+        string? skillsRequired = null
         )
     {
         Title = title;
@@ -81,6 +88,8 @@ public sealed class JobPosting : Entity
         Status = status;
         IsPublic = isPublic;
 
+        ContactInfo = contactInfo;
+
         Responsibilities = responsibilities;
         Qualifications = qualifications;
         LocationText = locationText;
@@ -88,11 +97,13 @@ public sealed class JobPosting : Entity
         EmploymentType = employmentType;
         ExperienceLevelRequired = experienceLevelRequired;
         VacancyCount = vacancyCount;
+        SalaryRange = salaryRange;
+        SkillsRequired = skillsRequired;
 
         // ValidFrom ve ValidTo gibi diğer alanlar için de parametreler eklenebilir veya
         // publish/schedule gibi metotlarla ayarlanabilir.
-        ValidFrom = datePosted; // Varsayılan olarak yayınlandığı an aktif
-        ValidTo = applicationDeadline;
+        ValidFrom = validFrom ?? datePosted; // Varsayılan olarak yayınlandığı an aktif
+        ValidTo = validTo ?? applicationDeadline;
     }
     public bool IsOpenForApplication()
     {
@@ -137,9 +148,17 @@ public sealed class JobPosting : Entity
         }
     }
     public void UpdateDetails(
-        string title, string description, string? responsibilities, string? qualifications,
-        DateTimeOffset applicationDeadline, string? locationText, bool isRemote, /* ... diğer alanlar ... */
-        EmploymentType? employmentType, ExperienceLevel? experienceLevelRequired, int? vacancyCount)
+        string title, 
+        string description,
+        string? responsibilities,
+        string? qualifications,
+        DateTimeOffset applicationDeadline,
+        string? locationText,
+        bool isRemote,
+        EmploymentType? employmentType,
+        ExperienceLevel? experienceLevelRequired,
+        int? vacancyCount
+        )
     {
         // Sadece belirli durumlarda güncellemeye izin verilebilir (örn: taslak iken)
         if (Status == JobPostingStatus.Draft || Status == JobPostingStatus.OnHold) // Veya admin yetkisine bağlı olarak her zaman
@@ -156,5 +175,24 @@ public sealed class JobPosting : Entity
             VacancyCount = vacancyCount;
             // ... diğer alanların güncellenmesi
         }
+    }
+    public void UpdateAdditionalFields(
+    DateTimeOffset datePosted,
+    DateTimeOffset? validFrom,
+    DateTimeOffset? validTo,
+    string? salaryRange,
+    string? skillsRequired,
+    string? contactInfo,
+    bool isPublic,
+    Guid? postingGroupId)
+    {
+        DatePosted = datePosted;
+        ValidFrom = validFrom;
+        ValidTo = validTo;
+        SalaryRange = salaryRange;
+        SkillsRequired = skillsRequired;
+        ContactInfo = contactInfo;
+        IsPublic = isPublic;
+        PostingGroupId = postingGroupId;
     }
 }
