@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BasvuruSistemi.Server.WebAPI.Controllers.v1;
-[Route("api/v1/")]
+[Route("v1/api/")]
 [ApiController]
 public class AppController(ISender sender) : ControllerBase
 {

@@ -16,7 +16,6 @@ public sealed class Application : Entity
     public DateTimeOffset AppliedDate { get; private set; }
     public ApplicationStatus Status { get; private set; } = ApplicationStatus.Pending;
 
-
     public ICollection<ApplicationFieldValue> FieldValues { get; private set; } = new List<ApplicationFieldValue>();
 
     private Application() { }

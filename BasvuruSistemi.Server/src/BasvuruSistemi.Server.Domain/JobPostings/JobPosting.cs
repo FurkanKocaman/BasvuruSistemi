@@ -3,16 +3,35 @@ using BasvuruSistemi.Server.Domain.ApplicationFormTemplates;
 using BasvuruSistemi.Server.Domain.Applications;
 using BasvuruSistemi.Server.Domain.Companies;
 using BasvuruSistemi.Server.Domain.Departments;
+using BasvuruSistemi.Server.Domain.Enums;
+using BasvuruSistemi.Server.Domain.PostingGroups;
 
 namespace BasvuruSistemi.Server.Domain.JobPostings;
 public sealed class JobPosting : Entity
 {
-    public string Title { get; private set; } = default!;
-    public string Description { get; private set; } = default!;
-    public DateTimeOffset PostedDate { get; private set; }
-    public DateTimeOffset ClosingDate { get; private set; }
-    public bool IsPublic { get; private set; }
-    public bool IsPublished { get; private set; }
+    public string Title { get; private set; } = default!;          // İlan Başlığı
+    public string Description { get; private set; } = default!;    // Genel Açıklama (HTML/Markdown destekleyebilir)
+    public string? Responsibilities { get; private set; }         // Sorumluluklar (HTML/Markdown)
+    public string? Qualifications { get; private set; }           // Nitelikler (HTML/Markdown)
+    public string? Benefits { get; private set; }
+
+    public DateTimeOffset DatePosted { get; private set; }        // İlanın yayınlandığı veya oluşturulduğu tarih
+    public DateTimeOffset ApplicationDeadline { get; private set; } // Son Başvuru Tarihi
+    public DateTimeOffset? ValidFrom { get; private set; }        // İlanın aktif olacağı başlangıç tarihi (opsiyonel, ileri tarihli yayınlama için)
+    public DateTimeOffset? ValidTo { get; private set; }
+
+    public JobPostingStatus Status { get; private set; } = JobPostingStatus.Draft; // İlanın durumu
+    public bool IsRemote { get; private set; }                    // Uzaktan çalışma imkanı var mı?
+    public string? LocationText { get; private set; }             // Lokasyon (örn: "İstanbul, Türkiye", "Uzaktan/Hibrit")
+
+    public int? VacancyCount { get; private set; }                // Açık pozisyon sayısı (Kontenjan)
+    public EmploymentType? EmploymentType { get; private set; }   // Çalışma Şekli
+    public ExperienceLevel? ExperienceLevelRequired { get; private set; } // İstenen Deneyim Seviyesi
+    public string? SalaryRange { get; private set; }              // Maaş Aralığı (örn: "15.000 TL - 25.000 TL" veya yapısal)
+    public string? SkillsRequired { get; private set; }           // İstenen Yetenekler (virgülle ayrılmış veya JSON)
+
+    public string? ContactInfo { get; private set; }              // İletişim Bilgisi (örn: e-posta veya sorumlu kişi)
+    public bool IsPublic { get; private set; }                    // Herkese açık mı? (Anonim kullanıcılar görebilir mi?)
 
     public Guid CompanyId { get; set; }
     public Company Company { get; set; } = default!;
@@ -25,18 +44,117 @@ public sealed class JobPosting : Entity
 
     public ICollection<Application> Applications { get; private set; } = new List<Application>();
 
+    public Guid? PostingGroupId { get; private set; } // Ait olduğu İlan Grubu (opsiyonel)
+    public PostingGroup? PostingGroup { get; private set; } // Navigation property
+
     private JobPosting() { }
 
-    public JobPosting(string title, string description, DateTimeOffset postedDate, DateTimeOffset closingDate, bool isPublic, bool ispublished, Guid companyId, Guid? departmentId, Guid formTemplateId)
+    public JobPosting(
+        string title,
+        string description,
+        DateTimeOffset datePosted,
+        DateTimeOffset applicationDeadline,
+        Guid companyId,
+        Guid formTemplateId,
+        Guid? departmentId = null,
+        Guid? postingGroupId = null,
+        JobPostingStatus status = JobPostingStatus.Draft,
+        bool isPublic = true,
+                             
+        string? responsibilities = null,
+        string? qualifications = null,
+        string? locationText = null,
+        bool isRemote = false,
+        EmploymentType? employmentType = null,
+        ExperienceLevel? experienceLevelRequired = null,
+        int? vacancyCount = null
+        )
     {
         Title = title;
         Description = description;
-        PostedDate = postedDate;
-        ClosingDate = closingDate;
-        IsPublic = isPublic;
-        IsPublished = ispublished;
+        DatePosted = datePosted;
+        ApplicationDeadline = applicationDeadline;
         CompanyId = companyId;
-        DepartmentId = departmentId;
         FormTemplateId = formTemplateId;
+        DepartmentId = departmentId;
+        PostingGroupId = postingGroupId;
+        Status = status;
+        IsPublic = isPublic;
+
+        Responsibilities = responsibilities;
+        Qualifications = qualifications;
+        LocationText = locationText;
+        IsRemote = isRemote;
+        EmploymentType = employmentType;
+        ExperienceLevelRequired = experienceLevelRequired;
+        VacancyCount = vacancyCount;
+
+        // ValidFrom ve ValidTo gibi diğer alanlar için de parametreler eklenebilir veya
+        // publish/schedule gibi metotlarla ayarlanabilir.
+        ValidFrom = datePosted; // Varsayılan olarak yayınlandığı an aktif
+        ValidTo = applicationDeadline;
+    }
+    public bool IsOpenForApplication()
+    {
+        var now = DateTimeOffset.Now;
+        return Status == JobPostingStatus.Published &&
+               now >= (ValidFrom ?? DatePosted) &&
+               now <= (ValidTo ?? ApplicationDeadline);
+    }
+    public void Publish(DateTimeOffset? publishStartDate = null)
+    {
+        if (Status == JobPostingStatus.Draft || Status == JobPostingStatus.OnHold)
+        {
+            Status = JobPostingStatus.Published;
+            ValidFrom = publishStartDate ?? DateTimeOffset.UtcNow; // Eğer başlangıç tarihi verilmezse hemen
+            DatePosted = DateTimeOffset.UtcNow; // Yayınlama işleminin yapıldığı an olarak güncellenebilir
+        }
+        // else: Hata fırlat veya logla (zaten yayınlanmış veya kapatılmış bir ilanı tekrar yayınlayamazsın)
+    }
+
+    public void Close()
+    {
+        if (Status == JobPostingStatus.Published || Status == JobPostingStatus.OnHold)
+        {
+            Status = JobPostingStatus.Closed;
+        }
+    }
+
+    public void PutOnHold()
+    {
+        if (Status == JobPostingStatus.Published)
+        {
+            Status = JobPostingStatus.OnHold;
+        }
+    }
+
+    public void Archive()
+    {
+        // Sadece kapalı veya süresi dolmuş ilanlar arşivlenebilir gibi bir kural eklenebilir
+        if (Status == JobPostingStatus.Closed || Status == JobPostingStatus.Expired)
+        {
+            Status = JobPostingStatus.Archived;
+        }
+    }
+    public void UpdateDetails(
+        string title, string description, string? responsibilities, string? qualifications,
+        DateTimeOffset applicationDeadline, string? locationText, bool isRemote, /* ... diğer alanlar ... */
+        EmploymentType? employmentType, ExperienceLevel? experienceLevelRequired, int? vacancyCount)
+    {
+        // Sadece belirli durumlarda güncellemeye izin verilebilir (örn: taslak iken)
+        if (Status == JobPostingStatus.Draft || Status == JobPostingStatus.OnHold) // Veya admin yetkisine bağlı olarak her zaman
+        {
+            Title = title;
+            Description = description;
+            Responsibilities = responsibilities;
+            Qualifications = qualifications;
+            ApplicationDeadline = applicationDeadline;
+            LocationText = locationText;
+            IsRemote = isRemote;
+            EmploymentType = employmentType;
+            ExperienceLevelRequired = experienceLevelRequired;
+            VacancyCount = vacancyCount;
+            // ... diğer alanların güncellenmesi
+        }
     }
 }

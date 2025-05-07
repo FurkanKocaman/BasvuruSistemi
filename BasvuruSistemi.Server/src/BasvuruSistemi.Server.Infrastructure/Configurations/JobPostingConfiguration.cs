@@ -25,5 +25,11 @@ internal sealed class JobPostingConfiguration : IEntityTypeConfiguration<JobPost
             .WithMany()
             .HasForeignKey(p => p.FormTemplateId)
             .OnDelete(DeleteBehavior.NoAction);
+
+        builder
+            .HasOne(p => p.PostingGroup)
+            .WithMany(p => p.JobPostings)
+            .HasForeignKey(p => p.PostingGroupId)
+            .OnDelete(DeleteBehavior.NoAction);
     }
 }

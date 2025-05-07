@@ -7,7 +7,7 @@ using Microsoft.OData.ModelBuilder;
 
 namespace BasvuruSistemi.Server.WebAPI.Controllers.v1;
 
-[Route("odata")]
+[Route("v1/odata")]
 [ApiController]
 [EnableQuery]
 public class AppODataController(

@@ -85,6 +85,41 @@ public enum VerificationSourceEnum
     // Gelecekte eklenebilecek diğer kaynaklar
 }
 
+public enum JobPostingStatus
+{
+    Draft = 1,       // Taslak, henüz yayınlanmamış
+    Published = 2,   // Yayınlanmış ve aktif (başvuru alabilir)
+    OnHold = 3,      // Geçici olarak durdurulmuş
+    Closed = 4,      // Kapatılmış (manuel olarak veya pozisyon dolduğu için)
+    Expired = 5,     // Son başvuru tarihi geçmiş
+    Archived = 6     // Arşivlenmiş, kayıtlarda saklanıyor
+}
+
+public enum EmploymentType
+{
+    FullTime = 1,    // Tam Zamanlı
+    PartTime = 2,    // Yarı Zamanlı
+    Contract = 3,    // Sözleşmeli
+    Internship = 4,  // Staj
+    Temporary = 5,   // Geçici
+    Freelance = 6,   // Serbest Çalışan
+    ProjectBased = 7 // Proje Bazlı
+}
+
+public enum ExperienceLevel // Deneyim Seviyesi
+{
+    Student = 1,          // Öğrenci (Staj vb. için)
+    EntryLevel = 2,       // Yeni Başlayan
+    Junior = 3,           // 1-3 Yıl Deneyimli
+    MidLevel = 4,         // 3-5 Yıl Deneyimli
+    Senior = 5,           // 5+ Yıl Deneyimli
+    Lead = 6,             // Takım Lideri / Kıdemli Uzman
+    Principal = 7,        // Baş Uzman / Mimar
+    Manager = 8,          // Yönetici
+    Director = 9,         // Direktör
+    Executive = 10        // Üst Düzey Yönetici
+}
+
 public enum NotificationType
 {
     System = 0,
@@ -104,14 +139,4 @@ public enum DocumentType
     Resume = 4,
     CoverLetter = 5,
     Other = 99
-}
-
-public enum EmploymentType
-{
-    FullTime = 0,
-    PartTime = 1,
-    Contract = 2,
-    Internship = 3,
-    Freelance = 4,
-    Remote = 5
 }
