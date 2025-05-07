@@ -1,15 +1,8 @@
 <script setup lang="ts">
 import { useThemeStore } from "@/stores/theme";
-import { computed, onMounted, ref, type Ref } from "vue";
-import type { LoginRequest } from "../types/LoginRequest";
-import AuthService from "../services/AuthService";
+import { computed, onMounted } from "vue";
 
 const themeStore = useThemeStore();
-
-const request: Ref<LoginRequest> = ref({
-  usernameOrEmail: "",
-  password: "",
-});
 
 const currentTheme = computed(() => themeStore.currentTheme);
 
@@ -19,10 +12,6 @@ type Theme = "light" | "dark" | "system";
 const setTheme = (theme: Theme) => {
   themeStore.setTheme(theme);
 };
-
-async function login() {
-  await AuthService.login(request.value);
-}
 </script>
 <template>
   <main class="w-[100dvw] h-[100dvh] flex">
@@ -30,15 +19,48 @@ async function login() {
       class="w-full md:w-[50dvw] xl:w-[50dvw] bg-neutral-100 dark:bg-gray-900 h-full flex flex-col justify-center items-center"
     >
       <div class="flex-1 flex items-center justify-center h-full min-w-[50%]">
-        <form class="px-10 w-full" @submit.prevent="login()">
+        <form class="px-10 w-full">
           <div
             class="w-full py-5 mb-5 text-3xl text-neutral-700 dark:text-neutral-200 font-semibold text-left select-none"
           >
-            Giriş Yap
+            Kayıt Ol
             <p class="text-sm font-normal mt-3 dark:text-gray-500">
-              E-posta ve şifrenizle giriş yapın!
+              Kişisel bilgilerinizle kayıt olun!
             </p>
           </div>
+          <div class="flex flex-row">
+            <div class="mb-5 mr-2">
+              <label
+                for="firstName"
+                class="block mb-2 text-sm font-medium text-neutral-600 dark:text-neutral-300 select-none"
+                >Ad</label
+              >
+              <input
+                type="text"
+                id="firstName"
+                name="firstName"
+                placeholder="Adınızı girin"
+                class="border font-normal border-neutral-300 dark:border-gray-700 focus:border-indigo-500 focus:shadow-xl text-neutral-700 text-sm rounded-md outline-none bg-transparent dark:text-gray-200 block w-full p-3"
+                required
+              />
+            </div>
+            <div class="mb-5 ml-2">
+              <label
+                for="lastName"
+                class="block mb-2 text-sm font-medium text-neutral-600 dark:text-neutral-300 select-none"
+                >Soyad</label
+              >
+              <input
+                type="text"
+                id="lastName"
+                name="lastName"
+                placeholder="Soyadınızı girin"
+                class="border font-normal border-neutral-300 dark:border-gray-700 focus:border-indigo-500 focus:shadow-xl text-neutral-700 text-sm rounded-md outline-none bg-transparent dark:text-gray-200 block w-full p-3"
+                required
+              />
+            </div>
+          </div>
+
           <div class="mb-5">
             <label
               for="emailOrUsername"
@@ -49,8 +71,7 @@ async function login() {
               type="text"
               id="emailOrUsername"
               name="emailOrUsername"
-              v-model="request.usernameOrEmail"
-              placeholder="user@gmail.com"
+              placeholder="E-posta girin"
               class="border font-normal border-neutral-300 dark:border-gray-700 focus:border-indigo-500 focus:shadow-xl text-neutral-700 text-sm rounded-md outline-none bg-transparent dark:text-gray-200 block w-full p-3"
               required
             />
@@ -65,7 +86,6 @@ async function login() {
               type="password"
               id="password"
               name="password"
-              v-model="request.password"
               placeholder="******"
               class="border font-normal border-neutral-300 dark:border-gray-700 focus:border-indigo-500 focus:shadow-xl text-neutral-700 text-sm rounded-md outline-none bg-transparent dark:text-gray-200 block w-full p-3"
               required
@@ -73,8 +93,8 @@ async function login() {
           </div>
 
           <div class="flex justify-between mb-5">
-            <div class="flex items-center cursor-pointer">
-              <div class="flex items-center h-5">
+            <div class="flex items-start cursor-pointer max-w-sm">
+              <div class="flex items-center pt-1 mr-3">
                 <input
                   id="remember"
                   type="checkbox"
@@ -87,15 +107,13 @@ async function login() {
 
               <label
                 for="remember"
-                class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300 select-none cursor-pointer"
-                >Oturumu açık tut</label
+                class="block text-sm font-medium text-gray-700 dark:text-gray-400 select-none cursor-pointer break-words"
               >
-            </div>
-            <div class="flex items-center">
-              <label
-                class="text-sm font-medium text-gray-900 dark:text-gray-400 dark:hover:text-gray-50 cursor-pointer select-none"
-                >Şifremi unuttum?</label
-              >
+                Bu hesabı oluşturmanız
+                <span class="dark:text-gray-200 text-gray-900">Şartlar ve Koşullar'ı</span> ve
+                <span class="dark:text-gray-200 text-gray-900">Gizlilik politikamızı</span> kabul
+                ettiğiniz anlamına gelir.
+              </label>
             </div>
           </div>
           <div class="flex items-center justify-center">
@@ -103,14 +121,14 @@ async function login() {
               type="submit"
               class="text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-blue-300 font-medium rounded-md text-sm w-full px-5 py-2.5 text-center dark:bg-indigo-600 dark:hover:bg-indigo-700 select-none cursor-pointer"
             >
-              Giriş Yap
+              Kayıt Ol
             </button>
           </div>
           <div class="my-3">
             <router-link
-              to="/auth/register"
+              to="/auth/login"
               class="text-sm font-medium text-gray-900 dark:text-gray-300 hover:border-b border-neutral-400 cursor-pointer select-none"
-              >Hesabınız yok mu?</router-link
+              >Zaten kayıtlı mısınız?</router-link
             >
           </div>
           <div class="flex justify-center items-center my-8">
