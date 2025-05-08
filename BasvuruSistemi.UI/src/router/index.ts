@@ -24,6 +24,31 @@ const router = createRouter({
         },
       ],
     },
+    {
+      path: "/management",
+      name: "management",
+      component: () => import("@/modules/management/layouts/ManagementLayout.vue"),
+      redirect: "/management/job-postings",
+      children: [
+        {
+          path: "job-postings",
+          name: "job-posting",
+          redirect: "",
+          children: [
+            {
+              path: "",
+              name: "job-posting-list",
+              component: () => import("@/modules/management/pages/JobPostingPage.vue"),
+            },
+            {
+              path: "create",
+              name: "job-posting-create",
+              component: () => import("@/modules/management/pages/JobpostingCreatePage.vue"),
+            },
+          ],
+        },
+      ],
+    },
   ],
 });
 
