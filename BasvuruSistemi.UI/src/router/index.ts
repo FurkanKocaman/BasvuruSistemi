@@ -6,7 +6,7 @@ const router = createRouter({
     {
       path: "/",
       name: "home",
-      redirect: "auth/login",
+      redirect: "/jobs", // Ana sayfa artık iş ilanları sayfasına yönlendiriyor
     },
     {
       path: "/auth",
@@ -24,7 +24,40 @@ const router = createRouter({
         },
       ],
     },
+    {
+      // İş başvuru sistemi için yeni rotalar
+      path: "/",
+      component: () => import("@/modules/home/layouts/HomeLayout.vue"),
+      children: [
+        {
+          path: "jobs",
+          name: "Jobs",
+          component: () => import("@/modules/home/pages/JobsListingPage.vue"),
+          meta: { title: "İş İlanları" }
+        },
+        {
+          path: "jobs/:id/apply",
+          name: "JobApplication",
+          component: () => import("@/modules/home/pages/JobApplicationPage.vue"),
+          props: true,
+          meta: { title: "İş Başvurusu" }
+        },
+        {
+          path: "my-applications",
+          name: "MyApplications",
+          component: () => import("@/modules/home/pages/MyApplicationsPage.vue"),
+          meta: { title: "Başvurularım" }
+        }
+      ]
+    },
   ],
+});
+
+// Sayfa başlıklarını ayarlama
+router.beforeEach((to, from, next) => {
+  // Sayfa başlığını meta bilgisinden alıp ayarlama
+  document.title = to.meta.title ? `${to.meta.title} | Başvuru Sistemi` : 'Başvuru Sistemi';
+  next();
 });
 
 export default router;
