@@ -25,6 +25,31 @@ const router = createRouter({
       ],
     },
     {
+      path: "/",
+      component: () => import("@/modules/home/layouts/HomeLayout.vue"),
+      children: [
+        {
+          path: "jobs",
+          name: "Jobs",
+          component: () => import("@/modules/home/pages/JobsListingPage.vue"),
+          meta: { title: "İş İlanları" },
+        },
+        {
+          path: "jobs/:id/apply",
+          name: "JobApplication",
+          component: () => import("@/modules/home/pages/JobApplicationPage.vue"),
+          props: true,
+          meta: { title: "İş Başvurusu" },
+        },
+        {
+          path: "my-applications",
+          name: "MyApplications",
+          component: () => import("@/modules/home/pages/MyApplicationsPage.vue"),
+          meta: { title: "Başvurularım" },
+        },
+      ],
+    },
+    {
       path: "/management",
       name: "management",
       component: () => import("@/modules/management/layouts/ManagementLayout.vue"),
