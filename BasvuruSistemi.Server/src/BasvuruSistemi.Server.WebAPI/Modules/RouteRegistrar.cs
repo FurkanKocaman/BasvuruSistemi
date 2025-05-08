@@ -13,5 +13,6 @@ public static class RouteRegistrar
         app.RegisterDepartmentRoutes();
         app.RegisterFormFieldDefinitionRoutes();
         app.RegisterFormTemplateRoutes();
+        app.RegisterJobPostingRoutes();
     }
 }

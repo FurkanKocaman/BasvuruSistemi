@@ -25,30 +25,29 @@ const router = createRouter({
       ],
     },
     {
-      // İş başvuru sistemi için yeni rotalar
-      path: "/",
-      component: () => import("@/modules/home/layouts/HomeLayout.vue"),
+      path: "/management",
+      name: "management",
+      component: () => import("@/modules/management/layouts/ManagementLayout.vue"),
+      redirect: "/management/job-postings",
       children: [
         {
-          path: "jobs",
-          name: "Jobs",
-          component: () => import("@/modules/home/pages/JobsListingPage.vue"),
-          meta: { title: "İş İlanları" }
+          path: "job-postings",
+          name: "job-posting",
+          redirect: "",
+          children: [
+            {
+              path: "",
+              name: "job-posting-list",
+              component: () => import("@/modules/management/pages/JobPostingPage.vue"),
+            },
+            {
+              path: "create",
+              name: "job-posting-create",
+              component: () => import("@/modules/management/pages/JobpostingCreatePage.vue"),
+            },
+          ],
         },
-        {
-          path: "jobs/:id/apply",
-          name: "JobApplication",
-          component: () => import("@/modules/home/pages/JobApplicationPage.vue"),
-          props: true,
-          meta: { title: "İş Başvurusu" }
-        },
-        {
-          path: "my-applications",
-          name: "MyApplications",
-          component: () => import("@/modules/home/pages/MyApplicationsPage.vue"),
-          meta: { title: "Başvurularım" }
-        }
-      ]
+      ],
     },
   ],
 });
@@ -56,7 +55,7 @@ const router = createRouter({
 // Sayfa başlıklarını ayarlama
 router.beforeEach((to, from, next) => {
   // Sayfa başlığını meta bilgisinden alıp ayarlama
-  document.title = to.meta.title ? `${to.meta.title} | Başvuru Sistemi` : 'Başvuru Sistemi';
+  document.title = to.meta.title ? `${to.meta.title} | Başvuru Sistemi` : "Başvuru Sistemi";
   next();
 });
 

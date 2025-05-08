@@ -16,7 +16,7 @@ internal sealed class JobPostingConfiguration : IEntityTypeConfiguration<JobPost
         builder
             .HasOne(p => p.Department)
             .WithMany(p => p.JobPostings)
-            .HasForeignKey(p => p.CompanyId)
+            .HasForeignKey(p => p.DepartmentId)
             .OnDelete(DeleteBehavior.NoAction);
 
 
