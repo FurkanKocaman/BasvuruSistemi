@@ -1,6 +1,9 @@
-﻿using BasvuruSistemi.Server.Application.JobPostings;
+﻿using BasvuruSistemi.Server.Application.FormTemplates;
+using BasvuruSistemi.Server.Application.JobPostings;
 using BasvuruSistemi.Server.Application.Organizations;
+using BasvuruSistemi.Server.Application.Tenants;
 using BasvuruSistemi.Server.Application.Users;
+using BasvuruSistemi.Server.Domain.DTOs;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -26,15 +29,70 @@ public class AppController(ISender sender) : ControllerBase
         return Ok(response);
     }
 
-    [HttpGet("job-postings")]
-
+    [HttpGet("job-postings/active")]
     public async Task<ActionResult<GetActiveJobPostingsQueryResponse>> GetActiveJobPostings(
-    [FromQuery] string view = "summaries",
     [FromQuery] int page = 1,
     [FromQuery] int pageSize = 20, 
     CancellationToken cancellationToken = default)
     {
         var response = await sender.Send(new GetActiveJobPostingsQuery(page,pageSize), cancellationToken);
+        return Ok(response);
+    }
+
+    [HttpGet("job-postings")]
+    [Authorize()]
+    public async Task<ActionResult<GetJobPostingsByTenantQueryResponse>> GetJobPostings(
+    [FromQuery] int page = 1,
+    [FromQuery] int pageSize = 20,
+    CancellationToken cancellationToken = default)
+    {
+        var response = await sender.Send(new GetJobPostingsByTenantQuery(page, pageSize), cancellationToken);
+        return Ok(response);
+    }
+
+    [HttpGet("tenants")]
+    [Authorize()]
+    public async Task<ActionResult<List<GetUserAuthorizedTenantsQueryResponse>>> GetUserAuthorizedTenants(CancellationToken cancellationToken = default)
+    {
+        var response = await sender.Send(new GetUserAuthorizedTenantsQuery(), cancellationToken);
+        return Ok(response);
+    }
+
+    [HttpGet("form-templates/{id}")]
+    [Authorize()]
+    public async Task<ActionResult<GetFormTemplateQueryResponse>> GetFormTemplate(Guid id, CancellationToken cancellationToken = default)
+    {
+        var response = await sender.Send(new GetFormTemplateQuery(id), cancellationToken);
+        return Ok(response);
+    }
+
+    [HttpGet("form-templates")]
+    [Authorize()]
+    public async Task<IActionResult> GetFormTemplates(
+        [FromQuery] string view = "summaries",
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken cancellationToken = default)
+    {
+        if(view == "summaries")
+        {
+            var response = await sender.Send(new GetFormTemplateSummariesQuery(), cancellationToken);
+            return Ok(response);
+        }
+        else if(view == "details")
+        {
+            var response = await sender.Send(new GetAllFormTemplatesQuery(page, pageSize), cancellationToken);
+            return Ok(response);
+        }
+        return BadRequest();
+            
+    }
+
+    [HttpGet("organizations")]
+    [Authorize()]
+    public async Task<ActionResult<GetAllOrganizationsByTenantQueryResponse>> GetAllOrganizationsByTenant(CancellationToken cancellationToken = default)
+    {
+        var response = await sender.Send(new GetAllOrganizationsByTenantQuery(), cancellationToken);
         return Ok(response);
     }
 }

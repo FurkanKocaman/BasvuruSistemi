@@ -55,14 +55,14 @@ public enum FieldTypeEnum
     Number = 8,
     Email = 9,
     PhoneNumber = 10,
-    EDevletVerifiedFile = 11, // e-Devlet doğrulamalı dosya
-    YoksisAlesDocument = 12,  // YÖKSİS ALES Belgesi (Dosya olarak yüklenip doğrulanacak)
-    YoksisAlesScore = 13,     // YÖKSİS ALES Puanı (Yıl seçimi ile YÖKSİS'ten çekilecek)
-    YoksisKpssScore = 14,     // YÖKSİS KPSS Puanı (Yıl ve Puan Türü seçimi ile YÖKSİS'ten çekilecek)
-    TCKN = 11,              // Türkiye Cumhuriyeti Kimlik Numarası
+    TCKN = 11,
     IBAN = 12,
-    Image = 13,             // Profil fotoğrafı, belge görseli
-    URL = 14
+    Image = 13, // Profil fotoğrafı, belge görseli
+    URL = 14,
+    EDevletVerifiedFile = 15, // e-Devlet doğrulamalı dosya
+    YoksisAlesDocument = 16,  // YÖKSİS ALES Belgesi (Dosya olarak yüklenip doğrulanacak)
+    YoksisAlesScore = 17,     // YÖKSİS ALES Puanı (Yıl seçimi ile YÖKSİS'ten çekilecek)
+    YoksisKpssScore = 18,     // YÖKSİS KPSS Puanı (Yıl ve Puan Türü seçimi ile YÖKSİS'ten çekilecek)
 }
 
 // Bu enum, eğer FieldTypeEnum'da YoksisAlesScore, YoksisKpssScore gibi
