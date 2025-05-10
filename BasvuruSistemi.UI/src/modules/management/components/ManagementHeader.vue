@@ -103,7 +103,6 @@ function togglePostingMenu() {
                 <div class="flex-auto">
                   <router-link
                     to="/management/job-postings"
-                    href="#"
                     class="block font-semibold text-gray-700 dark:text-gray-200"
                     @click.prevent="togglePostingMenu()"
                   >
@@ -121,7 +120,6 @@ function togglePostingMenu() {
                 <div class="flex-auto">
                   <router-link
                     to="/management/job-postings/create"
-                    href="#"
                     class="block font-semibold text-gray-700 dark:text-gray-200"
                     @click.prevent="togglePostingMenu()"
                   >
@@ -135,8 +133,10 @@ function togglePostingMenu() {
           </div>
         </div>
 
-        <a href="#" class="text-sm/6 font-semibold text-gray-700 dark:text-gray-50"
-          >Form Şablonları</a
+        <router-link
+          to="/management/form-templates"
+          class="text-sm/6 font-semibold text-gray-700 dark:text-gray-50"
+          >Form Şablonları</router-link
         >
         <a href="#" class="text-sm/6 font-semibold text-gray-700 dark:text-gray-50">Başvurular</a>
         <a href="#" class="text-sm/6 font-semibold text-gray-700 dark:text-gray-50">Birimler</a>

@@ -10,10 +10,9 @@ watch(
   () => route.fullPath,
   () => {
     isRouteChanging.value = true;
-    // Kısa gecikmeyle "loading" simülasyonu
     setTimeout(() => {
       isRouteChanging.value = false;
-    }, 300); // API isteklerinle senkronize etmek istersen burayı özelleştir
+    }, 300);
   }
 );
 </script>
@@ -25,19 +24,22 @@ watch(
       <ManagementHeader />
     </div>
 
-    <!-- İçerik Alanı (Scrollable + Animasyon) -->
+    <!-- Scrollable ve Animasyonlu İçerik -->
     <div class="flex-1 overflow-y-auto overflow-x-hidden relative">
-      <transition name="fade" mode="out-in">
-        <div v-if="isRouteChanging" key="loading" class="w-full flex justify-center py-10">
-          <span
-            class="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full"
-          ></span>
-        </div>
-        <router-view v-else :key="route.fullPath" />
-      </transition>
+      <router-view v-slot="{ Component }">
+        <transition name="fade" mode="out-in">
+          <div v-if="isRouteChanging" key="loading" class="w-full flex justify-center py-10">
+            <span
+              class="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full"
+            ></span>
+          </div>
+          <component v-else :is="Component" :key="route.fullPath" />
+        </transition>
+      </router-view>
     </div>
   </div>
 </template>
+
 <style scoped>
 .fade-enter-active,
 .fade-leave-active {

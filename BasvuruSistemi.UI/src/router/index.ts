@@ -50,6 +50,11 @@ const router = createRouter({
       ],
     },
     {
+      path: "/tenants",
+      name: "tenants",
+      component: () => import("@/modules/management/pages/TenantPage.vue"),
+    },
+    {
       path: "/management",
       name: "management",
       component: () => import("@/modules/management/layouts/ManagementLayout.vue"),
@@ -66,9 +71,26 @@ const router = createRouter({
               component: () => import("@/modules/management/pages/JobPostingPage.vue"),
             },
             {
-              path: "create",
+              path: "create/:id?",
               name: "job-posting-create",
               component: () => import("@/modules/management/pages/JobpostingCreatePage.vue"),
+            },
+          ],
+        },
+        {
+          path: "form-templates",
+          name: "form-templates",
+          redirect: "",
+          children: [
+            {
+              path: "",
+              name: "form-templates-list",
+              component: () => import("@/modules/management/pages/FormTemplatesPage.vue"),
+            },
+            {
+              path: "create/:id?",
+              name: "form-templates-create",
+              component: () => import("@/modules/management/pages/FormTemplateCreatePage.vue"),
             },
           ],
         },
