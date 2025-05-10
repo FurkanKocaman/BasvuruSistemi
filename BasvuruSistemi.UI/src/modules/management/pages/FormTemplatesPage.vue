@@ -1,24 +1,28 @@
 <script setup lang="ts">
 import { onMounted, ref, Ref } from "vue";
-import jobPostingService from "../services/job-posting.service";
-import { JobPostingsByTenantResponse } from "../models/job-posting-by-tenant.model";
+import { FormTemplateGetModel } from "../models/form-template-get.model";
+import formTemplateService from "../services/form-template.service";
+import { useRouter } from "vue-router";
 
-const jobPostings: Ref<JobPostingsByTenantResponse[]> = ref([]);
-const page = ref(1);
+const formTemplates: Ref<FormTemplateGetModel[] | undefined> = ref([]);
+const page = ref(0);
 const pageSize = ref(10);
 const totalCount = ref(0);
 
-onMounted(async () => {
-  getJobPostings();
+const router = useRouter();
+
+onMounted(() => {
+  getFormTemplates();
 });
 
-const getJobPostings = async () => {
-  const res = await jobPostingService.getJobPostings();
+const getFormTemplates = async () => {
+  const res = await formTemplateService.getFormTemplates();
+  console.log(res);
   if (res) {
-    jobPostings.value = res.items;
+    formTemplates.value = res.items;
     totalCount.value = res.totalCount;
-    page.value = res.page;
     pageSize.value = res.pageSize;
+    page.value = res.page;
   }
 };
 
@@ -34,6 +38,10 @@ function formatDateTime(value: string): string {
 
   return `${day}.${month}.${year} ${hours}:${minutes}`;
 }
+
+const goToFormTemplate = (id: string) => {
+  router.push({ name: "form-templates-create", params: { id } });
+};
 </script>
 
 <template>
@@ -45,8 +53,16 @@ function formatDateTime(value: string): string {
       <div
         class="w-full dark:bg-gray-800/40 bg-gray-50 rounded-xl border dark:border-gray-800 border-gray-200"
       >
-        <div class="border-b px-5 py-3 dark:border-gray-800 border-gray-200">
-          <span class="text-xl font-base dark:text-gray-50 text-gray-700">İlan Listesi</span>
+        <div
+          class="border-b px-5 py-3 dark:border-gray-800 border-gray-200 flex justify-between items-center"
+        >
+          <span class="text-xl font-base dark:text-gray-50 text-gray-700">Form Şablonları</span>
+          <router-link
+            to="/management/form-templates/create"
+            class="border rounded-md dark:border-gray-700 border-gray-200 text-sm dark:text-gray-200 text-gray-700 dark:hover:bg-gray-700/20 hover:bg-gray-200/20 cursor-pointer px-3 py-1.5"
+          >
+            Şablon Oluştur
+          </router-link>
         </div>
         <div class="px-5 py-5">
           <div
@@ -56,6 +72,7 @@ function formatDateTime(value: string): string {
               <select
                 name="pageSize"
                 id="pageSize"
+                v-model="pageSize"
                 class="text-sm dark:text-gray-300 text-gray-700 dark:bg-gray-800 px-3 py-1 outline-none focus:border-indigo-600 rounded-md border dark:border-gray-700 border-gray-300"
               >
                 <option value="10">10</option>
@@ -87,7 +104,7 @@ function formatDateTime(value: string): string {
                     class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200 cursor-pointer select-none dark:text-gray-400 text-sm"
                   >
                     <div class="flex items-center justify-between">
-                      <span>İlan Adı</span>
+                      <span>Şablon Adı</span>
                       <svg
                         class="size-6 dark:fill-gray-500"
                         viewBox="0 0 1024 1024"
@@ -103,7 +120,7 @@ function formatDateTime(value: string): string {
                     class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200 cursor-pointer select-none dark:text-gray-400 text-sm"
                   >
                     <div class="flex items-center justify-between">
-                      <span>İlan Tipi</span>
+                      <span>Şablon Açıklama</span>
                       <svg
                         class="size-6 dark:fill-gray-500"
                         viewBox="0 0 1024 1024"
@@ -119,7 +136,7 @@ function formatDateTime(value: string): string {
                     class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200 cursor-pointer select-none dark:text-gray-400 text-sm"
                   >
                     <div class="flex items-center justify-between">
-                      <span>İlk Başvuru Tarihi</span>
+                      <span>Alanlar</span>
                       <svg
                         class="size-6 dark:fill-gray-500"
                         viewBox="0 0 1024 1024"
@@ -135,7 +152,7 @@ function formatDateTime(value: string): string {
                     class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200 cursor-pointer select-none dark:text-gray-400 text-sm"
                   >
                     <div class="flex items-center justify-between">
-                      <span>Son Başvuru Tarihi</span>
+                      <span>Oluşturulma Tarihi</span>
                       <svg
                         class="size-6 dark:fill-gray-500"
                         viewBox="0 0 1024 1024"
@@ -151,7 +168,7 @@ function formatDateTime(value: string): string {
                     class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200 cursor-pointer select-none dark:text-gray-400 text-sm"
                   >
                     <div class="flex items-center justify-between">
-                      <span>Kontenjan Var Mı</span>
+                      <span>Oluşturan</span>
                       <svg
                         class="size-6 dark:fill-gray-500"
                         viewBox="0 0 1024 1024"
@@ -163,22 +180,7 @@ function formatDateTime(value: string): string {
                       </svg>
                     </div>
                   </td>
-                  <td
-                    class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200 cursor-pointer select-none dark:text-gray-400 text-sm"
-                  >
-                    <div class="flex items-center justify-between">
-                      <span>Başvuru sayısı</span>
-                      <svg
-                        class="size-6 dark:fill-gray-500"
-                        viewBox="0 0 1024 1024"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M620.6 562.3l36.2 36.2L512 743.3 367.2 598.5l36.2-36.2L512 670.9l108.6-108.6zM512 353.1l108.6 108.6 36.2-36.2L512 280.7 367.2 425.5l36.2 36.2L512 353.1z"
-                        />
-                      </svg>
-                    </div>
-                  </td>
+
                   <td
                     class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200 cursor-pointer select-none dark:text-gray-400 text-sm"
                   >
@@ -200,40 +202,40 @@ function formatDateTime(value: string): string {
               </thead>
               <tbody class="">
                 <tr
-                  v-for="(jobPosting, index) in jobPostings"
-                  :key="jobPosting.id"
+                  v-for="(formTemplate, index) in formTemplates"
+                  :key="formTemplate.id"
                   class="border-b dark:border-gray-700/30 border-gray-200"
                 >
                   <td class="py-3 pr-2 pl-4 border-r dark:border-gray-700/30 border-gray-200">
                     {{ index + 1 }}
                   </td>
                   <td class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200">
-                    <span class="cursor-pointer">{{ jobPosting.title }}</span>
-                  </td>
-                  <td class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200">Type</td>
-                  <td class="py-3 px-2 border-r text-sm dark:border-gray-700/30 border-gray-200">
-                    {{ formatDateTime(jobPosting.validFrom!) }}
-                  </td>
-                  <td class="py-3 px-2 border-r text-sm dark:border-gray-700/30 border-gray-200">
-                    {{ formatDateTime(jobPosting.validTo!) }}
+                    <span class="cursor-pointer">{{ formTemplate.name }}</span>
                   </td>
                   <td class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200">
-                    <span
-                      class="py-0.5 px-1.5 rounded-lg"
-                      :class="
-                        jobPosting.vacancyCount
-                          ? 'dark:bg-blue-500/60 bg-blue-500/20 dark:text-gray-200 text-gray-600'
-                          : 'dark:bg-red-500/60 bg-red-500/20 dark:text-red-200 text-red-600'
-                      "
-                      >{{ jobPosting.vacancyCount ?? "yok" }}</span
-                    >
+                    {{ formTemplate.description ?? "-" }}
                   </td>
-                  <td class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200">80</td>
+                  <td class="py-3 px-2 border-r text-sm dark:border-gray-700/30 border-gray-200">
+                    {{ formTemplate.fields.length }}
+                  </td>
+                  <td class="py-3 px-2 border-r text-sm dark:border-gray-700/30 border-gray-200">
+                    {{ formatDateTime(formTemplate.createdAt.toString()) }}
+                  </td>
                   <td class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200">
-                    <span class="bg-blue-600 py-0.5 px-1.5 rounded-lg text-gray-100">Status</span>
+                    {{ formTemplate.createUserName }}
                   </td>
+                  <td class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200">
+                    <span class="px-2 py-1 bg-green-600 text-gray-100 rounded-lg">{{
+                      formTemplate.isActive ? "Aktif" : "Pasif"
+                    }}</span>
+                  </td>
+
                   <td class="py-3 px-2">
-                    <button class="cursor-pointer pr-1 group">
+                    <button
+                      class="cursor-pointer pr-1 group"
+                      title="Düzenle"
+                      @click="goToFormTemplate(formTemplate.id)"
+                    >
                       <svg
                         class="size-5 dark:fill-gray-400 fill-gray-600 group-hover:fill-blue-600 dark:group-hover:fill-blue-600"
                         viewBox="0 0 24 24"
@@ -244,7 +246,7 @@ function formatDateTime(value: string): string {
                         />
                       </svg>
                     </button>
-                    <button class="cursor-pointer pr-1">
+                    <button class="cursor-pointer pr-1" title="Sil">
                       <svg
                         class="size-5 group"
                         viewBox="0 0 24 24"
@@ -282,7 +284,7 @@ function formatDateTime(value: string): string {
                         />
                       </svg>
                     </button>
-                    <button class="cursor-pointer pr-1 group">
+                    <button class="cursor-pointer pr-1 group" title="Önizleme">
                       <svg
                         class="size-5 group"
                         viewBox="0 0 24 24"

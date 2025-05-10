@@ -1,3 +1,4 @@
+import { useTenantStore } from "@/stores/tenant";
 import axios, {
   type AxiosInstance,
   type AxiosResponse,
@@ -14,6 +15,12 @@ api.interceptors.request.use(
     const accessToken = localStorage.getItem("accessToken");
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`;
+    }
+    const tenantStore = useTenantStore();
+    const tenantId = tenantStore.tenantId;
+
+    if (tenantId) {
+      config.headers["X-Current-Tenant"] = tenantId;
     }
 
     return config;

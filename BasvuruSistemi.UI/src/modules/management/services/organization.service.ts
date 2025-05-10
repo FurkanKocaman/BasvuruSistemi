@@ -1,0 +1,19 @@
+import api from "@/services/Axios";
+
+class OrganizationService {
+  async getOrganizationsByTenant(): Promise<
+    { name: string; companyId: string; departmentId?: string }[] | undefined
+  > {
+    try {
+      const res = await api.get(`${import.meta.env.VITE_API_URL}/api/organizations`);
+
+      console.log(res);
+
+      return res.data;
+    } catch (ex) {
+      console.error(ex);
+    }
+  }
+}
+
+export default new OrganizationService();
