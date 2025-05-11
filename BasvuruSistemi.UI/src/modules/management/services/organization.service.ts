@@ -7,8 +7,6 @@ class OrganizationService {
     try {
       const res = await api.get(`${import.meta.env.VITE_API_URL}/api/organizations`);
 
-      console.log(res);
-
       return res.data;
     } catch (ex) {
       console.error(ex);

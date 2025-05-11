@@ -2,11 +2,51 @@ import api from "@/services/Axios";
 import { FormTemplateCreateReqeust } from "../models/form-template-create.model";
 import { FormTemplateGetModel } from "../models/form-template-get.model";
 import { PaginatedResponse } from "@/models/response/paginated-response.model";
+import { useToastStore } from "@/modules/toast/store/toast.store";
 
 class FormTeplateSerive {
+  toastSore = useToastStore();
+
   async createFormTemplate(request: FormTemplateCreateReqeust): Promise<string | undefined> {
     try {
       const res = await api.post(`${import.meta.env.VITE_API_URL}/form-templates`, request);
+
+      if (res.status == 200) {
+        this.toastSore.addToast({
+          message: res.data.data,
+          type: "success",
+          duration: 3000,
+        });
+      } else {
+        this.toastSore.addToast({
+          message: res.data.data,
+          type: "error",
+          duration: 3000,
+        });
+      }
+
+      return res.data;
+    } catch (err) {
+      console.error(err);
+    }
+  }
+  async updateFormTemplate(request: FormTemplateCreateReqeust): Promise<string | undefined> {
+    try {
+      const res = await api.put(`${import.meta.env.VITE_API_URL}/form-templates`, request);
+
+      if (res.status == 200) {
+        this.toastSore.addToast({
+          message: res.data.data,
+          type: "success",
+          duration: 3000,
+        });
+      } else {
+        this.toastSore.addToast({
+          message: res.data.data,
+          type: "error",
+          duration: 3000,
+        });
+      }
 
       return res.data;
     } catch (err) {

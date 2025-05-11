@@ -17,11 +17,16 @@ export interface JobPostingCreateModel {
   vacancyCount?: number;
   employmentType?: number; // Enum
   experienceLevelRequired?: number; // Enum
-  salaryRange?: string;
   skillsRequired?: string;
+
+  allowedNationalIds?: string[];
 
   contactInfo?: string;
   isPublic: boolean;
+
+  minSalary?: number;
+  maxSalary?: number;
+  currency?: string;
 
   companyId: string;
   departmentId?: string;

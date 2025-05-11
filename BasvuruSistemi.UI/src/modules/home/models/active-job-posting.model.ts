@@ -1,4 +1,4 @@
-export interface ActiveJobPosting {
+export interface GetActiveJobPostingsQueryResponse {
   id: string;
 
   title: string;
@@ -7,13 +7,13 @@ export interface ActiveJobPosting {
   qualifications?: string;
   benefits?: string;
 
-  validFrom?: string; // ISO date string
-  validTo?: string; // ISO date string
+  validFrom?: string;
+  validTo?: string;
 
   isRemote: boolean;
   locationText?: string;
 
-  vacancyCount?: number; // Açık pozisyon sayısı (Kontenjan)
+  vacancyCount?: number;
   employmentType?: string;
   experienceLevelRequired?: string;
   salaryRange?: string;
@@ -24,4 +24,6 @@ export interface ActiveJobPosting {
 
   company: string;
   department?: string;
+
+  formTemplateId: string;
 }
