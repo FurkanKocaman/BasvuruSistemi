@@ -48,8 +48,6 @@ public sealed class FormFieldDefinition : Entity
         string? optionsJson = null,
         bool isReadOnly = false,
         string? defaultValue = null,
-        VerificationSourceEnum verificationSource = VerificationSourceEnum.None,
-        string? verificationParametersJson = null,
         string? allowedFileTypes = null,
         int? maxFileSizeMB = null)
     {
@@ -63,8 +61,6 @@ public sealed class FormFieldDefinition : Entity
         OptionsJson = optionsJson;
         IsReadOnly = isReadOnly;
         DefaultValue = defaultValue;
-        VerificationSource = verificationSource;
-        VerificationParametersJson = verificationParametersJson;
         AllowedFileTypes = allowedFileTypes;
         MaxFileSizeMB = maxFileSizeMB;
 

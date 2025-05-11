@@ -40,6 +40,8 @@ public sealed class GetActiveJobPostingsQueryResponse
     public string Company { get; set; } = default!;
     public string? Department { get; set; }
 
+    public Guid FormTemplateId { get; set; }
+
 }
 
 internal sealed class GetActiveJobPostingsQueryHandler(
@@ -77,7 +79,7 @@ internal sealed class GetActiveJobPostingsQueryHandler(
             VacancyCount = p.VacancyCount,
             EmploymentType = p.EmploymentType.ToString(),
             ExperienceLevelRequired = p.ExperienceLevelRequired.ToString(),
-            SalaryRange = p.SalaryRange,
+            SalaryRange = p.MinSalary.ToString()+p.Currency + p.MaxSalary.ToString()+p.Currency,
             SkillsRequired = p.SkillsRequired,
 
             ContactInfo = p.ContactInfo,
@@ -86,6 +88,7 @@ internal sealed class GetActiveJobPostingsQueryHandler(
             Company = p.Company.Name,
             Department = p.Department != null ? p.Department.Name : null,
 
+            FormTemplateId = p.FormTemplateId,
         });
 
         return Task.FromResult(new PagedResult<GetActiveJobPostingsQueryResponse>(response, request.page, request.pageSize, totalCount));

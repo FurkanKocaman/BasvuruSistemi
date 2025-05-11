@@ -1,5 +1,4 @@
-﻿using BasvuruSistemi.Server.Application.Services;
-using BasvuruSistemi.Server.Domain.Enums;
+﻿using BasvuruSistemi.Server.Domain.Enums;
 using BasvuruSistemi.Server.Domain.JobPostings;
 using BasvuruSistemi.Server.Domain.UnitOfWork;
 using MediatR;
@@ -14,7 +13,7 @@ public sealed record JobPostingCreateCommand(
     string? benefits,
 
     DateTimeOffset datePosted,
-    DateTimeOffset  applicationDeadLine,
+    DateTimeOffset applicationDeadLine,
     DateTimeOffset? validFrom,
     DateTimeOffset? validTo,
 
@@ -25,11 +24,16 @@ public sealed record JobPostingCreateCommand(
     int? vacancyCount,
     int? employementType, //EmploymentType Enum
     int? experienceLevelRequired, //ExperienceLevel Enum
-    string? salaryRange,
     string? skillsRequired,
+
+    List<string>? allowedNationalIds,
 
     string? contactInfo,
     bool isPublic,
+
+    decimal? minSalary,
+    decimal? maxSalary,
+    string? currency,
 
     Guid companyId,
     Guid? departmentId,
@@ -65,7 +69,42 @@ internal sealed class JobPostingCreateCommandHandler(
         }
         ExperienceLevel? experienceLevelRequired = (ExperienceLevel?)request.experienceLevelRequired;
 
-        JobPosting jobPosting = new(request.title,request.description,request.datePosted,request.applicationDeadLine,request.companyId,request.formTemplateId,request.departmentId,request.postingGroupId,status,request.isPublic,request.validFrom,request.validTo,request.contactInfo,request.responsibilities,request.qualifications,request.locationText,request.isRemote,employementType,experienceLevelRequired,request.vacancyCount,request.salaryRange,request.skillsRequired);
+        JobPosting jobPosting = new(
+             request.title
+            ,request.description
+            ,request.datePosted
+            ,request.applicationDeadLine
+            ,request.companyId
+            ,request.formTemplateId
+            ,request.departmentId
+            ,request.postingGroupId
+            ,status
+            ,request.isPublic
+
+            ,request.validFrom
+            ,request.validTo
+
+            ,request.contactInfo
+
+            ,request.responsibilities
+            ,request.qualifications
+            ,request.benefits
+            ,request.locationText
+            ,request.isRemote
+            ,employementType
+            ,experienceLevelRequired
+            ,request.vacancyCount
+            ,request.skillsRequired
+
+            ,request.minSalary
+            ,request.maxSalary
+            ,request.currency
+            );
+
+        if(request.allowedNationalIds is not null)
+        {
+            jobPosting.SetAllowedNationalIds(request.allowedNationalIds);
+        }
 
         jobPostingRepository.Add(jobPosting);
 

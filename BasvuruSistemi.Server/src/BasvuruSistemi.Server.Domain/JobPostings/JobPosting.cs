@@ -27,11 +27,15 @@ public sealed class JobPosting : Entity
     public int? VacancyCount { get; private set; }                // Açık pozisyon sayısı (Kontenjan)
     public EmploymentType? EmploymentType { get; private set; }   // Çalışma Şekli
     public ExperienceLevel? ExperienceLevelRequired { get; private set; } // İstenen Deneyim Seviyesi
-    public string? SalaryRange { get; private set; }              // Maaş Aralığı (örn: "15.000 TL - 25.000 TL" veya yapısal)
     public string? SkillsRequired { get; private set; }           // İstenen Yetenekler (virgülle ayrılmış veya JSON)
 
+    public List<string> AllowedNationalIds { get; private set; } = new List<string>(); // İlanın geçerli olduğu ulusal kimlik numaraları (örn: Türkiye için TCKN)
     public string? ContactInfo { get; private set; }              // İletişim Bilgisi (örn: e-posta veya sorumlu kişi)
     public bool IsPublic { get; private set; }                    // Herkese açık mı? (Anonim kullanıcılar görebilir mi?)
+
+    public decimal? MinSalary { get; private set; }
+    public decimal? MaxSalary { get; private set; }
+    public string? Currency { get; private set; }
 
     public Guid CompanyId { get; set; }
     public Company Company { get; set; } = default!;
@@ -68,13 +72,17 @@ public sealed class JobPosting : Entity
 
         string? responsibilities = null,
         string? qualifications = null,
+        string? benefits = null,
         string? locationText = null,
         bool isRemote = false,
         EmploymentType? employmentType = null,
         ExperienceLevel? experienceLevelRequired = null,
         int? vacancyCount = null,
-        string? salaryRange = null,
-        string? skillsRequired = null
+        string? skillsRequired = null,
+
+        decimal? minSalary = null,
+        decimal? maxSalary = null,
+        string? currency = null
         )
     {
         Title = title;
@@ -92,13 +100,17 @@ public sealed class JobPosting : Entity
 
         Responsibilities = responsibilities;
         Qualifications = qualifications;
+        Benefits = benefits;
         LocationText = locationText;
         IsRemote = isRemote;
         EmploymentType = employmentType;
         ExperienceLevelRequired = experienceLevelRequired;
         VacancyCount = vacancyCount;
-        SalaryRange = salaryRange;
         SkillsRequired = skillsRequired;
+
+        MinSalary = minSalary;
+        MaxSalary = maxSalary;
+        Currency = currency;
 
         // ValidFrom ve ValidTo gibi diğer alanlar için de parametreler eklenebilir veya
         // publish/schedule gibi metotlarla ayarlanabilir.
@@ -111,6 +123,15 @@ public sealed class JobPosting : Entity
         return Status == JobPostingStatus.Published &&
                now >= (ValidFrom ?? DatePosted) &&
                now <= (ValidTo ?? ApplicationDeadline);
+    }
+
+    public void CheckAndExpire()
+    {
+        var now = DateTimeOffset.Now;
+        if (Status == JobPostingStatus.Published && now > (ValidTo ?? ApplicationDeadline))
+        {
+            Status = JobPostingStatus.Expired;
+        }
     }
     public void Publish(DateTimeOffset? publishStartDate = null)
     {
@@ -180,7 +201,11 @@ public sealed class JobPosting : Entity
     DateTimeOffset datePosted,
     DateTimeOffset? validFrom,
     DateTimeOffset? validTo,
-    string? salaryRange,
+
+    decimal? minSalary,
+    decimal? maxSalary,
+    string? currency,
+
     string? skillsRequired,
     string? contactInfo,
     bool isPublic,
@@ -189,10 +214,22 @@ public sealed class JobPosting : Entity
         DatePosted = datePosted;
         ValidFrom = validFrom;
         ValidTo = validTo;
-        SalaryRange = salaryRange;
+
+        MinSalary = minSalary;
+        MaxSalary = maxSalary;
+        Currency = currency;
+
         SkillsRequired = skillsRequired;
         ContactInfo = contactInfo;
         IsPublic = isPublic;
         PostingGroupId = postingGroupId;
+    }
+
+    public void SetAllowedNationalIds(IEnumerable<string> nationalIds)
+    {
+        AllowedNationalIds.Clear();
+        AllowedNationalIds.AddRange(nationalIds
+            .Select(id => id.Trim())
+            .Where(id => !string.IsNullOrWhiteSpace(id) && id.Length == 11)); // T.C. No 11 hanelidir
     }
 }
