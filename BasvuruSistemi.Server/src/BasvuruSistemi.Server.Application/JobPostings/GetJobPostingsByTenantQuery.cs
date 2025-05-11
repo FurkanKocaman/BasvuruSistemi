@@ -83,7 +83,7 @@ internal sealed class GetJobPostingsByTenantQueryHandler(
             VacancyCount = jobPosting.VacancyCount,
             EmploymentType = jobPosting.EmploymentType.ToString(),
             ExperienceLevelRequired = jobPosting.ExperienceLevelRequired.ToString(),
-            SalaryRange = jobPosting.SalaryRange,
+            SalaryRange = jobPosting.MinSalary.ToString() + jobPosting.Currency + jobPosting.MaxSalary.ToString() + jobPosting.Currency,
             SkillsRequired = jobPosting.SkillsRequired,
 
             ContactInfo = jobPosting.ContactInfo,

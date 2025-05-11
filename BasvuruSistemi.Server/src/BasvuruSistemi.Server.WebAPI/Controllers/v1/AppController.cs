@@ -29,6 +29,7 @@ public class AppController(ISender sender) : ControllerBase
         return Ok(response);
     }
 
+    [AllowAnonymous]
     [HttpGet("job-postings/active")]
     public async Task<ActionResult<GetActiveJobPostingsQueryResponse>> GetActiveJobPostings(
     [FromQuery] int page = 1,

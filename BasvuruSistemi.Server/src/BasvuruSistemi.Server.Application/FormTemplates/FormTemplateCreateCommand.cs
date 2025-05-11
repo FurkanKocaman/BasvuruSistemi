@@ -45,9 +45,6 @@ internal sealed class FormTemplateCreateCommandHandler(
                     if (!Enum.IsDefined(typeof(FieldTypeEnum), field.type))
                         return Result<string>.Failure($"Invalid FieldType: {field.type}");
 
-                    if (!Enum.IsDefined(typeof(VerificationSourceEnum), field.verificationSource))
-                        return Result<string>.Failure($"Invalid VerificationSource: {field.verificationSource}");
-
                     var formFieldDefinition = new FormFieldDefinition(
                         applicationFormTemplate.Id,
                         field.label,
@@ -59,9 +56,7 @@ internal sealed class FormTemplateCreateCommandHandler(
                         field.optionsJson,
                         field.isReadOnly,
                         field.defaultValue,
-                        (VerificationSourceEnum)field.verificationSource,
-                        field.verificationParametersJson,
-                    field.allowedFileTypes,
+                        field.allowedFileTypes,
                         field.maxFileSizeMB
                     );
 

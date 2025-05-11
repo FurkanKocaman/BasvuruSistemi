@@ -57,7 +57,19 @@ internal sealed class FormFieldDefinitonCreateCommandHandler(
 
         int order = template.FieldDefinitions.Count + 1;
 
-        FormFieldDefinition formFieldDefinition = new(request.templateId,request.label,fieldType,request.isRequired,order,request.description,request.placeholder,request.optionsJson,request.isReadOnly,request.defaultValue,verificationSource,request.verificationParametersJson,request.allowedFileTypes,request.maxFileSizeMB);
+        FormFieldDefinition formFieldDefinition = new(
+            request.templateId
+            ,request.label
+            ,fieldType
+            ,request.isRequired
+            ,order
+            ,request.description
+            ,request.placeholder
+            ,request.optionsJson
+            ,request.isReadOnly
+            ,request.defaultValue
+            ,request.allowedFileTypes
+            ,request.maxFileSizeMB);
 
         formFieldDefinitionRepository.Add(formFieldDefinition);
 
