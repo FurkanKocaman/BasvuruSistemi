@@ -47,3 +47,7 @@ export const FieldTypeOptions = [
 export function getFieldTypeOptionByValue(value: number | string) {
   return FieldTypeOptions.find((option) => option.value === Number(value));
 }
+
+export function getFieldTypeOptionByLabel(label: string) {
+  return FieldTypeOptions.find((option) => option.label === label);
+}

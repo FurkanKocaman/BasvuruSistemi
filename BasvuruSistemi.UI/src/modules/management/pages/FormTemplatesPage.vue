@@ -17,7 +17,6 @@ onMounted(() => {
 
 const getFormTemplates = async () => {
   const res = await formTemplateService.getFormTemplates();
-  console.log(res);
   if (res) {
     formTemplates.value = res.items;
     totalCount.value = res.totalCount;

@@ -1,3 +1,4 @@
+//Create form template de kullanılıyor
 export interface FormFieldDefinition {
   label: string;
   type: number;
@@ -7,8 +8,6 @@ export interface FormFieldDefinition {
   optionsJson?: string;
   isReadOnly: boolean;
   defaultValue?: string;
-  verificationSource: number;
-  verificationParametersJson?: string;
   allowedFileTypes?: string;
   maxFileSizeMB?: number;
 }
