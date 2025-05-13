@@ -1,14 +1,27 @@
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, defineProps, defineComponent } from "vue";
+import { ref, computed, onMounted, defineProps, defineComponent } from "vue";
 import { useJobPostingStore } from "@/stores/job-posting";
 import { GetActiveJobPostingsQueryResponse } from "../models/active-job-posting.model";
 import formTemplateService from "@/modules/management/services/form-template.service";
-import { FormFieldDefinition } from "@/modules/management/models/form-field.model";
-import DynamicFormRenderer from "./DynamicFormRenderer.vue";
+import { getComponentByFieldType } from "../services/getComponentByField.service";
+import { useRouter } from "vue-router";
+import { FormFieldResponse } from "@/modules/management/models/form-filed-response.model";
+import { FieldValueModel } from "../models/field-value.model";
+import { ApplicationCreateRequest } from "../models/application-create.model";
+import applicationService from "../services/application.service";
 
 const props = defineProps<{
   jobId?: string;
 }>();
+
+const router = useRouter();
+
+const values = ref<Record<string, any>>({});
+
+const request = ref<ApplicationCreateRequest>({
+  jobPostingId: "",
+  fieldValues: [],
+});
 
 defineComponent({
   name: "ApplicationForm",
@@ -22,53 +35,18 @@ const jobPostingStore = useJobPostingStore();
 const job = ref<GetActiveJobPostingsQueryResponse | null>(null);
 const jobPostings = computed(() => jobPostingStore.jobPostings);
 
-const fields = ref<FormFieldDefinition[]>([]);
-
-const form = reactive({
-  fullName: "",
-  resumeFileName: "",
-  resumeFile: null as File | null,
-  department: "",
-  coverLetter: "",
-});
-
-const errors = reactive({
-  fullName: "",
-  resume: "",
-  department: "",
-});
-
-const handleFileChange = (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  if (target.files && target.files.length > 0) {
-    const file = target.files[0];
-
-    const allowedTypes = [
-      "application/pdf",
-      "application/msword",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    ];
-    if (!allowedTypes.includes(file.type)) {
-      errors.resume = "Yalnızca PDF, DOC veya DOCX dosyaları yükleyebilirsiniz.";
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      errors.resume = "Dosya boyutu 5MB'dan küçük olmalıdır.";
-      return;
-    }
-
-    form.resumeFile = file;
-    form.resumeFileName = file.name;
-    errors.resume = "";
-  }
-};
+const fields = ref<FormFieldResponse[]>([]);
 
 const getFormTemplate = async () => {
   if (job.value) {
+    request.value.jobPostingId = job.value.id;
     const res = await formTemplateService.getFormTemplate(job.value.formTemplateId);
     if (res) {
-      fields.value = res?.fields;
+      console.log(res.fields);
+      fields.value = res.fields;
+      res.fields.forEach((element) => {
+        values.value[element.id] = undefined;
+      });
     }
   }
 };
@@ -79,6 +57,47 @@ onMounted(() => {
     getFormTemplate();
   }
 });
+
+const goBack = () => {
+  router.back();
+};
+const submitForm = async () => {
+  let isError = false;
+
+  for (const field of fields.value) {
+    if (field.type === 6 || field.type === 13 || field.type === 15 || field.type === 16) {
+      const file = values.value[field.id];
+      if (file) {
+        try {
+          const res = await applicationService.uploadFileByField(field.id, file);
+          if (res.statusCode === 200) {
+            values.value[field.id] = res.data;
+          } else {
+            isError = true;
+            console.error(res.errorMessages?.[0] ?? "Bilinmeyen hata");
+          }
+        } catch (err) {
+          isError = true;
+          console.error("Dosya yükleme hatası:", err);
+        }
+      }
+    }
+  }
+
+  const result: FieldValueModel[] = Object.entries(values.value).map(([fieldId, val]) => ({
+    fieldDefinitionId: fieldId,
+    value: val,
+  }));
+
+  request.value.fieldValues = result;
+
+  if (isError) {
+    console.log("Hata oluştu");
+  } else {
+    console.log("Request", request.value);
+    await applicationService.createApplication(request.value);
+  }
+};
 </script>
 
 <template>
@@ -89,27 +108,30 @@ onMounted(() => {
 
     <!-- Başvuru formu -->
     <div class="space-y-6">
-      <div>
-        <label
-          for="fullName"
-          class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-        >
-          Ad Soyad <span class="text-red-600">*</span>
-        </label>
-        <input
-          id="fullName"
-          v-model="form.fullName"
-          type="text"
-          required
-          aria-required="true"
-          class="w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-          placeholder="Adınız ve soyadınız"
+      <div v-for="field in fields" :key="field.id">
+        <component
+          :is="getComponentByFieldType(field.type)"
+          v-model="values[field.id]"
+          :field="field"
         />
-        <p v-if="errors.fullName" class="mt-1 text-sm text-red-600">
-          {{ errors.fullName }}
-        </p>
       </div>
-      <DynamicFormRenderer :fields="fields"></DynamicFormRenderer>
+    </div>
+
+    <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
+      <button
+        type="button"
+        class="w-full sm:w-auto flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors duration-200 disabled:opacity-70 disabled:cursor-not-allowed"
+        @click="submitForm"
+      >
+        <span>Başvuruyu Gönder</span>
+      </button>
+      <button
+        type="button"
+        @click="goBack"
+        class="w-full sm:w-auto flex-1 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 text-gray-800 dark:text-white font-medium py-2 px-6 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition-colors duration-200"
+      >
+        İptal
+      </button>
     </div>
   </div>
 </template>
