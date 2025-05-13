@@ -60,6 +60,8 @@ app.UseAuthorization();
 
 app.UseResponseCompression();
 
+app.UseStaticFiles();
+
 app.UseExceptionHandler();
 
 app.MapControllers().RequireRateLimiting("fixed").RequireAuthorization();

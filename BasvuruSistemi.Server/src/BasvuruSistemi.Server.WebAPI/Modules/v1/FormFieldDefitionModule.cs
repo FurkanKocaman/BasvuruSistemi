@@ -16,7 +16,7 @@ public static class FormFieldDefitionModule
                 var response = await sender.Send(request, cancellationToken);
                 return response.IsSuccessful ? Results.Ok(response) : Results.InternalServerError(response);
             })
-            .Produces<Result<string>>();
+            .RequireAuthorization().Produces<Result<string>>();
 
         group.MapPost("bulk",
             async (ISender sender, FormFieldDefinitonBulkCreateCommand request, CancellationToken cancellationToken) =>
@@ -24,6 +24,6 @@ public static class FormFieldDefitionModule
                 var response = await sender.Send(request, cancellationToken);
                 return response.IsSuccessful ? Results.Ok(response) : Results.InternalServerError(response);
             })
-            .Produces<Result<string>>();
+            .RequireAuthorization().Produces<Result<string>>();
     }
 }

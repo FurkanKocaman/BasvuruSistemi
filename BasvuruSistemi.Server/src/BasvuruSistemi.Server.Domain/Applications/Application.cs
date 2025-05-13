@@ -15,6 +15,8 @@ public sealed class Application : Entity
 
     public DateTimeOffset AppliedDate { get; private set; }
     public ApplicationStatus Status { get; private set; } = ApplicationStatus.Pending;
+    public DateTimeOffset? ReviewDate { get; private set; }
+    public string? ReviewDescription { get; set; }
 
     public ICollection<ApplicationFieldValue> FieldValues { get; private set; } = new List<ApplicationFieldValue>();
 
@@ -29,8 +31,16 @@ public sealed class Application : Entity
         FieldValues = new List<ApplicationFieldValue>();
     }
 
-    public void Reject() => Status = ApplicationStatus.Rejected;
-    public void Accept() => Status = ApplicationStatus.Approved;
+    //public void Reject() => Status = ApplicationStatus.Rejected;
+    //public void Accept() => Status = ApplicationStatus.Approved;
+    //public void Withdrawn() => Status = ApplicationStatus.Withdrawn;
+
+    public void Review(ApplicationStatus status,string? reviewDescription)
+    {
+        Status = status;
+        ReviewDescription = reviewDescription;
+        ReviewDate = DateTimeOffset.Now;
+    }
 
     public void AddFieldValue(ApplicationFieldValue value)
     {
