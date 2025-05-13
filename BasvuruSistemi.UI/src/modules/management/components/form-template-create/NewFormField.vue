@@ -243,7 +243,7 @@ watch(fieldTypeDropdown.selectedLabel, () => {
       </div>
     </div>
     <div
-      v-if="newField.type == 4 || newField.type == 5"
+      v-if="newField.type == 3 || newField.type == 4 || newField.type == 5"
       class="flex-1 flex flex-col my-2 items-start 2xl:mr-3"
     >
       <label for="options" class="w-full text-sm my-1 dark:text-gray-300 text-gray-600"
