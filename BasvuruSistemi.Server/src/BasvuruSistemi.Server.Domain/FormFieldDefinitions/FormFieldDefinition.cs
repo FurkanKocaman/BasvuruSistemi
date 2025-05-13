@@ -9,7 +9,7 @@ public sealed class FormFieldDefinition : Entity
     public Guid TemplateId { get; private set; }
     public string Label { get; private set; } = default!;
     public string? Description { get; private set; }
-    public FieldTypeEnum Type { get; private set; }
+    public FieldTypeEnum Type { get; private set; } 
     public bool IsRequired { get; private set; }
     public int Order { get; private set; } // Alanların form üzerindeki sırasını belirlemek için eklendi
     public string? Placeholder { get; private set; } // Alan için örnek metin

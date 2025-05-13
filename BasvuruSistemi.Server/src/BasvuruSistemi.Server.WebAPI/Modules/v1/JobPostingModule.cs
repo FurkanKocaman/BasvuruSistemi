@@ -17,7 +17,7 @@ public static class JobPostingModule
                 var response = await sender.Send(request, cancellationToken);
                 return response.IsSuccessful ? Results.Ok(response) : Results.InternalServerError(response);
             })
-            .Produces<Result<string>>();
+            .RequireAuthorization().Produces<Result<string>>();
 
         group.MapPatch("{id:guid}/status",
            async (ISender sender, Guid id, ChangeJobPostingStatusDto dto, CancellationToken cancellationToken) =>
@@ -26,7 +26,7 @@ public static class JobPostingModule
                var response = await sender.Send(request, cancellationToken);
                return response.IsSuccessful ? Results.Ok(response) : Results.InternalServerError(response);
            })
-           .Produces<Result<string>>();
+           .RequireAuthorization().Produces<Result<string>>();
 
         group.MapPatch("{id:guid}",
            async (ISender sender, Guid id, JobPostingUpdateCommand request, CancellationToken cancellationToken) =>
@@ -35,7 +35,7 @@ public static class JobPostingModule
                var response = await sender.Send(command, cancellationToken);
                return response.IsSuccessful ? Results.Ok(response) : Results.InternalServerError(response);
            })
-           .Produces<Result<string>>();
+           .RequireAuthorization().Produces<Result<string>>();
 
     }
 }

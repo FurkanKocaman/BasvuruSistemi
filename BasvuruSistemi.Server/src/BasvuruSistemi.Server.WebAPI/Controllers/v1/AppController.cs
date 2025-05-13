@@ -1,4 +1,5 @@
-﻿using BasvuruSistemi.Server.Application.FormTemplates;
+﻿using BasvuruSistemi.Server.Application.Applications;
+using BasvuruSistemi.Server.Application.FormTemplates;
 using BasvuruSistemi.Server.Application.JobPostings;
 using BasvuruSistemi.Server.Application.Organizations;
 using BasvuruSistemi.Server.Application.Tenants;
@@ -94,6 +95,18 @@ public class AppController(ISender sender) : ControllerBase
     public async Task<ActionResult<GetAllOrganizationsByTenantQueryResponse>> GetAllOrganizationsByTenant(CancellationToken cancellationToken = default)
     {
         var response = await sender.Send(new GetAllOrganizationsByTenantQuery(), cancellationToken);
+        return Ok(response);
+    }
+
+    [HttpGet("applications/{jobPostingId}")]
+    [Authorize()]
+    public async Task<ActionResult<GetAllApplilactionsQueryResponse>> GetAllApplications(
+        Guid jobPostingId,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken cancellationToken = default)
+    {
+        var response = await sender.Send(new GetAllApplilactionsQuery(jobPostingId, page, pageSize), cancellationToken);
         return Ok(response);
     }
 }

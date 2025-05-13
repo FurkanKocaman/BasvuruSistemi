@@ -17,6 +17,6 @@ public static class DepartmentModule
                 var response = await sender.Send(request, cancellationToken);
                 return response.IsSuccessful ? Results.Ok(response) : Results.InternalServerError(response);
             })
-            .Produces<Result<string>>();
+            .RequireAuthorization().Produces<Result<string>>();
     }
 }

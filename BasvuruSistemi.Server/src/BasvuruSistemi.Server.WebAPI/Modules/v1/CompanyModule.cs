@@ -16,6 +16,6 @@ public static class CompanyModule
                 var response = await sender.Send(request, cancellationToken);
                 return response.IsSuccessful ? Results.Ok(response) : Results.InternalServerError(response);
             })
-            .Produces<Result<string>>();
+            .RequireAuthorization().Produces<Result<string>>();
     }
 }
