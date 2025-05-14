@@ -12,7 +12,12 @@ internal sealed class AppUserConfiguration : IEntityTypeConfiguration<AppUser>
         builder.Property(P => P.UserName).HasColumnType("varchar(20)");
         builder.Property(P => P.Email).HasColumnType("varchar(MAX)");
 
-        builder.OwnsOne(p => p.Address);
+        builder
+            .HasOne(p => p.Address)
+            .WithOne()
+            .HasForeignKey<AppUser>(p => p.AddressId)
+            .OnDelete(DeleteBehavior.NoAction);
+
         builder.OwnsOne(p => p.Contact);
     }
 }

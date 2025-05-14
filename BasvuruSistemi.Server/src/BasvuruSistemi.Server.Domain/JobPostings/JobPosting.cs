@@ -1,10 +1,10 @@
 ﻿using BasvuruSistemi.Server.Domain.Abstractions;
 using BasvuruSistemi.Server.Domain.ApplicationFormTemplates;
 using BasvuruSistemi.Server.Domain.Applications;
-using BasvuruSistemi.Server.Domain.Companies;
-using BasvuruSistemi.Server.Domain.Departments;
 using BasvuruSistemi.Server.Domain.Enums;
 using BasvuruSistemi.Server.Domain.PostingGroups;
+using BasvuruSistemi.Server.Domain.Tenants;
+using BasvuruSistemi.Server.Domain.Units;
 
 namespace BasvuruSistemi.Server.Domain.JobPostings;
 public sealed class JobPosting : Entity
@@ -31,17 +31,18 @@ public sealed class JobPosting : Entity
 
     public List<string> AllowedNationalIds { get; private set; } = new List<string>(); // İlanın geçerli olduğu ulusal kimlik numaraları (örn: Türkiye için TCKN)
     public string? ContactInfo { get; private set; }              // İletişim Bilgisi (örn: e-posta veya sorumlu kişi)
-    public bool IsPublic { get; private set; }                    // Herkese açık mı? (Anonim kullanıcılar görebilir mi?)
+    public bool IsPublic { get; private set; } // Sadece seçili kişiler mi yoksa herkes mi görebilir
+    public bool IsAnonymous { get; private set; } // Başvuru yapmak için oturum açmaya gerek var mı
 
     public decimal? MinSalary { get; private set; }
     public decimal? MaxSalary { get; private set; }
     public string? Currency { get; private set; }
 
-    public Guid CompanyId { get; set; }
-    public Company Company { get; set; } = default!;
+    public Guid TenantId { get; set; }
+    public Tenant Tenant { get; set; } = default!;
 
-    public Guid? DepartmentId { get; set; }
-    public Department? Department { get; set; }
+    public Guid? UnitId { get; set; }
+    public Unit? Unit { get; set; } 
 
     public Guid FormTemplateId { get; private set; }
     public ApplicationFormTemplate FormTemplate { get; private set; } = default!;
@@ -58,12 +59,13 @@ public sealed class JobPosting : Entity
         string description,
         DateTimeOffset datePosted,
         DateTimeOffset applicationDeadline,
-        Guid companyId,
+        Guid tenantId,
+        Guid? unitId,
         Guid formTemplateId,
-        Guid? departmentId = null,
         Guid? postingGroupId = null,
         JobPostingStatus status = JobPostingStatus.Draft,
         bool isPublic = true,
+        bool isAnonymous = false,
 
         DateTimeOffset? validFrom = null,
         DateTimeOffset? validTo = null,
@@ -89,12 +91,13 @@ public sealed class JobPosting : Entity
         Description = description;
         DatePosted = datePosted;
         ApplicationDeadline = applicationDeadline;
-        CompanyId = companyId;
+        TenantId = tenantId;
+        UnitId = unitId;
         FormTemplateId = formTemplateId;
-        DepartmentId = departmentId;
         PostingGroupId = postingGroupId;
         Status = status;
         IsPublic = isPublic;
+        IsAnonymous = isAnonymous;
 
         ContactInfo = contactInfo;
 

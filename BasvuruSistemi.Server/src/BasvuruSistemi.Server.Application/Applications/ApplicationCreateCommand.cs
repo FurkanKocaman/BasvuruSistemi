@@ -43,11 +43,8 @@ internal sealed class ApplicationCreateCommandHandler(
                 if (jobPosting.Applications.Any(p => p.UserId == userId))
                     return Result<string>.Failure("You have already applied for this job posting.");
 
-                if(jobPosting.ApplicationDeadline < DateTimeOffset.Now)
-                    return Result<string>.Failure("Application deadline has passed.");
-
-                if(jobPosting.Status != JobPostingStatus.Published)
-                    return Result<string>.Failure("Job posting is not open for applications.");
+                if(!jobPosting.IsOpenForApplication())
+                    return Result<string>.Failure("Application deadline has passed or not published.");
 
                 var application = new Domain.Applications.Application(request.jobPostingId,userId.Value, DateTimeOffset.Now,ApplicationStatus.Pending);
 

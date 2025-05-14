@@ -1,13 +1,14 @@
 ﻿using BasvuruSistemi.Server.Domain.Abstractions;
+using BasvuruSistemi.Server.Domain.Addresses;
 using BasvuruSistemi.Server.Domain.ApplicationFieldValues;
 using BasvuruSistemi.Server.Domain.ApplicationFormTemplates;
-using BasvuruSistemi.Server.Domain.Companies;
-using BasvuruSistemi.Server.Domain.Departments;
+
 using BasvuruSistemi.Server.Domain.Entities;
 using BasvuruSistemi.Server.Domain.FormFieldDefinitions;
 using BasvuruSistemi.Server.Domain.JobPostings;
 using BasvuruSistemi.Server.Domain.PostingGroups;
 using BasvuruSistemi.Server.Domain.Roles;
+using BasvuruSistemi.Server.Domain.Units;
 using BasvuruSistemi.Server.Domain.UserRoles;
 using BasvuruSistemi.Server.Domain.Users;
 using GenericRepository;
@@ -26,8 +27,8 @@ internal sealed class ApplicationDbContext: IdentityDbContext<AppUser, AppRole,G
     {
         _httpContextAccessor = httpContextAccessor;
     }
-    public DbSet<Company> Companies { get; set; }
-    public DbSet<Department> Departments { get; set; }
+
+    public DbSet<Unit> Units { get; set; }
 
     public DbSet<Certification> Certifications { get; set; }
     public DbSet<Education> Educations { get; set; }
@@ -45,6 +46,8 @@ internal sealed class ApplicationDbContext: IdentityDbContext<AppUser, AppRole,G
 
     public DbSet<AppUserTenantRole> AppUserTenantRoles { get; set; }
 
+    public DbSet<Address> Addresses { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -54,6 +57,12 @@ internal sealed class ApplicationDbContext: IdentityDbContext<AppUser, AppRole,G
         modelBuilder.Ignore<IdentityUserLogin<Guid>>();
         modelBuilder.Ignore<IdentityUserToken<Guid>>();
         modelBuilder.Ignore<IdentityUserRole<Guid>>();
+
+        modelBuilder.Entity<Address>()
+            .HasOne(p => p.User)
+            .WithOne(p => p.Address)
+            .HasForeignKey<AppUser>(p => p.AddressId)
+            .OnDelete(DeleteBehavior.NoAction);
     }
 
     public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)

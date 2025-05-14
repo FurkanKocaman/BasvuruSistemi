@@ -9,11 +9,10 @@ public static class RouteRegistrar
         app.RegisterAuthRoutes();
         app.RegisterTenantRoutes();
         app.RegisterUserRoutes();
-        app.RegisterCompanyRoutes();
-        app.RegisterDepartmentRoutes();
         app.RegisterFormFieldDefinitionRoutes();
         app.RegisterFormTemplateRoutes();
         app.RegisterJobPostingRoutes();
         app.RegisterApplicationRoutes();
+        app.RegisterUnitRoutes();
     }
 }

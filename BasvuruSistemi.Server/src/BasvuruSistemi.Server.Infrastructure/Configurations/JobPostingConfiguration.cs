@@ -8,15 +8,9 @@ internal sealed class JobPostingConfiguration : IEntityTypeConfiguration<JobPost
     public void Configure(EntityTypeBuilder<JobPosting> builder)
     {
         builder
-            .HasOne(p => p.Company)
+            .HasOne(p => p.Unit)
             .WithMany(p => p.JobPostings)
-            .HasForeignKey(p => p.CompanyId)
-            .OnDelete(DeleteBehavior.NoAction);
-
-        builder
-            .HasOne(p => p.Department)
-            .WithMany(p => p.JobPostings)
-            .HasForeignKey(p => p.DepartmentId)
+            .HasForeignKey(p => p.UnitId)
             .OnDelete(DeleteBehavior.NoAction);
 
 

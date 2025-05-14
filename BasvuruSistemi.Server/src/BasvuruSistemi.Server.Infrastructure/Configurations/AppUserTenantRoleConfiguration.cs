@@ -26,15 +26,9 @@ internal sealed class AppUserTenantRoleConfiguration : IEntityTypeConfiguration<
             .OnDelete(DeleteBehavior.NoAction);
 
         builder
-            .HasOne(p => p.Company)
+            .HasOne(p => p.Unit)
             .WithMany()
-            .HasForeignKey(p => p.CompanyId)
-            .OnDelete(DeleteBehavior.NoAction);
-
-        builder
-            .HasOne(p => p.Department)
-            .WithMany()
-            .HasForeignKey(p => p.DepartmentId)
+            .HasForeignKey(p => p.UnitId)
             .OnDelete(DeleteBehavior.NoAction);
     }
 }

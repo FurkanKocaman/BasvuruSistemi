@@ -43,12 +43,12 @@ internal sealed class TenantCreateCommandHandler(
 
                 await roleSeedService.SeddDefaultRoles(tenant.Id);
 
-                var role = await roleManager.Roles.Where(p => p.Name == "Admin" && p.TenantId == tenant.Id).FirstOrDefaultAsync();
+                var role = await roleManager.Roles.Where(p => p.Name == "TenantManager" && p.TenantId == tenant.Id).FirstOrDefaultAsync();
 
                 if (role is null)
                     return Result<string>.Failure("Role not found");
 
-                AppUserTenantRole appUserTenantRole = new(userId.Value, tenant.Id, role.Id,null,null);
+                AppUserTenantRole appUserTenantRole = new(userId.Value, tenant.Id, role.Id,null);
 
                 userTenantRoleRepository.Add(appUserTenantRole);
 

@@ -1,4 +1,7 @@
 ﻿using BasvuruSistemi.Server.Application.Auth;
+using BasvuruSistemi.Server.Domain.Addresses;
+using BasvuruSistemi.Server.Domain.DTOs;
+using BasvuruSistemi.Server.Domain.UnitOfWork;
 using BasvuruSistemi.Server.Domain.Users;
 using BasvuruSistemi.Server.Domain.ValueObjects;
 using MediatR;
@@ -14,14 +17,16 @@ public sealed record UserCreateCommand(
     string password,
     string? nationality,
     string? tckn,
-    DateOnly birthOfDate,
-    Address address,
+    DateTimeOffset birthOfDate,
+    AddressDto address,
     Contact contact
     ) : IRequest<Result<LoginCommandResponse>>;
 
 internal sealed class UserCreateCommandHandler(
     UserManager<AppUser> userManager,
-    ISender sender
+    IAddressRepository addressRepository,
+    IUnitOfWork unitOfWork,
+    ISender sender 
     ) : IRequestHandler<UserCreateCommand, Result<LoginCommandResponse>>
 {
     public async Task<Result<LoginCommandResponse>> Handle(UserCreateCommand request, CancellationToken cancellationToken)
@@ -38,7 +43,7 @@ internal sealed class UserCreateCommandHandler(
                 return Result<LoginCommandResponse>.Failure("User with this TCKN is already exist");
         }
 
-        AppUser user = new(request.firstName, request.lastName, request.birthOfDate, request.nationality, request.tckn, request.address, request.contact);
+        AppUser user = new(request.firstName, request.lastName, new DateOnly(request.birthOfDate.Year, request.birthOfDate.Month, request.birthOfDate.Day), request.nationality, request.tckn, request.contact);
 
         user.EmailConfirmed = true;
 
@@ -52,8 +57,18 @@ internal sealed class UserCreateCommandHandler(
             counter++;
         }
         user.UserName = userName;
+        user.Email = request.email;
 
         IdentityResult result = await userManager.CreateAsync(user, request.password);
+
+        Address address = new(request.address.Street,request.address.District,request.address.City,request.address.Country,request.address.PostalCode,request.address.PostalCode,user.Id);
+
+        addressRepository.Add(address);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        user.AddAddress(address.Id);
+
+        await userManager.UpdateAsync(user);
 
         if (!result.Succeeded)
             return Result<LoginCommandResponse>.Failure("User creation failed :" + result.Errors.ToArray()[0]);
