@@ -1,4 +1,5 @@
-﻿using BasvuruSistemi.Server.Domain.Enums;
+﻿using BasvuruSistemi.Server.Application.Services;
+using BasvuruSistemi.Server.Domain.Enums;
 using BasvuruSistemi.Server.Domain.JobPostings;
 using BasvuruSistemi.Server.Domain.UnitOfWork;
 using MediatR;
@@ -30,13 +31,12 @@ public sealed record JobPostingCreateCommand(
 
     string? contactInfo,
     bool isPublic,
-
+    bool isAnonymous,
     decimal? minSalary,
     decimal? maxSalary,
     string? currency,
 
-    Guid companyId,
-    Guid? departmentId,
+    Guid? unitId,
 
     Guid formTemplateId,
 
@@ -45,12 +45,18 @@ public sealed record JobPostingCreateCommand(
 
 
 internal sealed class JobPostingCreateCommandHandler(
+    ICurrentUserService currentUserService,
     IJobPostingRepository jobPostingRepository,
     IUnitOfWork unitOfWork
     ) : IRequestHandler<JobPostingCreateCommand, Result<string>>
 {
     public async Task<Result<string>> Handle(JobPostingCreateCommand request, CancellationToken cancellationToken)
     {
+        Guid? tenantId = currentUserService.TenantId;
+
+        if (!tenantId.HasValue)
+            return Result<string>.Failure("Tenant not found");
+
         if (!System.Enum.IsDefined(typeof(JobPostingStatus), request.status))
         {
             return Result<string>.Failure($"Invalid JobPostingStatus: {request.status}.");
@@ -74,14 +80,15 @@ internal sealed class JobPostingCreateCommandHandler(
             ,request.description
             ,request.datePosted
             ,request.applicationDeadLine
-            ,request.companyId
+            ,tenantId.Value
+            ,request.unitId
             ,request.formTemplateId
-            ,request.departmentId
             ,request.postingGroupId
             ,status
             ,request.isPublic
+            ,request.isAnonymous
 
-            ,request.validFrom
+            , request.validFrom
             ,request.validTo
 
             ,request.contactInfo

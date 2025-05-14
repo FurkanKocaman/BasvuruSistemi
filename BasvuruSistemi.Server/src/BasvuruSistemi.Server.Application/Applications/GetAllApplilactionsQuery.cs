@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BasvuruSistemi.Server.Application.Applications;
 public sealed record GetAllApplilactionsQuery(
-    Guid jobPostingId,
+    Guid? jobPostingId,
     int page,
     int pageSize
     ) : IRequest<PagedResult<GetAllApplilactionsQueryResponse>>;
@@ -31,7 +31,7 @@ internal sealed class GetAllApplilactionsQueryHandler(
 {
     public Task<PagedResult<GetAllApplilactionsQueryResponse>> Handle(GetAllApplilactionsQuery request, CancellationToken cancellationToken)
     {
-        var applications = applicationRepository.Where(p => p.JobPostingId == request.jobPostingId).Include(p => p.User);
+        var applications = applicationRepository.Where(p => !string.IsNullOrWhiteSpace(request.jobPostingId.ToString()) ? p.JobPostingId == request.jobPostingId : true && !p.IsDeleted).Include(p => p.User);
 
         var totalCount = applications.Count();
 
@@ -52,7 +52,7 @@ internal sealed class GetAllApplilactionsQueryHandler(
             ReviewDescription = application.ReviewDescription,
         }).ToList();
 
-        return Task.FromResult(new PagedResult<GetAllApplilactionsQueryResponse>(response, totalCount, request.page, request.pageSize));
+        return Task.FromResult(new PagedResult<GetAllApplilactionsQueryResponse>(response, request.page, request.pageSize, totalCount));
 
     }
 }

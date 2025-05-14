@@ -1,6 +1,4 @@
-﻿using BasvuruSistemi.Server.Domain.Companies;
-using BasvuruSistemi.Server.Domain.Departments;
-using BasvuruSistemi.Server.Domain.DTOs;
+﻿using BasvuruSistemi.Server.Domain.DTOs;
 using BasvuruSistemi.Server.Domain.Enums;
 using BasvuruSistemi.Server.Domain.JobPostings;
 using MediatR;
@@ -37,8 +35,8 @@ public sealed class GetActiveJobPostingsQueryResponse
     public string? ContactInfo { get; set; }
     public bool IsPublic { get; set; }
 
-    public string Company { get; set; } = default!;
-    public string? Department { get; set; }
+    public string Tenant { get; set; } = default!;
+    public string? Unit { get; set; }
 
     public Guid FormTemplateId { get; set; }
 
@@ -51,7 +49,7 @@ internal sealed class GetActiveJobPostingsQueryHandler(
     public Task<PagedResult<GetActiveJobPostingsQueryResponse>> Handle(GetActiveJobPostingsQuery request, CancellationToken cancellationToken)
     {
         var jobPostings = jobPostingRepository
-            .Where(p => p.Status == JobPostingStatus.Published && p.IsPublic && !p.IsDeleted).Include(p => p.Company).Include(p => p.Department);
+            .Where(p => p.Status == JobPostingStatus.Published && p.IsPublic && !p.IsDeleted).Include(p => p.Unit);
 
         var totalCount = jobPostings.Count(); 
 
@@ -85,8 +83,8 @@ internal sealed class GetActiveJobPostingsQueryHandler(
             ContactInfo = p.ContactInfo,
             IsPublic = p.IsPublic,
 
-            Company = p.Company.Name,
-            Department = p.Department != null ? p.Department.Name : null,
+            Tenant = p.Tenant.Name,
+            Unit = p.Unit != null ? p.Unit.Name : null,
 
             FormTemplateId = p.FormTemplateId,
         });

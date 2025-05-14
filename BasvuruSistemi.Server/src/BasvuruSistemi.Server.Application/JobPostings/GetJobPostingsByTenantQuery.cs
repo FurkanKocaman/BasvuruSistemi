@@ -36,11 +36,9 @@ public sealed class GetJobPostingsByTenantQueryResponse
     public string? ContactInfo { get; set; }
     public bool IsPublic { get; set; }
 
-    public Guid CompanyId { get; set; }
-    public string Company { get; set; } = default!;
+    public Guid? UnitId { get; set; }
+    public string? unit { get; set; } = default!;
 
-    public Guid? DepartmentId { get; set; }
-    public string? Department { get; set; }
 }
 
 internal sealed class GetJobPostingsByTenantQueryHandler(
@@ -55,7 +53,7 @@ internal sealed class GetJobPostingsByTenantQueryHandler(
         if(!tenantId.HasValue)
             return Task.FromResult(new PagedResult<GetJobPostingsByTenantQueryResponse>(new List<GetJobPostingsByTenantQueryResponse>(), 0, 0, 0));
 
-        var jobPostings = jobPostingRepository.Where(p => !p.IsDeleted).Include(p => p.Company).Include(p => p.Department);
+        var jobPostings = jobPostingRepository.Where(p => !p.IsDeleted).Include(p => p.Unit);
 
         var totalCount = jobPostings.Count();
 
@@ -89,11 +87,9 @@ internal sealed class GetJobPostingsByTenantQueryHandler(
             ContactInfo = jobPosting.ContactInfo,
             IsPublic = jobPosting.IsPublic,
 
-            CompanyId = jobPosting.CompanyId,
-            Company = jobPosting.Company.Name,
+            UnitId = jobPosting.UnitId,
+            unit = jobPosting.Unit?.Name,
 
-            DepartmentId = jobPosting.DepartmentId,
-            Department = jobPosting.Department?.Name,
         }).ToList();
 
         return Task.FromResult(new PagedResult<GetJobPostingsByTenantQueryResponse>(response, request.page, request.pageSize, totalCount));

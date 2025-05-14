@@ -1,4 +1,6 @@
-﻿using BasvuruSistemi.Server.Domain.Applications;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using BasvuruSistemi.Server.Domain.Addresses;
+using BasvuruSistemi.Server.Domain.Applications;
 using BasvuruSistemi.Server.Domain.Entities;
 using BasvuruSistemi.Server.Domain.Enums;
 using BasvuruSistemi.Server.Domain.ValueObjects;
@@ -17,9 +19,11 @@ public sealed class AppUser : IdentityUser<Guid>
     public string? Nationality { get; private set; }
     public string? TCKN { get; private set; }
     public ProfileStatus ProfileStatus { get; private set; } = ProfileStatus.Draft;
-
-    public Address Address { get; private set; } = default!;
     public Contact Contact { get; private set; } = default!;
+
+    public Guid? AddressId { get; private set; }
+    [ForeignKey(nameof(AddressId))]
+    public Address? Address { get; private set; } 
 
     public ICollection<Education> EducationHistory { get; private set; } = new List<Education>();
     public ICollection<Experience> WorkExperience { get; private set; } = new List<Experience>();
@@ -39,7 +43,7 @@ public sealed class AppUser : IdentityUser<Guid>
     public Guid? DeleteUserId { get; set; }
 
     private AppUser() { }
-    public AppUser(string firstName, string lastName, DateOnly? bod, string? nationality, string? tCKN, Address address, Contact contact)
+    public AppUser(string firstName, string lastName, DateOnly? bod, string? nationality, string? tCKN, Contact contact)
     {
         Id = Guid.CreateVersion7();
         FirstName = firstName;
@@ -48,9 +52,13 @@ public sealed class AppUser : IdentityUser<Guid>
         Nationality = nationality;
         TCKN = tCKN;
         ProfileStatus = ProfileStatus.Draft;
-        Address = address;
         Contact = contact;
         CreatedAt = DateTimeOffset.Now;
+    }
+
+    public void AddAddress(Guid addressId)
+    {
+        AddressId = addressId;
     }
     #endregion
 

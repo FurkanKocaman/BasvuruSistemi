@@ -1,8 +1,9 @@
 ﻿using BasvuruSistemi.Server.Application.Applications;
 using BasvuruSistemi.Server.Application.FormTemplates;
 using BasvuruSistemi.Server.Application.JobPostings;
-using BasvuruSistemi.Server.Application.Organizations;
+
 using BasvuruSistemi.Server.Application.Tenants;
+using BasvuruSistemi.Server.Application.Units;
 using BasvuruSistemi.Server.Application.Users;
 using BasvuruSistemi.Server.Domain.DTOs;
 using MediatR;
@@ -22,11 +23,20 @@ public class AppController(ISender sender) : ControllerBase
         return Ok(response);
     }
 
-    [HttpGet("organizations/authorized")]
-    [Authorize]
-    public async Task<ActionResult<GetAuthorizedOrganizationsQueryResponse>> GetAuthorizedOrganizations (CancellationToken cancellationToken = default)
+    [HttpGet("units")]
+    [Authorize()]
+    public async Task<ActionResult<GetAllUnitsByTenantQueryResponse>> GetAllOrganizationsByTenant(CancellationToken cancellationToken = default)
     {
-        var response = await sender.Send(new GetAuthorizedOrganizationsQuery(), cancellationToken);
+        var response = await sender.Send(new GetAllUnitsByTenantQuery(), cancellationToken);
+        return Ok(response);
+    }
+
+
+    [HttpGet("units/authorized")]
+    [Authorize]
+    public async Task<ActionResult<GetAuthorizedUnitsQueryResponse>> GetAuthorizedOrganizations (CancellationToken cancellationToken = default)
+    {
+        var response = await sender.Send(new GetAuthorizedUnitsQuery(), cancellationToken);
         return Ok(response);
     }
 
@@ -90,23 +100,25 @@ public class AppController(ISender sender) : ControllerBase
             
     }
 
-    [HttpGet("organizations")]
-    [Authorize()]
-    public async Task<ActionResult<GetAllOrganizationsByTenantQueryResponse>> GetAllOrganizationsByTenant(CancellationToken cancellationToken = default)
-    {
-        var response = await sender.Send(new GetAllOrganizationsByTenantQuery(), cancellationToken);
-        return Ok(response);
-    }
-
-    [HttpGet("applications/{jobPostingId}")]
+  
+    [HttpGet("applications/{jobPostingId?}")]
     [Authorize()]
     public async Task<ActionResult<GetAllApplilactionsQueryResponse>> GetAllApplications(
-        Guid jobPostingId,
+        Guid? jobPostingId,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
         CancellationToken cancellationToken = default)
     {
         var response = await sender.Send(new GetAllApplilactionsQuery(jobPostingId, page, pageSize), cancellationToken);
+        return Ok(response);
+    }
+    [HttpGet("applications/detail/{applicationId}")]
+    [Authorize()]
+    public async Task<ActionResult<GetAllApplilactionsQueryResponse>> GetApplication(
+    Guid applicationId,
+    CancellationToken cancellationToken = default)
+    {
+        var response = await sender.Send(new GetApplicationQuery(applicationId), cancellationToken);
         return Ok(response);
     }
 }
