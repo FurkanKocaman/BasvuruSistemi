@@ -23,7 +23,7 @@ internal sealed class UnitCreateCommandHandler(
         if (!tenantId.HasValue)
             return Result<string>.Failure("Tenant not found");
 
-        var unitExist = await unitRepository.AnyAsync(p => p.TenantId == tenantId.Value && p.Name == request.name);
+        var unitExist = await unitRepository.AnyAsync(p => p.TenantId == tenantId.Value && p.Name == request.name && !p.IsDeleted);
 
         if(unitExist)
             return Result<string>.Failure("Unit already exists");

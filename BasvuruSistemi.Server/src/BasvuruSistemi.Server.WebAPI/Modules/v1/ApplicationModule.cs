@@ -30,5 +30,25 @@ public static class ApplicationModule
            .Accepts<IFormFile>("multipart/form-data")
            .RequireAuthorization()
            .Produces<Result<string>>();
+
+        group.MapPatch("withdrawn/{id}",
+            async (ISender sender, Guid id, CancellationToken cancellationToken) =>
+            {
+                var request = new ApplicationWithdrawnCommand(id);
+                var response = await sender.Send(request, cancellationToken);
+                return response.IsSuccessful ? Results.Ok(response) : Results.InternalServerError(response);
+            })
+            .RequireAuthorization().Produces<Result<string>>();
+
+        group.MapPatch("review/{id}",
+           async (ISender sender, Guid id, ApplicationReviewCommand request, CancellationToken cancellationToken) =>
+           {
+               if(id != request.id)
+                return Results.BadRequest("Id in the route and body must be same.");
+
+               var response = await sender.Send(request, cancellationToken);
+               return response.IsSuccessful ? Results.Ok(response) : Results.InternalServerError(response);
+           })
+           .RequireAuthorization().Produces<Result<string>>();
     }
 }

@@ -3,7 +3,7 @@ import DatePicker from "primevue/datepicker";
 import { onMounted, reactive, Ref, ref } from "vue";
 import { useDropdown } from "../composables/useDropdown";
 import { JobPostingCreateModel } from "../models/job-posting-create.model";
-import organizationService from "../services/organization.service";
+import organizationService from "../services/unit.service";
 import jobPostingService from "../services/job-posting.service";
 import DOMPurify from "dompurify";
 import EditorComponent from "../components/EditorComponent.vue";
@@ -12,10 +12,14 @@ import { FormFieldDefinition } from "../models/form-field.model";
 import NewFormField from "../components/form-template-create/NewFormField.vue";
 import FieldsFromFormTemplate from "../components/form-template-create/FieldsFromFormTemplate.vue";
 import SelectedFormFields from "../components/form-template-create/SelectedFormFields.vue";
+import { Unit } from "../models/unit-node.model";
+import { useRoute, useRouter } from "vue-router";
 
-const organizations: Ref<{ name: string; unitId: string }[]> = ref([]);
+const organizations: Ref<Unit[]> = ref([]);
 
 const organizationsDropdown = useDropdown();
+
+const router = useRouter();
 
 const isQuota = ref<boolean>(false);
 const onlyDefinedUsers = ref<boolean>(false);
@@ -32,13 +36,13 @@ const allowedNationalIdsText = ref<string>("");
 const request = reactive<JobPostingCreateModel>({
   title: "",
   description: "",
-  responsibilities: undefined,
-  qualifications: undefined,
-  benefits: undefined,
+  responsibilities: "",
+  qualifications: "",
+  benefits: "",
 
   datePosted: new Date(),
-  applicationDeadLine: new Date(),
-  validFrom: undefined,
+  applicationDeadline: new Date(),
+  validFrom: new Date(),
   validTo: undefined,
 
   status: 1,
@@ -62,24 +66,76 @@ const request = reactive<JobPostingCreateModel>({
   postingGroupId: undefined,
 });
 
-//update eklemek için kullanılacak
-// const route = useRoute();
-// const id = route.params.id as string | undefined;
+const route = useRoute();
+const id = route.params.id as string | undefined;
 
-onMounted(() => {
+onMounted(async () => {
   getOrganizations();
   getFormTemplateSummaries();
+  if (id) {
+    await getJobPosting(id);
+  }
 });
 
-const getOrganizations = async () => {
-  const res = await organizationService.getOrganizationsByTenant();
+const getJobPosting = async (id: string) => {
+  const res = await jobPostingService.getJobPosting(id);
   if (res) {
-    organizations.value = res;
+    request.title = res.data.title;
+    request.description = res.data.description ?? "";
+    request.responsibilities = res.data.responsibilities ?? "";
+    request.qualifications = res.data.qualifications ?? "";
+    request.benefits = res.data.benefits ?? "";
+
+    request.datePosted = res.data.datePosted;
+    request.applicationDeadline = new Date(res.data.applicationDeadline);
+    request.validFrom = res.data.validFrom ? new Date(res.data.validFrom) : undefined;
+    request.validTo = res.data.validTo ? new Date(res.data.validTo) : undefined;
+
+    request.status = res.data.status;
+    request.isRemote = res.data.isRemote;
+    request.locationText = res.data.locationText;
+
+    request.vacancyCount = res.data.vacancyCount;
+    request.employmentType = res.data.employmentType;
+    request.experienceLevelRequired = res.data.experienceLevelRequired;
+    request.skillsRequired = res.data.skillsRequired;
+
+    request.allowedNationalIds = res.data.allowedNationalIds;
+
+    request.contactInfo = res.data.contactInfo;
+    request.isPublic = res.data.isPublic;
+
+    request.unitId = res.data.unitId;
+
+    request.formTemplateId = res.data.formTemplateId;
+
+    request.postingGroupId = res.data.postingGroupId;
+
+    if (organizations.value) {
+      var organization = organizations.value.find((p) => p.id == request.unitId);
+      if (organization) {
+        organizationsDropdown.selectOption(organization.name);
+      }
+    }
   }
 };
 
-const selectOrganization = (organization: { name: string; unitId: string }) => {
-  request.unitId = organization.unitId;
+const getOrganizations = async () => {
+  const res = await organizationService.getUnitsByTenant();
+  if (res) {
+    organizations.value = res;
+
+    if (request.unitId) {
+      var organization = organizations.value.find((p) => p.id == request.unitId);
+      if (organization) {
+        organizationsDropdown.selectOption(organization.name);
+      }
+    }
+  }
+};
+
+const selectOrganization = (organization: Unit) => {
+  request.unitId = organization.id;
 };
 
 const setAllowedNationalIds = () => {
@@ -100,9 +156,10 @@ const handleSubmit = async () => {
 
   setAllowedNationalIds();
 
-  console.log("Job posting create request", request);
-
-  await jobPostingService.createJobPostings(request);
+  const res = await jobPostingService.createJobPostings(request);
+  if (res) {
+    router.push({ name: "job-posting-list" });
+  }
 };
 
 const getFormTemplate = async (label: string) => {
@@ -222,7 +279,7 @@ const removeFieldFromRequest = (label: string) => {
               >
               <DatePicker
                 input-id="endDate"
-                v-model="request.applicationDeadLine"
+                v-model="request.applicationDeadline"
                 class="!w-full !border !outline-none !rounded-md dark:!border-gray-700 !border-gray-200 !py-1.5 !px-2 !bg-gray-50 dark:!bg-gray-900/50 focus:!border-indigo-600"
                 inputClass="!text-start !text-sm  "
                 panel-class="dark:!bg-gray-900 !bg-gray-50 dark:!text-gray-200 !border !outline-none !rounded-md dark:!border-gray-700 !border-gray-200 !p-3"
@@ -409,6 +466,7 @@ const removeFieldFromRequest = (label: string) => {
                       type="text"
                       name="formTeplate"
                       id="formTeplate"
+                      :ref="formTemplateDropdown.inputRef"
                       v-model="formTemplateDropdown.selectedLabel.value"
                       @focus="formTemplateDropdown.handleFocus"
                       @blur="formTemplateDropdown.handleBlur"

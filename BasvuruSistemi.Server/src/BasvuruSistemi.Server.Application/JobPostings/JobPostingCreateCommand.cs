@@ -14,7 +14,7 @@ public sealed record JobPostingCreateCommand(
     string? benefits,
 
     DateTimeOffset datePosted,
-    DateTimeOffset applicationDeadLine,
+    DateTimeOffset applicationDeadline,
     DateTimeOffset? validFrom,
     DateTimeOffset? validTo,
 
@@ -79,7 +79,7 @@ internal sealed class JobPostingCreateCommandHandler(
              request.title
             ,request.description
             ,request.datePosted
-            ,request.applicationDeadLine
+            ,request.applicationDeadline
             ,tenantId.Value
             ,request.unitId
             ,request.formTemplateId

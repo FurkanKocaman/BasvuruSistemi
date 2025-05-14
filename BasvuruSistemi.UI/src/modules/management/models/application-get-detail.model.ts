@@ -2,11 +2,27 @@ import { FieldValueResponseModel } from "@/modules/home/models/field-value-respo
 
 export interface ApplicationGetDetailModel {
   id: string;
-  jobPostingId: string;
-  jobPostingTitle: string;
+
   userId: string;
   firstName: string;
   lastName: string;
+  email?: string;
+  phone?: string;
+  tckn?: string;
+
+  country?: string;
+  city?: string;
+  district?: string;
+  street?: string;
+  fullAddress?: string;
+  postalCode?: string;
+
+  jobPostingId: string;
+  jobPostingTitle: string;
+  jobPostingCreateDate: string; //Date
+  jobPostingVacancyCount?: number;
+  totalApplicationCount?: number;
+  unit: string;
 
   appliedDate: string;
   status: string;

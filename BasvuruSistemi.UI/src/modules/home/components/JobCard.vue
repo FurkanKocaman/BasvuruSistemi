@@ -27,42 +27,16 @@ const formatDate = (dateString: string): string => {
 
 <template>
   <div
-    class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-300 border border-gray-200 dark:border-gray-700"
+    class="bg-gray-50 dark:bg-gray-800/40 rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-300 border border-gray-200 dark:border-gray-700"
   >
     <!-- İş kartı başlık bölümü -->
     <div class="flex justify-between items-start mb-4">
       <h3 class="text-xl font-bold text-gray-800 dark:text-white">{{ job.title }}</h3>
-      <!-- <span class="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs font-semibold px-2.5 py-0.5 rounded">
-        {{ job.department }}
-      </span> -->
     </div>
 
     <!-- Şirket ve lokasyon bilgisi -->
     <div class="mb-4">
-      <p class="text-gray-600 dark:text-gray-300 font-medium">{{ job.company }}</p>
-      <p class="text-gray-500 dark:text-gray-400 text-sm flex items-center">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-4 w-4 mr-1"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-          />
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-          />
-        </svg>
-        {{ job.locationText }}
-      </p>
+      <p class="text-gray-600 dark:text-gray-300 font-medium">{{ job.unit }}</p>
     </div>
 
     <!-- Maaş ve tarih bilgisi -->

@@ -80,5 +80,10 @@ public sealed class FormFieldDefinition : Entity
         }
     }
 
+    public void MarkAsDeleted()
+    {
+        IsDeleted = true;
+    }
+
     // Update metotları eklenebilir
 }

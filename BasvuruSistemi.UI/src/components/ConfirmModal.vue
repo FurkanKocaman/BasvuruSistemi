@@ -1,0 +1,87 @@
+<template>
+  <div v-if="visible" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6 animate-fadeIn" @click.stop>
+      <div class="flex items-center">
+        <div class="bg-red-100 rounded-full p-2 mr-4">
+          <svg
+            class="w-6 h-6 text-red-600"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"
+            />
+          </svg>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900">{{ title }}</h3>
+      </div>
+      <p class="mt-4 text-sm text-gray-600">{{ description }}</p>
+
+      <div class="mt-6 flex justify-end space-x-3">
+        <button
+          class="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-md cursor-pointer"
+          @click="cancel"
+        >
+          İptal
+        </button>
+        <button
+          class="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-500 text-white rounded-md cursor-pointer"
+          @click="confirm"
+        >
+          Onayla
+        </button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, defineExpose, defineProps } from "vue";
+
+defineProps({
+  title: String,
+  description: String,
+});
+
+const visible = ref(false);
+const resolveFn = ref(null);
+
+function open() {
+  visible.value = true;
+  return new Promise((resolve) => {
+    resolveFn.value = resolve;
+  });
+}
+
+function confirm() {
+  visible.value = false;
+  resolveFn.value?.(true);
+}
+
+function cancel() {
+  visible.value = false;
+  resolveFn.value?.(false);
+}
+
+defineExpose({ open }); // Parent çağırabilsin diye
+</script>
+
+<style scoped>
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out;
+}
+</style>

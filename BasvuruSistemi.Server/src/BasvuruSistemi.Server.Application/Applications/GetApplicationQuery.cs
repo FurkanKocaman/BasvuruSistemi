@@ -33,7 +33,7 @@ public sealed class GetApplicationQueryResponse
     public DateTimeOffset JobPostingCreateDate { get; set; } = default!;
     public int? JobPostingVacancyCount { get; set; }
     public int? TotalApplicationCount { get; set; }
-    public string Organization { get; set; } = default!;
+    public string Unit { get; set; } = default!;
 
     public DateTimeOffset AppliedDate { get; set; }
     public string Status { get; set; } = default!;
@@ -52,6 +52,7 @@ internal sealed class GetApplicationQueryHandler(
     {
         var application = applicationRepository.Where(p => p.Id == request.applicationId)
             .Include(p => p.User)
+            .ThenInclude(p => p.Address)
             .Include(p => p.FieldValues)
             .ThenInclude(p => p.FieldDefinition)
             .Include(p => p.JobPosting)
@@ -88,7 +89,7 @@ internal sealed class GetApplicationQueryHandler(
             JobPostingCreateDate = application.JobPosting.CreatedAt,
             JobPostingVacancyCount = application.JobPosting.VacancyCount,
             TotalApplicationCount = 12,
-            Organization = application.JobPosting.Unit != null ? application.JobPosting.Unit.Name : application.JobPosting.Tenant.Name ,
+            Unit = application.JobPosting.Unit != null ? application.JobPosting.Unit.Name : application.JobPosting.Tenant.Name ,
 
             AppliedDate = application.AppliedDate,
             Status = application.Status.ToString(),
@@ -98,7 +99,7 @@ internal sealed class GetApplicationQueryHandler(
             FieldValues = application.FieldValues.Select(p => new FieldValueResponseDto(
                 p.FieldDefinitionId,
                 p.FieldDefinition.Label,
-                p.FieldDefinition.Type.ToString(),
+                p.FieldDefinition.Type,
                 p.Value
             )).ToList(),
         };

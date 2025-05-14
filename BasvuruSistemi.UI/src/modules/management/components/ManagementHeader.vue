@@ -32,9 +32,9 @@ function togglePostingMenu() {
   >
     <nav class="mx-auto flex items-center justify-between p-4 lg:px-8" aria-label="Global">
       <div class="flex lg:flex-1">
-        <a href="#" class="-m-1.5 p-1.5">
+        <router-link to="/jobs" class="-m-1.5 p-1.5">
           <span class="dark:text-gray-50 text-gray-800 font-semibold">Başvuru Sistemi</span>
-        </a>
+        </router-link>
       </div>
       <div class="flex lg:hidden">
         <button
@@ -143,7 +143,11 @@ function togglePostingMenu() {
           class="text-sm/6 font-semibold text-gray-700 dark:text-gray-50"
           >Başvurular</router-link
         >
-        <a href="#" class="text-sm/6 font-semibold text-gray-700 dark:text-gray-50">Birimler</a>
+        <router-link
+          to="/management/units"
+          class="text-sm/6 font-semibold text-gray-700 dark:text-gray-50"
+          >Birimler</router-link
+        >
       </div>
       <div class="hidden lg:flex lg:flex-1 lg:justify-end">
         <div

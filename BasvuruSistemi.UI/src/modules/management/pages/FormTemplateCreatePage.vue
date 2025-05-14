@@ -2,7 +2,7 @@
 import { onMounted, reactive, Ref, ref } from "vue";
 import { FormTemplateCreateReqeust } from "../models/form-template-create.model";
 import formTemplateService from "../services/form-template.service";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { FormFieldDefinition } from "../models/form-field.model";
 import { useDropdown } from "../composables/useDropdown";
 import FieldsFromFormTemplate from "../components/form-template-create/FieldsFromFormTemplate.vue";
@@ -16,12 +16,14 @@ const formTemplateDropdown = useDropdown();
 const formTemplateSummaries: Ref<{ id: string; name: string }[]> = ref([]);
 
 const request = reactive<FormTemplateCreateReqeust>({
+  id: undefined,
   name: "",
   description: undefined,
   fields: [],
 });
 
 const route = useRoute();
+const router = useRouter();
 const id = route.params.id as string | undefined;
 
 const isUpdate = ref<boolean>(false);
@@ -31,6 +33,7 @@ onMounted(async () => {
     isUpdate.value = true;
     const res = await formTemplateService.getFormTemplate(id);
     if (res) {
+      request.id = res.id;
       request.name = res.name;
       request.description = res.description;
       request.fields = res.fields;
@@ -41,9 +44,18 @@ onMounted(async () => {
 
 const handleSubmit = async () => {
   if (!isUpdate.value) {
-    await formTemplateService.createFormTemplate(request);
+    const res = await formTemplateService.createFormTemplate(request);
+    if (res) {
+      router.push({ name: "form-templates-list" });
+    }
   } else {
-    console.error("İmplement update");
+    if (request.id) {
+      console.log(request);
+      const res = await formTemplateService.updateFormTemplate(request.id, request);
+      if (res) {
+        router.push({ name: "form-templates-list" });
+      }
+    }
   }
 };
 

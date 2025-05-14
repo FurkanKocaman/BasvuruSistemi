@@ -3,12 +3,15 @@ import { onMounted, ref } from "vue";
 import applicationService from "@/services/application.service";
 import { useRoute } from "vue-router";
 import { ApplicationGetDetailModel } from "../models/application-get-detail.model";
+import { getFieldTypeOptionByValue } from "@/models/constants/field-type";
 
 const route = useRoute();
 const id = route.params.id as string | undefined;
 
 const isReviewModalOpen = ref<boolean>(false);
 const isApplicationApproved = ref<boolean>(false);
+
+const apiUrl = import.meta.env.VITE_API_PUBLIC_URL;
 
 const application = ref<ApplicationGetDetailModel>({
   id: "",
@@ -20,6 +23,8 @@ const application = ref<ApplicationGetDetailModel>({
   appliedDate: "",
   status: "",
   fieldValues: [],
+  jobPostingCreateDate: "",
+  unit: "",
 });
 
 onMounted(() => {
@@ -52,6 +57,7 @@ function formatDateTime(value: string): string {
 
 <template>
   <main class="w-full h-full px-30 pt-20 pb-20">
+    <!-- Modal start -->
     <div
       class="relative ease-in-out transition-all duration-1000"
       :class="!isReviewModalOpen ? 'hidden' : 'block'"
@@ -149,7 +155,7 @@ function formatDateTime(value: string): string {
         </div>
       </div>
     </div>
-
+    <!-- Modal end -->
     <div class="w-full h-full flex flex-col dark:bg-gray-800/40 bg-gray-50 rounded-lg px-10 py-10">
       <div
         class="w-full h-full border dark:border-gray-800 border-gray-200 rounded-lg mb-5 py-3 px-5 flex items-center"
@@ -163,7 +169,7 @@ function formatDateTime(value: string): string {
           <span class="text-base dark:text-gray-100 font-semibold ml-5">{{
             application.firstName + " " + application.lastName
           }}</span>
-          <span class="text-sm dark:text-gray-400 font-normal ml-5">furkan61kcmn@gmail.com</span>
+          <span class="text-sm dark:text-gray-400 font-normal ml-5">{{ application.email }}</span>
         </div>
       </div>
       <div
@@ -174,25 +180,25 @@ function formatDateTime(value: string): string {
           <div class="flex flex-col mr-20">
             <div class="flex flex-col mb-3">
               <label class="text-xs dark:text-gray-400 text-gray-700 mb-1.5">Ad</label>
-              <span class="dark:text-gray-200 text-gray-800">Furkan </span>
+              <span class="dark:text-gray-200 text-gray-800">{{ application.firstName }} </span>
             </div>
             <div class="flex flex-col mb-3">
               <label class="text-xs dark:text-gray-400 text-gray-700 mb-1.5">E-posta</label>
-              <span class="dark:text-gray-200 text-gray-800">furkan61kcmn@gmail.com </span>
+              <span class="dark:text-gray-200 text-gray-800">{{ application.email ?? "-" }}</span>
             </div>
             <div class="flex flex-col mb-3">
               <label class="text-xs dark:text-gray-400 text-gray-700 mb-1.5">TC Kimlik No</label>
-              <span class="dark:text-gray-200 text-gray-800">41225015066 </span>
+              <span class="dark:text-gray-200 text-gray-800">{{ application.tckn ?? "-" }} </span>
             </div>
           </div>
           <div class="flex flex-col">
             <div class="flex flex-col mb-3">
               <label class="text-xs dark:text-gray-400 text-gray-700 mb-1.5">Soyad</label>
-              <span class="dark:text-gray-200 text-gray-800">Kocaman </span>
+              <span class="dark:text-gray-200 text-gray-800">{{ application.lastName }} </span>
             </div>
             <div class="flex flex-col mb-3">
               <label class="text-xs dark:text-gray-400 text-gray-700 mb-1.5">Telefon</label>
-              <span class="dark:text-gray-200 text-gray-800">0531 781 55 04 </span>
+              <span class="dark:text-gray-200 text-gray-800">{{ application.phone ?? "-" }}</span>
             </div>
           </div>
         </div>
@@ -205,25 +211,33 @@ function formatDateTime(value: string): string {
           <div class="flex flex-col mr-20">
             <div class="flex flex-col mb-3">
               <label class="text-xs dark:text-gray-400 text-gray-700 mb-1.5">Ülke</label>
-              <span class="dark:text-gray-200 text-gray-800">Türkiye </span>
+              <span class="dark:text-gray-200 text-gray-800"
+                >{{ application.country ?? "-" }}
+              </span>
             </div>
             <div class="flex flex-col mb-3">
               <label class="text-xs dark:text-gray-400 text-gray-700 mb-1.5">İlçe</label>
-              <span class="dark:text-gray-200 text-gray-800">Çarşıbaşı</span>
+              <span class="dark:text-gray-200 text-gray-800">{{
+                application.district ?? "-"
+              }}</span>
             </div>
             <div class="flex flex-col mb-3">
               <label class="text-xs dark:text-gray-400 text-gray-700 mb-1.5">Tam Adres</label>
-              <span class="dark:text-gray-200 text-gray-800">Yavuz mah Çarşıbaşı/Trabzon</span>
+              <span class="dark:text-gray-200 text-gray-800">{{
+                application.fullAddress ?? "-"
+              }}</span>
             </div>
           </div>
           <div class="flex flex-col">
             <div class="flex flex-col mb-3">
               <label class="text-xs dark:text-gray-400 text-gray-700 mb-1.5">İl</label>
-              <span class="dark:text-gray-200 text-gray-800">Trabzon </span>
+              <span class="dark:text-gray-200 text-gray-800">{{ application.city ?? "-" }} </span>
             </div>
             <div class="flex flex-col mb-3">
               <label class="text-xs dark:text-gray-400 text-gray-700 mb-1.5">Posta Kodu</label>
-              <span class="dark:text-gray-200 text-gray-800">61420 </span>
+              <span class="dark:text-gray-200 text-gray-800"
+                >{{ application.postalCode ?? "-" }}
+              </span>
             </div>
           </div>
         </div>
@@ -236,17 +250,21 @@ function formatDateTime(value: string): string {
           <div class="flex flex-col mr-20">
             <div class="flex flex-col mb-3">
               <label class="text-xs dark:text-gray-400 text-gray-700 mb-1.5">Başlık</label>
-              <span class="dark:text-gray-200 text-gray-800">Five Personel Alım İlanı </span>
+              <span class="dark:text-gray-200 text-gray-800"
+                >{{ application.jobPostingTitle ?? "-" }}
+              </span>
             </div>
             <div class="flex flex-col mb-3">
               <label class="text-xs dark:text-gray-400 text-gray-700 mb-1.5"
                 >Kontenjan Sayısı</label
               >
-              <span class="dark:text-gray-200 text-gray-800">60</span>
+              <span class="dark:text-gray-200 text-gray-800">{{
+                application.jobPostingVacancyCount ?? "-"
+              }}</span>
             </div>
             <div class="flex flex-col mb-3">
               <label class="text-xs dark:text-gray-400 text-gray-700 mb-1.5">Birim</label>
-              <span class="dark:text-gray-200 text-gray-800">Five LTD. ŞTİ.</span>
+              <span class="dark:text-gray-200 text-gray-800">{{ application.unit ?? "-" }}</span>
             </div>
           </div>
           <div class="flex flex-col mr-20">
@@ -254,7 +272,9 @@ function formatDateTime(value: string): string {
               <label class="text-xs dark:text-gray-400 text-gray-700 mb-1.5"
                 >Oluşturulma Tarihi</label
               >
-              <span class="dark:text-gray-200 text-gray-800">01.02.2025 12:30 </span>
+              <span class="dark:text-gray-200 text-gray-800"
+                >{{ formatDateTime(application.jobPostingCreateDate) ?? "-" }}
+              </span>
             </div>
             <div class="flex flex-col mb-3">
               <label class="text-xs dark:text-gray-400 text-gray-700 mb-1.5"
@@ -338,13 +358,33 @@ function formatDateTime(value: string): string {
               </tr>
             </thead>
             <tbody class="dark:text-gray-200 text-gray-800">
-              <tr class="border-b dark:border-gray-700/30 border-gray-200">
-                <td class="py-3 pr-2 pl-4 border-r dark:border-gray-800 border-gray-200">1</td>
-                <td class="py-3 px-2 border-r dark:border-gray-800 border-gray-200">
-                  TC Kimlik No
+              <tr
+                v-for="(field, index) in application.fieldValues"
+                :key="field.fieldDefinitionId"
+                class="border-b dark:border-gray-700/30 border-gray-200"
+              >
+                <td class="py-3 pr-2 pl-4 border-r dark:border-gray-800 border-gray-200">
+                  {{ index }}
                 </td>
-                <td class="py-3 px-2 border-r dark:border-gray-800 border-gray-200">TCKN</td>
-                <td class="py-3 px-2 text-sm">12345678901</td>
+                <td class="py-3 px-2 border-r dark:border-gray-800 border-gray-200">
+                  {{ field.title }}
+                </td>
+                <td class="py-3 px-2 border-r dark:border-gray-800 border-gray-200">
+                  {{ getFieldTypeOptionByValue(field.type)?.label }}
+                </td>
+                <td class="py-3 px-2 text-sm">
+                  <a
+                    v-if="
+                      field.type == 6 || field.type == 13 || field.type == 15 || field.type == 16
+                    "
+                    :href="apiUrl + field.value"
+                    class="text-blue-500"
+                    target="_blank"
+                    >{{ field.value ?? "-" }}</a
+                  >
+
+                  <span v-else>{{ field.value ?? "-" }}</span>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -363,6 +403,7 @@ function formatDateTime(value: string): string {
             <textarea
               name="reviewDescription"
               id="reviewDescription"
+              v-model="application.reviewDescription"
               class="border rounded-sm border-gray-200 dark:border-gray-800 outline-none dark:focus:border-indigo-600 focus:border-indigo-600 px-2 py-2 text-gray-700 dark:text-gray-200 text-sm"
             ></textarea>
           </div>

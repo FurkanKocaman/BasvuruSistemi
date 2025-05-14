@@ -8,6 +8,7 @@ using BasvuruSistemi.Server.Application.Users;
 using BasvuruSistemi.Server.Domain.DTOs;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BasvuruSistemi.Server.WebAPI.Controllers.v1;
@@ -25,9 +26,16 @@ public class AppController(ISender sender) : ControllerBase
 
     [HttpGet("units")]
     [Authorize()]
-    public async Task<ActionResult<GetAllUnitsByTenantQueryResponse>> GetAllOrganizationsByTenant(CancellationToken cancellationToken = default)
+    public async Task<ActionResult<GetAllUnitsByTenantQueryResponse>> GetAllUnitsByTenant(CancellationToken cancellationToken = default)
     {
         var response = await sender.Send(new GetAllUnitsByTenantQuery(), cancellationToken);
+        return Ok(response);
+    }
+    [HttpGet("units/{id}")]
+    [Authorize()]
+    public async Task<ActionResult<GetAllUnitsByTenantQueryResponse>> GetUnit(Guid id, CancellationToken cancellationToken = default)
+    {
+        var response = await sender.Send(new GetUnitQuery(id), cancellationToken);
         return Ok(response);
     }
 
@@ -60,6 +68,15 @@ public class AppController(ISender sender) : ControllerBase
     {
         var response = await sender.Send(new GetJobPostingsByTenantQuery(page, pageSize), cancellationToken);
         return Ok(response);
+    }
+    [HttpGet("job-postings/{id:guid}")]
+    [Authorize()]
+    public async Task<ActionResult<GetJobPostingsQueryResponse>> GetJobPostings(
+    Guid id,
+    CancellationToken cancellationToken = default)
+    {
+        var response = await sender.Send(new GetJobPostingsQuery(id), cancellationToken);
+        return response.IsSuccessful ? Ok(response) : BadRequest(response);
     }
 
     [HttpGet("tenants")]
@@ -119,6 +136,17 @@ public class AppController(ISender sender) : ControllerBase
     CancellationToken cancellationToken = default)
     {
         var response = await sender.Send(new GetApplicationQuery(applicationId), cancellationToken);
+        return Ok(response);
+    }
+
+    [HttpGet("applications-by-user")]
+    [Authorize()]
+    public async Task<ActionResult<GetApplicationsByUserQueryResponse>> GetApplicationByUser(
+    [FromQuery] int page = 1,
+    [FromQuery] int pageSize = 20,
+    CancellationToken cancellationToken = default)
+    {
+        var response = await sender.Send(new GetApplicationsByUserQuery(page,pageSize), cancellationToken);
         return Ok(response);
     }
 }

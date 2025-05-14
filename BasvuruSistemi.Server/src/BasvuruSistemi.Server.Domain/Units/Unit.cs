@@ -26,4 +26,14 @@ public sealed class Unit : Entity
         Code = code;
         ParentId = parentId;
     }
+
+    public void Update(string name, string?code, Guid? parentId)
+    {
+        Name = name;
+        Code = code;
+        if(parentId is not null)
+        {
+            ParentId = parentId;
+        }
+    }
 }

@@ -10,8 +10,9 @@ public sealed record GetAllUnitsByTenantQuery(
 public sealed class GetAllUnitsByTenantQueryResponse
 {
     public Guid? ParentId { get; set; }
-    public Guid? UnitId { get; set; }
+    public Guid? Id { get; set; }
     public string Name { get; set; } = default!;
+    public string? Code { get; set; }
 }
 
 internal sealed class GetAllUnitsByTenantQueryHandler(
@@ -32,19 +33,25 @@ internal sealed class GetAllUnitsByTenantQueryHandler(
 
         var units = unitRepository.Where(p => p.TenantId == tenantId.Value && !p.IsDeleted).ToList();
 
-        var response = units.Select(unit => new GetAllUnitsByTenantQueryResponse
-        {
-            ParentId = unit.ParentId,
-            UnitId = unit.Id,
-            Name = unit.Name,
-        }).ToList();
+        var response = new List<GetAllUnitsByTenantQueryResponse>();
 
         response.Add(new GetAllUnitsByTenantQueryResponse
         {
-            UnitId = tenant.Id,
+            Id = tenant.Id,
             ParentId = null,
             Name = tenant.Name,
+            Code = tenant.Code,
         });
+
+        response.AddRange(units.Select(unit => new GetAllUnitsByTenantQueryResponse
+        {
+            ParentId = unit.ParentId,
+            Id = unit.Id,
+            Name = unit.Name,
+            Code = unit.Code,
+        }).OrderBy(p => p.Name).ToList());
+
+        
 
         return Task.FromResult(response);
     }

@@ -39,7 +39,7 @@ function formatDateTime(value: string): string {
 }
 
 const goToFormTemplate = (id: string) => {
-  router.push({ name: "form-templates-create", params: { id } });
+  router.push({ name: "form-templates-update", params: { id } });
 };
 </script>
 

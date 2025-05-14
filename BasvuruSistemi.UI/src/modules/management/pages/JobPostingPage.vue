@@ -2,11 +2,14 @@
 import { onMounted, ref, Ref } from "vue";
 import jobPostingService from "../services/job-posting.service";
 import { JobPostingsByTenantResponse } from "../models/job-posting-by-tenant.model";
+import { useRouter } from "vue-router";
 
 const jobPostings: Ref<JobPostingsByTenantResponse[]> = ref([]);
 const page = ref(1);
 const pageSize = ref(10);
 const totalCount = ref(0);
+
+const router = useRouter();
 
 onMounted(async () => {
   getJobPostings();
@@ -34,6 +37,10 @@ function formatDateTime(value: string): string {
 
   return `${day}.${month}.${year} ${hours}:${minutes}`;
 }
+
+const goToJobPostingEdit = (id: string) => {
+  router.push({ name: "job-posting-update", params: { id } });
+};
 </script>
 
 <template>
@@ -233,7 +240,10 @@ function formatDateTime(value: string): string {
                     <span class="bg-blue-600 py-0.5 px-1.5 rounded-lg text-gray-100">Status</span>
                   </td>
                   <td class="py-3 px-2">
-                    <button class="cursor-pointer pr-1 group">
+                    <button
+                      class="cursor-pointer pr-1 group"
+                      @click="goToJobPostingEdit(jobPosting.id)"
+                    >
                       <svg
                         class="size-5 dark:fill-gray-400 fill-gray-600 group-hover:fill-blue-600 dark:group-hover:fill-blue-600"
                         viewBox="0 0 24 24"

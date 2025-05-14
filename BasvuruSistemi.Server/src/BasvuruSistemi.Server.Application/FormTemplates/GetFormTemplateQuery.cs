@@ -53,7 +53,7 @@ internal sealed class GetFormTemplateQueryHandler(
             Name = formTemplate.Name,
             Description = formTemplate.Description,
 
-            Fields = formTemplate.FieldDefinitions.Select(field => new FormFieldResponse
+            Fields = formTemplate.FieldDefinitions.Where(p => !p.IsDeleted).Select(field => new FormFieldResponse
             {
                 Id = field.Id,
                 Label = field.Label,

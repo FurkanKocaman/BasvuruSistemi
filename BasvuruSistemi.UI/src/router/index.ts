@@ -71,8 +71,13 @@ const router = createRouter({
               component: () => import("@/modules/management/pages/JobPostingPage.vue"),
             },
             {
-              path: "create/:id?",
+              path: "create",
               name: "job-posting-create",
+              component: () => import("@/modules/management/pages/JobpostingCreatePage.vue"),
+            },
+            {
+              path: "update/:id",
+              name: "job-posting-update",
               component: () => import("@/modules/management/pages/JobpostingCreatePage.vue"),
             },
           ],
@@ -88,12 +93,18 @@ const router = createRouter({
               component: () => import("@/modules/management/pages/FormTemplatesPage.vue"),
             },
             {
-              path: "create/:id?",
+              path: "create",
               name: "form-templates-create",
+              component: () => import("@/modules/management/pages/FormTemplateCreatePage.vue"),
+            },
+            {
+              path: "update/:id",
+              name: "form-templates-update",
               component: () => import("@/modules/management/pages/FormTemplateCreatePage.vue"),
             },
           ],
         },
+
         {
           path: "applications",
           name: "applications",
@@ -108,6 +119,18 @@ const router = createRouter({
               path: "detail/:id",
               name: "application-detail",
               component: () => import("@/modules/management/pages/ApplicationDetailPage.vue"),
+            },
+          ],
+        },
+        {
+          path: "units",
+          name: "units",
+          redirect: { name: "units-tree-list" },
+          children: [
+            {
+              path: "",
+              name: "units-tree-list",
+              component: () => import("@/modules/management/pages/UnitsPage.vue"),
             },
           ],
         },

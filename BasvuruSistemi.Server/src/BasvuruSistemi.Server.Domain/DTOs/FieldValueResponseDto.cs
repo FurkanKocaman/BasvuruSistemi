@@ -4,6 +4,6 @@ namespace BasvuruSistemi.Server.Domain.DTOs;
 public sealed record FieldValueResponseDto(
      Guid Id,
      string Title,
-     string Type,
+     FieldTypeEnum Type,
      string? Value
     );

@@ -11,5 +11,11 @@ internal sealed class ApplicationConfigurations : IEntityTypeConfiguration<Domai
             .WithMany(p => p.Applications)
             .HasForeignKey(p => p.JobPostingId)
             .OnDelete(DeleteBehavior.NoAction);
+
+        builder
+            .HasOne(p => p.Reviewer)
+            .WithMany()
+            .HasForeignKey(p => p.ReviewerId)
+            .OnDelete(DeleteBehavior.NoAction);
     }
 }

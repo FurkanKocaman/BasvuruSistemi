@@ -30,10 +30,16 @@ class FormTeplateSerive {
       console.error(err);
     }
   }
-  async updateFormTemplate(request: FormTemplateCreateReqeust): Promise<string | undefined> {
+  async updateFormTemplate(
+    id: string,
+    request: FormTemplateCreateReqeust
+  ): Promise<string | undefined> {
     try {
-      const res = await api.put(`${import.meta.env.VITE_API_URL}/form-templates`, request);
-
+      const res = await api.put(
+        `${import.meta.env.VITE_API_URL}/form-templates/update/${id}`,
+        request
+      );
+      console.log("Update res", res);
       if (res.status == 200) {
         this.toastSore.addToast({
           message: res.data.data,

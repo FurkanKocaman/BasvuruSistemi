@@ -17,5 +17,15 @@ public static class FormTemplateModule
                 return response.IsSuccessful ? Results.Ok(response) : Results.InternalServerError(response);
             })
             .RequireAuthorization().Produces<Result<string>>();
+
+        group.MapPut("update/{id}",
+           async (ISender sender,Guid id, FormTemplateUpdateCommand request, CancellationToken cancellationToken) =>
+           {
+               if (id != request.Id)
+                   return Results.BadRequest("ID in route does not match ID in body.");
+               var response = await sender.Send(request, cancellationToken);
+               return response.IsSuccessful ? Results.Ok(response) : Results.InternalServerError(response);
+           })
+           .RequireAuthorization().Produces<Result<string>>();
     }
 }

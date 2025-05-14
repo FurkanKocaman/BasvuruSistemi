@@ -22,8 +22,7 @@ export interface GetActiveJobPostingsQueryResponse {
   contactInfo?: string;
   isPublic: boolean;
 
-  company: string;
-  department?: string;
+  unit: string;
 
   formTemplateId: string;
 }

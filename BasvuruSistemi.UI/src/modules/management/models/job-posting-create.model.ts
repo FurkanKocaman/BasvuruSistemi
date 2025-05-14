@@ -1,4 +1,5 @@
 export interface JobPostingCreateModel {
+  id?: string;
   title: string;
   description: string;
   responsibilities?: string;
@@ -6,7 +7,7 @@ export interface JobPostingCreateModel {
   benefits?: string;
 
   datePosted: Date;
-  applicationDeadLine: Date;
+  applicationDeadline: Date;
   validFrom?: Date;
   validTo?: Date;
 

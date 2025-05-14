@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, defineEmits } from "vue";
+import { ref, onMounted, defineEmits } from "vue";
 import { GetActiveJobPostingsQueryResponse } from "../models/active-job-posting.model";
 
-// Emits tanımlaması
 const emit = defineEmits<{
   (e: "filter", filteredJobs: GetActiveJobPostingsQueryResponse[]): void;
 }>();
@@ -11,65 +10,26 @@ const props = defineProps<{
   allJobs: GetActiveJobPostingsQueryResponse[];
 }>();
 
-// Filtre durumları
 const searchQuery = ref("");
-const selectedDepartment = ref("");
-const selectedLocation = ref("");
 
-// Departman ve lokasyon listelerini hesaplama
-const departments = computed(() => {
-  const deptSet = new Set(props.allJobs.map((job) => job.department));
-  return Array.from(deptSet);
-});
-
-// const applyFilters = () => {
-//   const filteredJobs = props.allJobs.filter((job) => {
-//     // Arama sorgusu filtresi
-//     const matchesSearch = searchQuery.value
-//       ? job.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-//         job.company.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-//         job.description.toLowerCase().includes(searchQuery.value.toLowerCase())
-//       : true;
-
-//     // Departman filtresi
-//     const matchesDepartment = selectedDepartment.value
-//       ? job.department === selectedDepartment.value
-//       : true;
-
-//     // Lokasyon filtresi (şehir kısmı)
-//     // const matchesLocation = selectedLocation.value
-//     //   ? job.location.includes(selectedLocation.value)
-//     //   : true;
-
-//     return matchesSearch && matchesDepartment;
-//   });
-
-//   // Filtrelenmiş sonuçları emit etme
-//   // emit("filter", filteredJobs);
-// };
-
-// Filtre sıfırlama fonksiyonu
 const resetFilters = () => {
   searchQuery.value = "";
-  selectedDepartment.value = "";
-  selectedLocation.value = "";
 
-  // Tüm işleri göster
   emit("filter", props.allJobs);
 };
 
-// Component yüklendiğinde
 onMounted(() => {
-  // Başlangıçta tüm iş ilanlarını göster
   emit("filter", props.allJobs);
 });
 </script>
 
 <template>
   <div
-    class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6 border border-gray-200 dark:border-gray-700"
+    class="bg-gray-50 dark:bg-gray-800/30 rounded-lg shadow p-4 mb-6 border border-gray-200 dark:border-gray-700 flex flex-col"
   >
-    <h2 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">İş Filtreleri</h2>
+    <div class="mb-3">
+      <span class="text-lg font-semibold text-gray-800 dark:text-white">Filtreler</span>
+    </div>
 
     <!-- Arama kutusu -->
     <div class="mb-4">
@@ -95,58 +55,22 @@ onMounted(() => {
           id="search"
           type="text"
           v-model="searchQuery"
-          placeholder="İş başlığı, şirket veya pozisyon ara"
-          class="pl-10 w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+          placeholder="İlan başlığı, şirket veya pozisyon ara"
+          class="pl-10 w-full rounded-md border border-gray-300 dark:border-gray-600 shadow-sm dark:focus:border-indigo-600 focus:border-indigo-600 outline-none py-1.5 text-gray-800 dark:text-gray-200"
         />
       </div>
     </div>
 
-    <!-- Departman filtresi -->
-    <div class="mb-4">
-      <label
-        for="department"
-        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-        >Departman</label
-      >
-      <select
-        id="department"
-        v-model="selectedDepartment"
-        class="w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-      >
-        <option value="">Tüm Departmanlar</option>
-        <option v-for="department in departments" :key="department" :value="department">
-          {{ department }}
-        </option>
-      </select>
-    </div>
-
-    <!-- Lokasyon filtresi -->
-    <!-- <div class="mb-4">
-      <label for="location" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-        >Lokasyon</label
-      >
-      <select
-        id="location"
-        v-model="selectedLocation"
-        class="w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-      >
-        <option value="">Tüm Lokasyonlar</option>
-        <option v-for="location in locations" :key="location" :value="location">
-          {{ location }}
-        </option>
-      </select>
-    </div> -->
-
     <!-- Filtreleri uygula ve sıfırla butonları -->
-    <div class="flex space-x-2">
+    <div class="flex justify-end space-x-2">
       <button
-        class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors duration-200"
+        class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors duration-200 cursor-pointer"
       >
         Filtreleri Uygula
       </button>
       <button
         @click="resetFilters"
-        class="flex-1 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 text-gray-800 dark:text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition-colors duration-200"
+        class="bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 text-gray-800 dark:text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition-colors duration-200 cursor-pointer"
       >
         Sıfırla
       </button>

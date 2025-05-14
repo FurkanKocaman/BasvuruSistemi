@@ -19,4 +19,10 @@ public sealed class ApplicationFormTemplate : Entity
         Name = name;
         Description = description;
     }
+
+    public void Update(string name, string? description)
+    {
+        Name = name;
+        Description = description;
+    }
 }

@@ -3,6 +3,7 @@ import api from "@/services/Axios";
 import { JobPostingsByTenantResponse } from "../models/job-posting-by-tenant.model";
 import { JobPostingCreateModel } from "../models/job-posting-create.model";
 import { useToastStore } from "@/modules/toast/store/toast.store";
+import { Result } from "@/models/entities/result.model";
 
 class JobPostingService {
   toastSore = useToastStore();
@@ -11,7 +12,16 @@ class JobPostingService {
       const res = await api.get(
         `${import.meta.env.VITE_API_URL}/api/job-postings?page=1&pageSize=20`
       );
-      console.log("Job posting get response", res);
+
+      return res.data;
+    } catch (err) {
+      console.error(err);
+    }
+  }
+  async getJobPosting(id: string): Promise<Result<JobPostingCreateModel> | undefined> {
+    try {
+      const res = await api.get(`${import.meta.env.VITE_API_URL}/api/job-postings/${id}`);
+      console.log(res);
       return res.data;
     } catch (err) {
       console.error(err);

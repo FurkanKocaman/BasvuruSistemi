@@ -9,6 +9,7 @@ import { FormFieldResponse } from "@/modules/management/models/form-filed-respon
 import { FieldValueModel } from "../models/field-value.model";
 import { ApplicationCreateRequest } from "../models/application-create.model";
 import applicationService from "../services/application.service";
+import { useToastStore } from "@/modules/toast/store/toast.store";
 
 const props = defineProps<{
   jobId?: string;
@@ -17,6 +18,8 @@ const props = defineProps<{
 const router = useRouter();
 
 const values = ref<Record<string, any>>({});
+
+const toastStore = useToastStore();
 
 const request = ref<ApplicationCreateRequest>({
   jobPostingId: "",
@@ -42,7 +45,6 @@ const getFormTemplate = async () => {
     request.value.jobPostingId = job.value.id;
     const res = await formTemplateService.getFormTemplate(job.value.formTemplateId);
     if (res) {
-      console.log(res.fields);
       fields.value = res.fields;
       res.fields.forEach((element) => {
         values.value[element.id] = undefined;
@@ -75,12 +77,23 @@ const submitForm = async () => {
           } else {
             isError = true;
             console.error(res.errorMessages?.[0] ?? "Bilinmeyen hata");
+            return;
           }
         } catch (err) {
           isError = true;
           console.error("Dosya yükleme hatası:", err);
+          return;
         }
       }
+    }
+    if (field.isRequired && !values.value[field.id]) {
+      isError = true;
+      toastStore.addToast({
+        message: "Zorunlu alanları doldurmanız gerekiyor",
+        type: "error",
+        duration: 5000,
+      });
+      return;
     }
   }
 
@@ -92,10 +105,11 @@ const submitForm = async () => {
   request.value.fieldValues = result;
 
   if (isError) {
-    console.log("Hata oluştu");
+    return;
   } else {
-    console.log("Request", request.value);
     await applicationService.createApplication(request.value);
+
+    router.push({ name: "/jobs" });
   }
 };
 </script>
@@ -120,17 +134,17 @@ const submitForm = async () => {
     <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
       <button
         type="button"
-        class="w-full sm:w-auto flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors duration-200 disabled:opacity-70 disabled:cursor-not-allowed"
-        @click="submitForm"
-      >
-        <span>Başvuruyu Gönder</span>
-      </button>
-      <button
-        type="button"
         @click="goBack"
         class="w-full sm:w-auto flex-1 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 text-gray-800 dark:text-white font-medium py-2 px-6 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition-colors duration-200"
       >
         İptal
+      </button>
+      <button
+        type="button"
+        class="w-full sm:w-auto flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors duration-200 disabled:opacity-70 disabled:cursor-not-allowed"
+        @click="submitForm"
+      >
+        <span>Başvuruyu Gönder</span>
       </button>
     </div>
   </div>

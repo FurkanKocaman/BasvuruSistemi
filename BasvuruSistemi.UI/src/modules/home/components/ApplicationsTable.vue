@@ -1,108 +1,277 @@
-<template>
-  <div class="overflow-x-auto">
-    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-      <thead class="bg-gray-50 dark:bg-gray-800">
-        <tr>
-          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-            İş Başlığı
-          </th>
-          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-            Departman
-          </th>
-          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-            Başvuru Tarihi
-          </th>
-          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-            Durum
-          </th>
-          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-            İşlemler
-          </th>
-        </tr>
-      </thead>
-      <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
-        <tr v-for="application in applications" :key="application.id" class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150">
-          <td class="px-6 py-4 whitespace-nowrap">
-            <div class="text-sm font-medium text-gray-900 dark:text-white">{{ application.jobTitle }}</div>
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap">
-            <div class="text-sm text-gray-700 dark:text-gray-300">{{ application.department }}</div>
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap">
-            <div class="text-sm text-gray-700 dark:text-gray-300">{{ formatDate(application.submissionDate) }}</div>
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap">
-            <status-badge :status="application.status" />
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-            <button 
-              @click="viewDetails(application.id)"
-              class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 mr-3"
-            >
-              Detaylar
-            </button>
-            <button 
-              v-if="application.status === 'Pending'"
-              @click="withdrawApplication(application.id)"
-              class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300"
-            >
-              Geri Çek
-            </button>
-          </td>
-        </tr>
-        <tr v-if="applications.length === 0">
-          <td colspan="5" class="px-6 py-10 text-center text-gray-500 dark:text-gray-400">
-            <div class="flex flex-col items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              <p class="text-lg font-medium">Henüz başvuru bulunamadı</p>
-              <p class="mt-1">İş ilanlarını inceleyip başvuru yapabilirsiniz.</p>
-              <router-link 
-                to="/jobs" 
-                class="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                İş İlanlarına Git
-              </router-link>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { defineProps, defineEmits } from 'vue';
-import StatusBadge from './StatusBadge.vue';
-import type { Application } from '../data/applications';
+import { ref, onMounted } from "vue";
+import applicationService from "../services/application.service";
+import { ApplicationByUserModel } from "../models/application-by-user.model";
+import { CircleX } from "lucide-vue-next";
+import { FileSearch } from "lucide-vue-next";
+import ConfirmModal from "@/components/ConfirmModal.vue";
 
-// Props tanımlaması
-defineProps<{
-  applications: Application[]
-}>();
+const applications = ref<ApplicationByUserModel[]>([]);
+const page = ref(1);
+const pageSize = ref(20);
+const totalCount = ref(0);
 
-// Emits tanımlaması
-const emit = defineEmits<{
-  (e: 'view-details', id: number): void
-  (e: 'withdraw', id: number): void
-}>();
+const confirmModal = ref();
 
-// Tarih formatı fonksiyonu
-const formatDate = (dateString: string): string => {
-  const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
-  return new Date(dateString).toLocaleDateString('tr-TR', options);
+onMounted(() => {
+  getApplications();
+});
+
+const getApplications = async () => {
+  const res = await applicationService.getApplicationsByUser(page.value, pageSize.value);
+  if (res) {
+    applications.value = res.items;
+    totalCount.value = res.totalCount;
+    pageSize.value = res.pageSize;
+    page.value = res.page;
+  }
 };
 
-// Detay görüntüleme fonksiyonu
-const viewDetails = (id: number) => {
-  emit('view-details', id);
-};
+function formatDateTime(value: string): string {
+  const date = new Date(value);
 
-// Başvuruyu geri çekme fonksiyonu
-const withdrawApplication = (id: number) => {
-  if (confirm('Bu başvuruyu geri çekmek istediğinizden emin misiniz?')) {
-    emit('withdraw', id);
+  const day = date.getDate().toString().padStart(2, "0");
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const year = date.getFullYear();
+
+  const hours = date.getHours().toString().padStart(2, "0");
+  const minutes = date.getMinutes().toString().padStart(2, "0");
+
+  return `${day}.${month}.${year} ${hours}:${minutes}`;
+}
+
+const withdrawApplication = async (id: string) => {
+  const result = await confirmModal.value.open();
+  if (result) {
+    await applicationService.withdrawnApplication(id);
+    getApplications();
+  } else {
+    console.log("Kullanıcı iptal etti.");
   }
 };
 </script>
+<template>
+  <div class="px-5 py-5">
+    <ConfirmModal
+      ref="confirmModal"
+      title="Başvurunuzu Geri Çekmek İstediğinize Emin Misiniz?"
+      description="Bu işlem geri alınamaz."
+    />
+    <div class="my-2">
+      <span class="text-gray-800 dark:text-gray-200 text-lg font-semibold">Başvurularım</span>
+    </div>
+    <div
+      class="bg-transparent dark:text-gray-300 rounded-md border dark:border-gray-800 border-gray-200"
+    >
+      <div class="ml-5 py-4">
+        <select
+          name="pageSize"
+          id="pageSize"
+          v-model.number="pageSize"
+          class="text-sm dark:text-gray-300 text-gray-700 dark:bg-gray-800 px-3 py-1 outline-none focus:border-indigo-600 rounded-md border dark:border-gray-700 border-gray-300"
+        >
+          <option :value="10">10</option>
+          <option :value="20" selected>20</option>
+          <option :value="30">30</option>
+        </select>
+        <span class="ml-2 dark:text-gray-400 text-gray-600"> kayıt göster</span>
+      </div>
+      <table class="w-full text-sm">
+        <thead class="">
+          <tr class="border-b border-t dark:border-gray-700/30 border-gray-200">
+            <td
+              class="py-3 pr-2 pl-4 border-r dark:border-gray-700/30 border-gray-200 cursor-pointer select-none dark:text-gray-400 text-sm"
+            >
+              <div class="flex items-center justify-between">
+                <span>Sıra</span>
+                <svg
+                  class="size-6 dark:fill-gray-500"
+                  viewBox="0 0 1024 1024"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M620.6 562.3l36.2 36.2L512 743.3 367.2 598.5l36.2-36.2L512 670.9l108.6-108.6zM512 353.1l108.6 108.6 36.2-36.2L512 280.7 367.2 425.5l36.2 36.2L512 353.1z"
+                  />
+                </svg>
+              </div>
+            </td>
+            <td
+              class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200 cursor-pointer select-none dark:text-gray-400 text-sm"
+            >
+              <div class="flex items-center justify-between">
+                <span>İlan Başlığı</span>
+                <svg
+                  class="size-6 dark:fill-gray-500"
+                  viewBox="0 0 1024 1024"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M620.6 562.3l36.2 36.2L512 743.3 367.2 598.5l36.2-36.2L512 670.9l108.6-108.6zM512 353.1l108.6 108.6 36.2-36.2L512 280.7 367.2 425.5l36.2 36.2L512 353.1z"
+                  />
+                </svg>
+              </div>
+            </td>
+            <td
+              class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200 cursor-pointer select-none dark:text-gray-400 text-sm"
+            >
+              <div class="flex items-center justify-between">
+                <span>Birim</span>
+                <svg
+                  class="size-6 dark:fill-gray-500"
+                  viewBox="0 0 1024 1024"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M620.6 562.3l36.2 36.2L512 743.3 367.2 598.5l36.2-36.2L512 670.9l108.6-108.6zM512 353.1l108.6 108.6 36.2-36.2L512 280.7 367.2 425.5l36.2 36.2L512 353.1z"
+                  />
+                </svg>
+              </div>
+            </td>
+            <td
+              class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200 cursor-pointer select-none dark:text-gray-400 text-sm"
+            >
+              <div class="flex items-center justify-between">
+                <span>Başvuru Tarihi</span>
+                <svg
+                  class="size-6 dark:fill-gray-500"
+                  viewBox="0 0 1024 1024"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M620.6 562.3l36.2 36.2L512 743.3 367.2 598.5l36.2-36.2L512 670.9l108.6-108.6zM512 353.1l108.6 108.6 36.2-36.2L512 280.7 367.2 425.5l36.2 36.2L512 353.1z"
+                  />
+                </svg>
+              </div>
+            </td>
+            <td
+              class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200 cursor-pointer select-none dark:text-gray-400 text-sm"
+            >
+              <div class="flex items-center justify-between">
+                <span>Değerlendirilme Tarihi</span>
+                <svg
+                  class="size-6 dark:fill-gray-500"
+                  viewBox="0 0 1024 1024"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M620.6 562.3l36.2 36.2L512 743.3 367.2 598.5l36.2-36.2L512 670.9l108.6-108.6zM512 353.1l108.6 108.6 36.2-36.2L512 280.7 367.2 425.5l36.2 36.2L512 353.1z"
+                  />
+                </svg>
+              </div>
+            </td>
+            <td
+              class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200 cursor-pointer select-none dark:text-gray-400 text-sm"
+            >
+              <div class="flex items-center justify-between">
+                <span>Değerlendirilme Durumu</span>
+                <svg
+                  class="size-6 dark:fill-gray-500"
+                  viewBox="0 0 1024 1024"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M620.6 562.3l36.2 36.2L512 743.3 367.2 598.5l36.2-36.2L512 670.9l108.6-108.6zM512 353.1l108.6 108.6 36.2-36.2L512 280.7 367.2 425.5l36.2 36.2L512 353.1z"
+                  />
+                </svg>
+              </div>
+            </td>
+
+            <td
+              class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200 cursor-pointer select-none dark:text-gray-400 text-sm"
+            >
+              <div class="flex items-center justify-between">
+                <span>Değerlendirme Açıklaması</span>
+                <svg
+                  class="size-6 dark:fill-gray-500"
+                  viewBox="0 0 1024 1024"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M620.6 562.3l36.2 36.2L512 743.3 367.2 598.5l36.2-36.2L512 670.9l108.6-108.6zM512 353.1l108.6 108.6 36.2-36.2L512 280.7 367.2 425.5l36.2 36.2L512 353.1z"
+                  />
+                </svg>
+              </div>
+            </td>
+            <td class="py-3 px-2">İşlemler</td>
+          </tr>
+        </thead>
+        <tbody class="">
+          <tr
+            v-for="(application, index) in applications"
+            :key="application.id"
+            class="border-b dark:border-gray-700/30 border-gray-200"
+          >
+            <td class="py-3 pr-2 pl-4 border-r dark:border-gray-700/30 border-gray-200">
+              {{ index + 1 }}
+            </td>
+            <td class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200">
+              <span class="cursor-pointer">{{ application.title }}</span>
+            </td>
+            <td class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200">
+              {{ application.unit ?? "-" }}
+            </td>
+            <td class="py-3 px-2 border-r text-sm dark:border-gray-700/30 border-gray-200">
+              {{ formatDateTime(application.appliedDate) }}
+            </td>
+            <td class="py-3 px-2 border-r text-sm dark:border-gray-700/30 border-gray-200">
+              {{ application.reviewDate ? formatDateTime(application.reviewDate) : "-" }}
+            </td>
+            <td class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200">
+              {{ application.status }}
+            </td>
+            <td class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200">
+              {{ application.reviewDescription ?? "-" }}
+            </td>
+
+            <td class="py-3 px-2">
+              <button class="cursor-pointer mr-2 group" title="Düzenle">
+                <FileSearch
+                  class="size-6 stroke-gray-600 dark:stroke-gray-400 dark:group-hover:stroke-sky-600 group-hover:stroke-sky-600"
+                />
+              </button>
+              <button class="cursor-pointer group">
+                <CircleX
+                  class="size-6 stroke-gray-600 dark:stroke-gray-400 dark:group-hover:stroke-red-600 group-hover:stroke-red-600"
+                  @click="withdrawApplication(application.id)"
+                />
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="flex flex-row justify-between py-4 px-5">
+        <div>
+          <span class="text-sm"
+            >Toplam {{ totalCount }} kayıttan {{ page }} ile
+            {{ totalCount - page * pageSize <= 0 ? totalCount : totalCount - page * pageSize }}
+            arası gösteriliyor</span
+          >
+        </div>
+        <div class="flex">
+          <button
+            class="border rounded-md p-2 text-sm dark:border-gray-700 border-gray-200 dark:text-gray-300 cursor-pointer"
+          >
+            Önceki
+          </button>
+          <div class="mx-3">
+            <button
+              class="rounded-md p-2 text-sm dark:text-blue-500 bg-blue-600/10 cursor-pointer mx-1 w-8 hover:bg-blue-600/10 dark:hover:text-blue-500 hover:text-blue-700"
+            >
+              1
+            </button>
+            <button
+              class="rounded-md p-2 text-sm dark:text-gray-300 cursor-pointer mx-1 w-8 hover:bg-blue-600/10 dark:hover:text-blue-500 hover:text-blue-700"
+            >
+              2
+            </button>
+          </div>
+          <button
+            class="border rounded-md p-2 text-sm dark:border-gray-700 border-gray-200 dark:text-gray-300 cursor-pointer"
+          >
+            Sonraki
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
