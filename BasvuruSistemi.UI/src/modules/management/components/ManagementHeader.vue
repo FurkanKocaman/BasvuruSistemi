@@ -138,7 +138,11 @@ function togglePostingMenu() {
           class="text-sm/6 font-semibold text-gray-700 dark:text-gray-50"
           >Form Şablonları</router-link
         >
-        <a href="#" class="text-sm/6 font-semibold text-gray-700 dark:text-gray-50">Başvurular</a>
+        <router-link
+          to="/management/applications"
+          class="text-sm/6 font-semibold text-gray-700 dark:text-gray-50"
+          >Başvurular</router-link
+        >
         <a href="#" class="text-sm/6 font-semibold text-gray-700 dark:text-gray-50">Birimler</a>
       </div>
       <div class="hidden lg:flex lg:flex-1 lg:justify-end">

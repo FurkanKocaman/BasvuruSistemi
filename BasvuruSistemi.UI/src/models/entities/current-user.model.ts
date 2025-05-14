@@ -1,3 +1,6 @@
+import { Address } from "./address-model";
+import { Contact } from "./contact-model";
+
 export interface CurrentUserModel {
   id: string;
   firstName: string;
@@ -10,18 +13,4 @@ export interface CurrentUserModel {
 
   address: Address;
   contact: Contact;
-}
-
-export interface Address {
-  country?: string;
-  city?: string;
-  district?: string;
-  street?: string;
-  fullAddress?: string;
-  postalCode?: string;
-}
-
-export interface Contact {
-  email?: string;
-  phone?: string;
 }

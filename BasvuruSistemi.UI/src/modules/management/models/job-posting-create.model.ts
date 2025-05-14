@@ -28,8 +28,7 @@ export interface JobPostingCreateModel {
   maxSalary?: number;
   currency?: string;
 
-  companyId: string;
-  departmentId?: string;
+  unitId?: string;
 
   formTemplateId: string;
 

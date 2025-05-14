@@ -13,7 +13,7 @@ import NewFormField from "../components/form-template-create/NewFormField.vue";
 import FieldsFromFormTemplate from "../components/form-template-create/FieldsFromFormTemplate.vue";
 import SelectedFormFields from "../components/form-template-create/SelectedFormFields.vue";
 
-const organizations: Ref<{ name: string; companyId: string; departmentId?: string }[]> = ref([]);
+const organizations: Ref<{ name: string; unitId: string }[]> = ref([]);
 
 const organizationsDropdown = useDropdown();
 
@@ -55,8 +55,7 @@ const request = reactive<JobPostingCreateModel>({
   contactInfo: undefined,
   isPublic: true,
 
-  companyId: "",
-  departmentId: undefined,
+  unitId: undefined,
 
   formTemplateId: "",
 
@@ -79,13 +78,8 @@ const getOrganizations = async () => {
   }
 };
 
-const selectOrganization = (organization: {
-  name: string;
-  companyId: string;
-  departmentId?: string;
-}) => {
-  request.companyId = organization.companyId;
-  request.departmentId = organization.departmentId;
+const selectOrganization = (organization: { name: string; unitId: string }) => {
+  request.unitId = organization.unitId;
 };
 
 const setAllowedNationalIds = () => {

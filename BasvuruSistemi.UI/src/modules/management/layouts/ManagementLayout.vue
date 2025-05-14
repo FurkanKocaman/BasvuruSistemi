@@ -18,7 +18,9 @@ watch(
 </script>
 
 <template>
-  <div class="dark:bg-gray-900 bg-gray-100 w-screen h-screen overflow-hidden flex flex-col">
+  <div
+    class="dark:bg-gray-900 bg-gray-100 min-h-[100dvh] w-full h-full overflow-hidden flex flex-col"
+  >
     <!-- Sabit Header -->
     <div class="flex-shrink-0">
       <ManagementHeader />

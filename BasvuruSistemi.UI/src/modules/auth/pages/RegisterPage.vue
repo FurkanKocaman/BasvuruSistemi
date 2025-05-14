@@ -1,12 +1,66 @@
 <script setup lang="ts">
 import { useThemeStore } from "@/stores/theme";
-import { computed, onMounted } from "vue";
+import { computed, onMounted, Ref, ref } from "vue";
+import { RegisterRequest } from "../types/RegisterReqeust";
+import DatePicker from "primevue/datepicker";
+import countryService from "../services/country.service";
+import { useDropdown } from "@/modules/management/composables/useDropdown";
+import AuthService from "../services/AuthService";
+import { useRouter } from "vue-router";
 
 const themeStore = useThemeStore();
-
 const currentTheme = computed(() => themeStore.currentTheme);
 
-onMounted(() => {});
+const router = useRouter();
+
+const nationalityDropdown = useDropdown();
+
+const countries = ref<{ name: string; flag: string }[]>([]);
+
+const request: Ref<RegisterRequest> = ref({
+  firstName: "",
+  lastName: "",
+  email: "",
+  password: "",
+  nationality: undefined,
+  tckn: undefined,
+  birthOfDate: new Date(),
+  address: {
+    country: undefined,
+    city: undefined,
+    district: undefined,
+    street: undefined,
+    fullAddress: undefined,
+    postalCode: undefined,
+  },
+  contact: {
+    email: undefined,
+    phone: undefined,
+  },
+});
+
+const getCountries = async () => {
+  countries.value = await countryService.getCountries();
+};
+
+onMounted(() => {
+  getCountries();
+});
+
+const selectCountry = (country: string) => {
+  request.value.nationality = country;
+};
+
+const onSubmit = async () => {
+  request.value.contact.email = request.value.email;
+  request.value.address.country = request.value.nationality;
+  request.value.birthOfDate = new Date(request.value.birthOfDate.toISOString().split("T")[0]);
+  console.log(request.value);
+  const res = await AuthService.register(request.value);
+  if (res) {
+    router.push({ name: "Jobs" });
+  }
+};
 
 type Theme = "light" | "dark" | "system";
 const setTheme = (theme: Theme) => {
@@ -19,7 +73,7 @@ const setTheme = (theme: Theme) => {
       class="w-full md:w-[50dvw] xl:w-[50dvw] bg-neutral-100 dark:bg-gray-900 h-full flex flex-col justify-center items-center"
     >
       <div class="flex-1 flex items-center justify-center h-full min-w-[50%]">
-        <form class="px-10 w-full">
+        <form class="px-10 w-full" @submit.prevent="onSubmit()">
           <div
             class="w-full py-5 mb-5 text-3xl text-neutral-700 dark:text-neutral-200 font-semibold text-left select-none"
           >
@@ -28,8 +82,8 @@ const setTheme = (theme: Theme) => {
               Kişisel bilgilerinizle kayıt olun!
             </p>
           </div>
-          <div class="flex flex-row">
-            <div class="mb-5 mr-2">
+          <div class="flex flex-row justify-between mb-5">
+            <div class="flex-1 mr-3">
               <label
                 for="firstName"
                 class="block mb-2 text-sm font-medium text-neutral-600 dark:text-neutral-300 select-none"
@@ -39,12 +93,13 @@ const setTheme = (theme: Theme) => {
                 type="text"
                 id="firstName"
                 name="firstName"
+                v-model="request.firstName"
                 placeholder="Adınızı girin"
                 class="border font-normal border-neutral-300 dark:border-gray-700 focus:border-indigo-500 focus:shadow-xl text-neutral-700 text-sm rounded-md outline-none bg-transparent dark:text-gray-200 block w-full p-3"
                 required
               />
             </div>
-            <div class="mb-5 ml-2">
+            <div class="flex-1 ml-3">
               <label
                 for="lastName"
                 class="block mb-2 text-sm font-medium text-neutral-600 dark:text-neutral-300 select-none"
@@ -54,10 +109,68 @@ const setTheme = (theme: Theme) => {
                 type="text"
                 id="lastName"
                 name="lastName"
+                v-model="request.lastName"
                 placeholder="Soyadınızı girin"
                 class="border font-normal border-neutral-300 dark:border-gray-700 focus:border-indigo-500 focus:shadow-xl text-neutral-700 text-sm rounded-md outline-none bg-transparent dark:text-gray-200 block w-full p-3"
                 required
               />
+            </div>
+          </div>
+          <div class="flex flex-row justify-between mb-5">
+            <div class="flex-1 mr-3">
+              <label
+                for="birthOfDate"
+                class="block mb-2 text-sm font-medium text-neutral-600 dark:text-neutral-300 select-none"
+                >Doğum Tarihi</label
+              >
+              <DatePicker
+                input-id="birthOfDate"
+                v-model="request.birthOfDate"
+                class="!w-full !border !outline-none !rounded-md dark:!border-gray-700 !border-neutral-300 !py-1.5 !px-2 !bg-transparent focus:!border-indigo-600"
+                inputClass="!text-start !text-sm  !text-gray-800 dark:!text-gray-200 !py-1.5 "
+                panel-class="dark:!bg-gray-900 !bg-gray-50 dark:!text-gray-200 !border !outline-none !rounded-md dark:!border-gray-700 !border-gray-200 !p-3"
+                showButtonBar
+                showIcon
+              />
+            </div>
+            <div class="flex-1 flex flex-col ml-3">
+              <label
+                for="organizaitonName"
+                class="w-full text-sm my-1 dark:text-gray-300 text-gray-600"
+                >Ülke</label
+              >
+              <input
+                type="text"
+                name="organizaitonName"
+                id="organizaitonName"
+                autocomplete="off"
+                :ref="nationalityDropdown.inputRef"
+                v-model="nationalityDropdown.selectedLabel.value"
+                @focus="nationalityDropdown.handleFocus"
+                @blur="nationalityDropdown.handleBlur"
+                readonly
+                placeholder="Ülke seçin..."
+                class="border font-normal border-neutral-300 dark:border-gray-700 focus:border-indigo-500 focus:shadow-xl text-neutral-700 text-sm rounded-md outline-none bg-transparent dark:text-gray-200 block w-full p-3"
+              />
+              <div
+                v-if="nationalityDropdown.isOpen.value"
+                class="absolute w-fit mt-20 text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow z-10 max-h-60 overflow-auto"
+              >
+                <div
+                  v-for="(country, index) in countries"
+                  :key="index"
+                  @mousedown.prevent="
+                    () => {
+                      nationalityDropdown.selectOption(country.name);
+                      selectCountry(country.name);
+                    }
+                  "
+                  class="px-4 py-2 hover:bg-gray-300/30 dark:hover:bg-gray-700/40 cursor-pointer text-sm flex items-center"
+                >
+                  <img :src="country.flag" alt="" class="size-5 rounded-xs object-cover mr-3" />
+                  {{ country.name }}
+                </div>
+              </div>
             </div>
           </div>
 
@@ -71,6 +184,7 @@ const setTheme = (theme: Theme) => {
               type="text"
               id="emailOrUsername"
               name="emailOrUsername"
+              v-model="request.email"
               placeholder="E-posta girin"
               class="border font-normal border-neutral-300 dark:border-gray-700 focus:border-indigo-500 focus:shadow-xl text-neutral-700 text-sm rounded-md outline-none bg-transparent dark:text-gray-200 block w-full p-3"
               required
@@ -86,6 +200,7 @@ const setTheme = (theme: Theme) => {
               type="password"
               id="password"
               name="password"
+              v-model="request.password"
               placeholder="******"
               class="border font-normal border-neutral-300 dark:border-gray-700 focus:border-indigo-500 focus:shadow-xl text-neutral-700 text-sm rounded-md outline-none bg-transparent dark:text-gray-200 block w-full p-3"
               required

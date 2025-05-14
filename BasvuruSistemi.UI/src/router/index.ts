@@ -94,6 +94,23 @@ const router = createRouter({
             },
           ],
         },
+        {
+          path: "applications",
+          name: "applications",
+          redirect: { name: "applications-list" },
+          children: [
+            {
+              path: "",
+              name: "applications-list",
+              component: () => import("@/modules/management/pages/ApplicationsPage.vue"),
+            },
+            {
+              path: "detail/:id",
+              name: "application-detail",
+              component: () => import("@/modules/management/pages/ApplicationDetailPage.vue"),
+            },
+          ],
+        },
       ],
     },
   ],

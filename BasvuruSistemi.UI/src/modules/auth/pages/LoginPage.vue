@@ -3,8 +3,10 @@ import { useThemeStore } from "@/stores/theme";
 import { computed, onMounted, ref, type Ref } from "vue";
 import type { LoginRequest } from "../types/LoginRequest";
 import AuthService from "../services/AuthService";
+import { useRouter } from "vue-router";
 
 const themeStore = useThemeStore();
+const router = useRouter();
 
 const request: Ref<LoginRequest> = ref({
   usernameOrEmail: "",
@@ -21,7 +23,10 @@ const setTheme = (theme: Theme) => {
 };
 
 async function login() {
-  await AuthService.login(request.value);
+  const res = await AuthService.login(request.value);
+  if (res) {
+    router.push({ name: "Jobs" });
+  }
 }
 </script>
 <template>
