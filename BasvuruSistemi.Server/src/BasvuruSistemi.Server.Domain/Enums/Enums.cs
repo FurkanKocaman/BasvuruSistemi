@@ -30,7 +30,8 @@ public enum ApplicationStatus
     Expired = 5,        // İlan süresi geçti, otomatik reddedildi
     InterviewScheduled = 6,
     OfferMade = 7,      // İş teklifi yapıldı
-    Hired = 8           // Süreç tamamlandı
+    Hired = 8,           // Süreç tamamlandı
+    JobPostingClosed = 9,
 }
 
 public enum VerificationStatus

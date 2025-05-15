@@ -12,6 +12,7 @@ public sealed record UnitCreateCommand(
     ) : IRequest<Result<string>>;
 
 internal sealed class UnitCreateCommandHandler(
+    IAuthorizationService authorizationService,
     IUnitRepository unitRepository,
     ICurrentUserService currentUserService,
     IUnitOfWork unitOfWork
@@ -19,9 +20,17 @@ internal sealed class UnitCreateCommandHandler(
 {
     public async Task<Result<string>> Handle(UnitCreateCommand request, CancellationToken cancellationToken)
     {
+        Guid? userId = currentUserService.TenantId;
+        if (!userId.HasValue)
+            return Result<string>.Failure(404,"user not found");
+
         Guid? tenantId = currentUserService.TenantId;
         if (!tenantId.HasValue)
-            return Result<string>.Failure("Tenant not found");
+            return Result<string>.Failure(404,"Tenant not found");
+
+        var isAuthorized = await authorizationService.IsTenantManagerAsync(tenantId.Value, userId.Value, cancellationToken);
+        if(!isAuthorized)
+            return Result<string>.Failure(403, "You do not have permission to create unit");
 
         var unitExist = await unitRepository.AnyAsync(p => p.TenantId == tenantId.Value && p.Name == request.name && !p.IsDeleted);
 

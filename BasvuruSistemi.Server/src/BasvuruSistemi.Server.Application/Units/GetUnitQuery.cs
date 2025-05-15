@@ -1,11 +1,12 @@
 ﻿using BasvuruSistemi.Server.Application.Services;
 using BasvuruSistemi.Server.Domain.Units;
 using MediatR;
+using TS.Result;
 
 namespace BasvuruSistemi.Server.Application.Units;
 public sealed record GetUnitQuery(
     Guid unitId
-    ) : IRequest<GetUnitQueryResponse>;
+    ) : IRequest<GetUnitQueryResponse?>;
 
 public sealed class GetUnitQueryResponse
 {
@@ -17,25 +18,33 @@ public sealed class GetUnitQueryResponse
 
 internal sealed class GetUnitQueryHandler(
     IUnitRepository unitRepository,
-    ICurrentUserService currentUserService
-    ) : IRequestHandler<GetUnitQuery, GetUnitQueryResponse>
+    ICurrentUserService currentUserService,
+    IAuthorizationService authorizationService
+    ) : IRequestHandler<GetUnitQuery, GetUnitQueryResponse?>
 {
-    public Task<GetUnitQueryResponse> Handle(GetUnitQuery request, CancellationToken cancellationToken)
+    public async Task<GetUnitQueryResponse?> Handle(GetUnitQuery request, CancellationToken cancellationToken)
     {
-        Guid? tenantId = currentUserService.TenantId;
+        Guid? userId = currentUserService.TenantId;
+        if (!userId.HasValue)
+            return null;
 
-        if(!tenantId.HasValue)
-            return Task.FromResult<GetUnitQueryResponse>(null!);
+        Guid? tenantId = currentUserService.TenantId;
+        if (!tenantId.HasValue)
+            return null;
+
+        var isAuthorized = await authorizationService.IsTenantManagerAsync(tenantId.Value, userId.Value, cancellationToken);
+        if (!isAuthorized)
+            return null;
 
         var allUnits = unitRepository.Where(p => !p.IsDeleted && p.TenantId == tenantId.Value).ToList();
 
         var rootUnit = allUnits.FirstOrDefault(p => p.Id == request.unitId);
         if (rootUnit is null)
-            return Task.FromResult<GetUnitQueryResponse>(null!);
+            return null;
 
         var response = MapToResponseRecursive(rootUnit, allUnits);
 
-        return Task.FromResult(response);
+        return response;
     }
 
     private GetUnitQueryResponse MapToResponseRecursive(Domain.Units.Unit unit, List<Domain.Units.Unit> allUnits)

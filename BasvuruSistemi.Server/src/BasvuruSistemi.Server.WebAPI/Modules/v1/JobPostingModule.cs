@@ -1,4 +1,5 @@
 ﻿using BasvuruSistemi.Server.Application.JobPostings;
+using BasvuruSistemi.Server.Application.PostingGroups;
 using BasvuruSistemi.Server.Domain.DTOs;
 using MediatR;
 using TS.Result;
@@ -36,6 +37,8 @@ public static class JobPostingModule
                return response.IsSuccessful ? Results.Ok(response) : Results.InternalServerError(response);
            })
            .RequireAuthorization().Produces<Result<string>>();
+
+
 
     }
 }

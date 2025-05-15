@@ -8,22 +8,20 @@ using MediatR;
 using TS.Result;
 
 namespace BasvuruSistemi.Server.Application.FormTemplates;
-public sealed record FormTemplateCreateCommand(
-    string name,
-    string? description,
+public sealed record FormTemplateCreateTempCommand(
     List<FormFieldDefinitionDto> fields
     ) : IRequest<Result<string>>;
 
-internal sealed class FormTemplateCreateCommandHandler(
+internal sealed class FormTemplateCreateTempCommandHandler(
     IFormTemplateRepository formTemplateRepository,
     ICurrentUserService currentUserService,
     IFormFieldDefinitionRepository formFieldDefinitionRepository,
     IUnitOfWork unitOfWork
-    ) : IRequestHandler<FormTemplateCreateCommand, Result<string>>
+    ) : IRequestHandler<FormTemplateCreateTempCommand, Result<string>>
 {
-    public async Task<Result<string>> Handle(FormTemplateCreateCommand request, CancellationToken cancellationToken)
+    public async Task<Result<string>> Handle(FormTemplateCreateTempCommand request, CancellationToken cancellationToken)
     {
-        using(var transaction = unitOfWork.BeginTransaction())
+        using (var transaction = unitOfWork.BeginTransaction())
         {
             try
             {
@@ -32,7 +30,7 @@ internal sealed class FormTemplateCreateCommandHandler(
                 if (!tenantId.HasValue)
                     return Result<string>.Failure("Tenant not found");
 
-                ApplicationFormTemplate applicationFormTemplate = new(tenantId.Value, request.name, request.description,true);
+                ApplicationFormTemplate applicationFormTemplate = new(tenantId.Value, Guid.CreateVersion7().ToString()+"TempFormTemplate",null, false);
 
                 formTemplateRepository.Add(applicationFormTemplate);
 
@@ -68,11 +66,11 @@ internal sealed class FormTemplateCreateCommandHandler(
 
                 return Result<string>.Succeed("Template created successfully");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 await unitOfWork.RollbackTransactionAsync(transaction);
-                return Result<string>.Failure("An error occurred while creating the template :" +ex);
+                return Result<string>.Failure("An error occurred while creating the template :" + ex);
             }
-         }
+        }
     }
 }

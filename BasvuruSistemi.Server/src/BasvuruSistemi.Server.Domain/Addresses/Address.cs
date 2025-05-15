@@ -26,6 +26,15 @@ public sealed class Address : Entity
         FullAddress = fullAdress;
         UserId = userId;
     }
+    public void Update(string? street, string? district, string? city, string? country, string? postalCode, string? fullAdress)
+    {
+        Street = street;
+        District = district;
+        City = city;
+        Country = country;
+        PostalCode = postalCode;
+        FullAddress = fullAdress;
+    }
 
     public override string ToString() =>
         $"{Street}, {District}, {City},{FullAddress} / {PostalCode}";

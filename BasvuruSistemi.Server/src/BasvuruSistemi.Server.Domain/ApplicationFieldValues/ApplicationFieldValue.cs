@@ -20,4 +20,8 @@ public sealed class ApplicationFieldValue : Entity
         FieldDefinitionId = fieldDefinitionId;
         Value = value;
     }
+    public void Update(string? value)
+    {
+        Value = value;
+    }
 }

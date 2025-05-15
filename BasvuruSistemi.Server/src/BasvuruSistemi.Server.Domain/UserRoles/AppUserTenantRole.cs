@@ -30,4 +30,9 @@ public class AppUserTenantRole
         RoleId = roleId;
         UnitId = unitId;
     }
+    public void Update(Guid roleId, Guid? unitId)
+    {
+        RoleId = roleId;
+        UnitId = unitId;
+    }
 }

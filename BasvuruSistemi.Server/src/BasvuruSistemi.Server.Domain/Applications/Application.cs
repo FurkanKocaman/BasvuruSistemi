@@ -4,6 +4,7 @@ using BasvuruSistemi.Server.Domain.Enums;
 using BasvuruSistemi.Server.Domain.JobPostings;
 using BasvuruSistemi.Server.Domain.Users;
 using Microsoft.EntityFrameworkCore.Query.Internal;
+using Microsoft.EntityFrameworkCore.Update.Internal;
 
 namespace BasvuruSistemi.Server.Domain.Applications;
 public sealed class Application : Entity
@@ -33,7 +34,6 @@ public sealed class Application : Entity
         Status = status;
         FieldValues = new List<ApplicationFieldValue>();
     }
-
     //public void Reject() => Status = ApplicationStatus.Rejected;
     //public void Accept() => Status = ApplicationStatus.Approved;
     //public void Withdrawn() => Status = ApplicationStatus.Withdrawn;

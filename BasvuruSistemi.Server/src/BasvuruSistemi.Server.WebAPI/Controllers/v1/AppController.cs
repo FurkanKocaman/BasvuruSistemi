@@ -5,10 +5,8 @@ using BasvuruSistemi.Server.Application.JobPostings;
 using BasvuruSistemi.Server.Application.Tenants;
 using BasvuruSistemi.Server.Application.Units;
 using BasvuruSistemi.Server.Application.Users;
-using BasvuruSistemi.Server.Domain.DTOs;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using TS.Result;
 

@@ -16,7 +16,17 @@ public static class FormTemplateModule
                 var response = await sender.Send(request, cancellationToken);
                 return response.IsSuccessful ? Results.Ok(response) : Results.InternalServerError(response);
             })
-            .RequireAuthorization().Produces<Result<string>>();
+            .RequireAuthorization().Produces<Result<string>>().WithName("FormTemplateCreate");
+
+
+        group.MapPost("temp",
+            async (ISender sender, FormTemplateCreateTempCommand request, CancellationToken cancellationToken) =>
+            {
+                var response = await sender.Send(request, cancellationToken);
+                return response.IsSuccessful ? Results.Ok(response) : Results.InternalServerError(response);
+            })
+            .RequireAuthorization().Produces<Result<string>>().WithName("FormTemplateCreateTemp");
+
 
         group.MapPut("update/{id}",
            async (ISender sender,Guid id, FormTemplateUpdateCommand request, CancellationToken cancellationToken) =>
@@ -26,6 +36,6 @@ public static class FormTemplateModule
                var response = await sender.Send(request, cancellationToken);
                return response.IsSuccessful ? Results.Ok(response) : Results.InternalServerError(response);
            })
-           .RequireAuthorization().Produces<Result<string>>();
+           .RequireAuthorization().Produces<Result<string>>().WithName("FormTemplateUpdate");
     }
 }

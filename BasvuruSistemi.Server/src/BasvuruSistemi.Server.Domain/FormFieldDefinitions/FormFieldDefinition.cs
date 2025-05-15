@@ -1,6 +1,6 @@
 ﻿using BasvuruSistemi.Server.Domain.Abstractions;
 using BasvuruSistemi.Server.Domain.ApplicationFormTemplates;
-using BasvuruSistemi.Server.Domain.Enums; // Enum'ları ekledik
+using BasvuruSistemi.Server.Domain.Enums;
 
 namespace BasvuruSistemi.Server.Domain.FormFieldDefinitions;
 

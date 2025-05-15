@@ -12,9 +12,10 @@ public sealed record GetAuthorizedUnitsQuery(
 
 public sealed class GetAuthorizedUnitsQueryResponse
 {
-    public string Type { get; set; } = default!;
-    public Guid Id { get; set; }
+    public Guid? ParentId { get; set; }
+    public Guid? Id { get; set; }
     public string Name { get; set; } = default!;
+    public string? Code { get; set; }
 }
 
 internal sealed class GetAuthorizedUnitsQueryhandler(
@@ -46,19 +47,23 @@ internal sealed class GetAuthorizedUnitsQueryhandler(
 
         if (userTenantRoles.Any(p => p.Role.Name == Roles.Admin.Name || p.Role.Name == Roles.TenantManager.Name))
         {
-            response = allUnits.Select(c => new GetAuthorizedUnitsQueryResponse
-            {
-                Type = "Unit",
-                Id = c.Id,
-                Name = c.Name,
-            }).ToList();
 
             response.Add(new GetAuthorizedUnitsQueryResponse
             {
-                Type = "Tenant",
+                ParentId = null,
                 Id = tenantId.Value,
                 Name = tenant.Name,
+                Code = tenant.Code,
             });
+
+            response.AddRange(allUnits.Select(c => new GetAuthorizedUnitsQueryResponse
+            {
+                ParentId = c.ParentId,
+                Id = c.Id,
+                Name = c.Name,
+                Code = c.Code,
+            }).ToList());
+
         }
         else if (userTenantRoles.Any(p => p.Role.Name == Roles.UnitManager.Name))
         {
@@ -68,17 +73,19 @@ internal sealed class GetAuthorizedUnitsQueryhandler(
             {
                 response.Add(new GetAuthorizedUnitsQueryResponse
                 {
-                    Type = "Unit",
+                    ParentId = unit.ParentId,
                     Id = unit.Id,
                     Name = unit.Name,
+                    Code = unit.Code,
                 });
                 foreach(var children in unit.Children)
                 {
                     response.Add(new GetAuthorizedUnitsQueryResponse
                     {
-                        Type = "Unit",
+                        ParentId = children.ParentId,
                         Id = children.Id,
                         Name = children.Name,
+                        Code = children.Code,
                     });
                 }
             }

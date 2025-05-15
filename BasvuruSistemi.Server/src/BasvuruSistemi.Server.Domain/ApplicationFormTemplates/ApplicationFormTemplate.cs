@@ -11,13 +11,16 @@ public sealed class ApplicationFormTemplate : Entity
     public string Name { get; private set; } = default!;
     public string? Description { get; private set; }
 
+    public bool IsSaved { get;private set; }
+
     public ICollection<FormFieldDefinition> FieldDefinitions { get; private set; } = new List<FormFieldDefinition>();
     private ApplicationFormTemplate() { }
-    public ApplicationFormTemplate(Guid tenantId, string name, string? description)
+    public ApplicationFormTemplate(Guid tenantId, string name, string? description, bool isSaved)
     {
         TenantId = tenantId;
         Name = name;
         Description = description;
+        IsSaved = isSaved;
     }
 
     public void Update(string name, string? description)

@@ -25,7 +25,7 @@ internal sealed class GetAllFormTemplatesQueryHandler(
         if (!tenantId.HasValue)
             return Task.FromResult(new PagedResult<GetFormTemplateQueryResponse>(new List<GetFormTemplateQueryResponse>(),0,0,0));
 
-        var templates = formTemplateRepository.Where(p => p.TenantId == tenantId && !p.IsDeleted).Include(p => p.FieldDefinitions);
+        var templates = formTemplateRepository.Where(p => p.TenantId == tenantId && !p.IsDeleted && p.IsSaved).Include(p => p.FieldDefinitions);
 
         var totalCount = templates.Count();
 

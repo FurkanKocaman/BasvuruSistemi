@@ -8,7 +8,8 @@ using TS.Result;
 namespace BasvuruSistemi.Server.Application.ApplicationFieldsValues;
 public sealed record UploadFileByFieldCommand(
     Guid formFieldId,
-    IFormFile file
+    IFormFile file,
+    Guid applicationId
     ) : IRequest<Result<string>>;
 
 internal sealed class UploadFileByFieldCommandhandler(
@@ -36,7 +37,7 @@ internal sealed class UploadFileByFieldCommandhandler(
         if (!allowedExtensions.Contains(extension))
             return Result<string>.Failure("İnvalid file extension.");
 
-        var uploadsRoot = Path.Combine(webHostEnvironment.WebRootPath, "uploads", "application_files", userId.Value.ToString());
+        var uploadsRoot = Path.Combine(webHostEnvironment.WebRootPath, "uploads", "application_files",request.applicationId.ToString(), userId.Value.ToString());
 
         if (!Directory.Exists(uploadsRoot))
             Directory.CreateDirectory(uploadsRoot);

@@ -235,4 +235,9 @@ public sealed class JobPosting : Entity
             .Select(id => id.Trim())
             .Where(id => !string.IsNullOrWhiteSpace(id) && id.Length == 11)); // T.C. No 11 hanelidir
     }
+
+    public void JoinGroup(Guid postingGroupId)
+    {
+        PostingGroupId = postingGroupId;
+    }
 }

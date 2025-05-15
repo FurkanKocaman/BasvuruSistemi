@@ -23,7 +23,7 @@ internal sealed class GetFormTemplateSummariesQueryHandler(
         if(!tenantId.HasValue)
             return Task.FromResult(new List<GetFormTemplateSummariesQueryResponse>());
 
-        var formTemplates = formTemplateRepository.Where(p => p.TenantId == tenantId && !p.IsDeleted).ToList();
+        var formTemplates = formTemplateRepository.Where(p => p.TenantId == tenantId && !p.IsDeleted && p.IsSaved).ToList();
 
         var response = formTemplates.Select(formTemplate => new GetFormTemplateSummariesQueryResponse
         {
