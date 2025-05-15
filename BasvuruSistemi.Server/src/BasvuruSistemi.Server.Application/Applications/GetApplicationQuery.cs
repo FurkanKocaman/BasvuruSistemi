@@ -1,5 +1,6 @@
 ﻿using BasvuruSistemi.Server.Domain.Applications;
 using BasvuruSistemi.Server.Domain.DTOs;
+using BasvuruSistemi.Server.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting.Internal;
@@ -36,7 +37,7 @@ public sealed class GetApplicationQueryResponse
     public string Unit { get; set; } = default!;
 
     public DateTimeOffset AppliedDate { get; set; }
-    public string Status { get; set; } = default!;
+    public ApplicationStatus Status { get; set; } = default!;
     public DateTimeOffset? ReviewDate { get; set; }
     public string? ReviewDescription { get; set; }
 
@@ -66,6 +67,9 @@ internal sealed class GetApplicationQueryHandler(
         if (application is null)
             return Task.FromResult(Result<GetApplicationQueryResponse>.Failure("Application not found."));
 
+        var totalApplicationCount = applicationRepository.Where(p => p.JobPostingId == application.JobPostingId && !p.IsDeleted).Count();
+
+
         var response = new GetApplicationQueryResponse
         {
             Id = application.Id,
@@ -88,15 +92,15 @@ internal sealed class GetApplicationQueryHandler(
             JobPostingTitle = application.JobPosting.Title,
             JobPostingCreateDate = application.JobPosting.CreatedAt,
             JobPostingVacancyCount = application.JobPosting.VacancyCount,
-            TotalApplicationCount = 12,
+            TotalApplicationCount = totalApplicationCount,
             Unit = application.JobPosting.Unit != null ? application.JobPosting.Unit.Name : application.JobPosting.Tenant.Name ,
 
             AppliedDate = application.AppliedDate,
-            Status = application.Status.ToString(),
+            Status = application.Status,
             ReviewDate = application.ReviewDate,
             ReviewDescription = application.ReviewDescription,
 
-            FieldValues = application.FieldValues.Select(p => new FieldValueResponseDto(
+            FieldValues = application.FieldValues.OrderBy(p => p.FieldDefinition.Order).Select(p => new FieldValueResponseDto(
                 p.FieldDefinitionId,
                 p.FieldDefinition.Label,
                 p.FieldDefinition.Type,

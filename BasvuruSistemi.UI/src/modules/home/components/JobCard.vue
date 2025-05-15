@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { defineProps, defineComponent } from "vue";
 import { GetActiveJobPostingsQueryResponse } from "../models/active-job-posting.model";
+import applicationService from "../services/application.service";
+import { useRouter } from "vue-router";
 
 // TypeScript için Vue bileşeni tanımlama
 defineComponent({
@@ -13,8 +15,10 @@ defineComponent({
   },
 });
 
+const router = useRouter();
+
 // Component prop tanımlaması
-defineProps<{
+const props = defineProps<{
   job: GetActiveJobPostingsQueryResponse;
 }>();
 
@@ -23,11 +27,18 @@ const formatDate = (dateString: string): string => {
   const options: Intl.DateTimeFormatOptions = { year: "numeric", month: "long", day: "numeric" };
   return new Date(dateString).toLocaleDateString("tr-TR", options);
 };
+
+const navigateApplication = async () => {
+  const res = await applicationService.checkApplicationExist(props.job.id);
+  if (res.data) {
+    router.push({ name: "JobApplication", params: { id: props.job.id } });
+  }
+};
 </script>
 
 <template>
   <div
-    class="bg-gray-50 dark:bg-gray-800/40 rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-300 border border-gray-200 dark:border-gray-700"
+    class="bg-gray-50 dark:bg-gray-800/40 rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-300 border border-gray-200 dark:border-gray-700 min-h-[25rem] flex flex-col justify-between"
   >
     <!-- İş kartı başlık bölümü -->
     <div class="flex justify-between items-start mb-4">
@@ -68,9 +79,9 @@ const formatDate = (dateString: string): string => {
 
     <!-- Başvur butonu -->
     <div class="flex justify-end">
-      <router-link
-        :to="{ name: 'JobApplication', params: { id: job.id } }"
+      <button
         class="inline-flex items-center px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white text-sm font-medium rounded-lg hover:bg-blue-700 dark:hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors duration-200"
+        @click="navigateApplication()"
       >
         Başvur
         <svg
@@ -87,7 +98,7 @@ const formatDate = (dateString: string): string => {
             d="M14 5l7 7m0 0l-7 7m7-7H3"
           />
         </svg>
-      </router-link>
+      </button>
     </div>
   </div>
 </template>

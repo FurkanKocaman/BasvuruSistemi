@@ -8,7 +8,6 @@ const themeStore = useThemeStore();
 
 onMounted(() => {
   themeStore.initTheme();
-  fetchCurrentUser();
 });
 </script>
 

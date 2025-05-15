@@ -18,18 +18,14 @@ import {
 
 const editor = ref<Editor | null>(null);
 
-onMounted(() => {
-  createEditor();
-});
-
-defineProps<{ modelValue: string; label: string }>();
+const props = defineProps<{ modelValue: string; label: string }>();
 const emit = defineEmits<{
   (e: "update:modelValue", value: string): void;
 }>();
 
 const createEditor = () => {
   editor.value = new Editor({
-    content: "",
+    content: props.modelValue ?? "",
     extensions: [
       StarterKit,
       Underline,
@@ -49,7 +45,10 @@ const createEditor = () => {
     },
   });
 };
-
+onMounted(() => {
+  console.log("ModelValue", props.modelValue);
+  createEditor();
+});
 onBeforeUnmount(() => {
   editor.value?.destroy();
 });

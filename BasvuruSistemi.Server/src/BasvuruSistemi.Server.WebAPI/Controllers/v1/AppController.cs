@@ -10,6 +10,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using TS.Result;
 
 namespace BasvuruSistemi.Server.WebAPI.Controllers.v1;
 [Route("v1/api/")]
@@ -136,6 +137,16 @@ public class AppController(ISender sender) : ControllerBase
     CancellationToken cancellationToken = default)
     {
         var response = await sender.Send(new GetApplicationQuery(applicationId), cancellationToken);
+        return Ok(response);
+    }
+
+    [HttpGet("applications/check-existing/{jobPostingId}")]
+    [Authorize()]
+    public async Task<ActionResult<Result<bool>>> CheckApplicationExist(
+    Guid jobPostingId,
+    CancellationToken cancellationToken = default)
+    {
+        var response = await sender.Send(new CheckApplicationExistsQuery(jobPostingId), cancellationToken);
         return Ok(response);
     }
 

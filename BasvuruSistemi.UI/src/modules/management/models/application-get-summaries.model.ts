@@ -3,8 +3,9 @@ export interface ApplicationGetSummariesModel {
   userId: string;
   userFullName: string;
   tckn?: string;
+  jobPosting: string;
   appliedDate: string;
-  status: string;
+  status: number;
   reviewDate?: string;
   reviewDescription?: string;
 }

@@ -109,7 +109,7 @@ const submitForm = async () => {
   } else {
     await applicationService.createApplication(request.value);
 
-    router.push({ name: "/jobs" });
+    router.push("/jobs");
   }
 };
 </script>

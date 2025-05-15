@@ -1,15 +1,18 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import applicationService from "@/services/application.service";
+import ApplicationManagementService from "../services/application.service";
 import { useRoute } from "vue-router";
 import { ApplicationGetDetailModel } from "../models/application-get-detail.model";
 import { getFieldTypeOptionByValue } from "@/models/constants/field-type";
+import ConfirmModal from "@/components/ConfirmModal.vue";
+import { getApplicationStatusOptionByValue } from "@/models/constants/application-status";
 
 const route = useRoute();
 const id = route.params.id as string | undefined;
 
-const isReviewModalOpen = ref<boolean>(false);
-const isApplicationApproved = ref<boolean>(false);
+const confirmModal = ref();
+const modalTitle = ref("");
 
 const apiUrl = import.meta.env.VITE_API_PUBLIC_URL;
 
@@ -21,7 +24,7 @@ const application = ref<ApplicationGetDetailModel>({
   firstName: "",
   lastName: "",
   appliedDate: "",
-  status: "",
+  status: 0,
   fieldValues: [],
   jobPostingCreateDate: "",
   unit: "",
@@ -41,6 +44,25 @@ const getApplicationDetail = async () => {
   }
 };
 
+const reviewApplication = async (id: string, status: number) => {
+  if (status == 2) {
+    modalTitle.value = "Başvuruyu onaylamak istediğinize emin misiniz?";
+  } else {
+    modalTitle.value = "Başvuruyu reddetmek istediğinize emin misiniz?";
+  }
+  const result = await confirmModal.value.open();
+  if (result) {
+    await ApplicationManagementService.reviewApplication(
+      id,
+      status,
+      application.value.reviewDescription
+    );
+    getApplicationDetail();
+  } else {
+    console.log("Kullanıcı iptal etti.");
+  }
+};
+
 function formatDateTime(value: string): string {
   const date = new Date(value);
 
@@ -57,105 +79,8 @@ function formatDateTime(value: string): string {
 
 <template>
   <main class="w-full h-full px-30 pt-20 pb-20">
-    <!-- Modal start -->
-    <div
-      class="relative ease-in-out transition-all duration-1000"
-      :class="!isReviewModalOpen ? 'hidden' : 'block'"
-    >
-      <div
-        class="fixed z-[50] inset-0 bg-gray-500/75 transition-opacity duration-500 ease-in-out"
-        :class="isReviewModalOpen ? 'opacity-100 visible' : 'opacity-0 invisible'"
-      ></div>
+    <ConfirmModal ref="confirmModal" :title="modalTitle" description="Bu işlem geri alınamaz." />
 
-      <div
-        class="fixed inset-0 z-[99] w-screen overflow-y-auto transition-all duration-500 ease-in-out"
-        :class="
-          isReviewModalOpen ? 'opacity-100 scale-100 visible' : 'opacity-0 scale-95 invisible'
-        "
-        @click="
-          () => {
-            isReviewModalOpen = false;
-          }
-        "
-      >
-        <div
-          class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0"
-        >
-          <div
-            class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg"
-          >
-            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-              <div class="sm:flex sm:items-start">
-                <div
-                  class="mx-auto flex size-12 shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:size-10"
-                >
-                  <svg
-                    class="size-6 text-red-600"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke-width="1.5"
-                    stroke="currentColor"
-                    aria-hidden="true"
-                    data-slot="icon"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"
-                    />
-                  </svg>
-                </div>
-                <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                  <h3 class="text-base font-semibold text-gray-900" id="modal-title">
-                    {{
-                      isApplicationApproved
-                        ? "Başvuruyu Onaylamak İstediğinize Emin Misiniz?"
-                        : "Başvuruyu Reddetmek İstediğinize Emin Misiniz?"
-                    }}
-                  </h3>
-                  <div class="mt-2">
-                    <p class="text-sm text-gray-500">
-                      Başvuruyu sonradan tekrar değerlendirebilirsiniz fakat kullanıcıya
-                      değerlendirilme e-postası gönderilecektir.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-              <button
-                type="button"
-                class="inline-flex w-full justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-xs sm:ml-3 sm:w-auto cursor-pointer"
-                :class="
-                  isApplicationApproved
-                    ? 'bg-green-600 hover:bg-green-500'
-                    : 'bg-red-600 hover:bg-red-500'
-                "
-                @click.stop="
-                  () => {
-                    isReviewModalOpen = false;
-                  }
-                "
-              >
-                {{ isApplicationApproved ? "Onayla" : "Reddet" }}
-              </button>
-              <button
-                type="button"
-                class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50 sm:mt-0 sm:w-auto cursor-pointer"
-                @click.stop="
-                  () => {
-                    isReviewModalOpen = false;
-                  }
-                "
-              >
-                İptal
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- Modal end -->
     <div class="w-full h-full flex flex-col dark:bg-gray-800/40 bg-gray-50 rounded-lg px-10 py-10">
       <div
         class="w-full h-full border dark:border-gray-800 border-gray-200 rounded-lg mb-5 py-3 px-5 flex items-center"
@@ -280,7 +205,9 @@ function formatDateTime(value: string): string {
               <label class="text-xs dark:text-gray-400 text-gray-700 mb-1.5"
                 >Toplam Başvuru Sayısı</label
               >
-              <span class="dark:text-gray-200 text-gray-800">150 </span>
+              <span class="dark:text-gray-200 text-gray-800"
+                >{{ application.totalApplicationCount }}
+              </span>
             </div>
           </div>
         </div>
@@ -288,7 +215,26 @@ function formatDateTime(value: string): string {
       <div
         class="w-full border dark:border-gray-800 border-gray-200 rounded-lg mb-5 py-3 px-5 flex flex-col items-start"
       >
-        <span class="text-lg dark:text-gray-100 font-semibold">Başvuru Bilgileri</span>
+        <div class="flex justify-between w-full items-center">
+          <span class="flex-1 text-lg dark:text-gray-100 font-semibold">Başvuru Bilgileri</span>
+
+          <span
+            class="text-sm px-2 py-1 rounded-md text-white"
+            :class="
+              application.status == 0
+                ? 'bg-yellow-600'
+                : application.status == 1
+                ? 'bg-blue-600'
+                : application.status == 2
+                ? 'bg-green-600'
+                : application.status == 3
+                ? 'bg-red-500'
+                : 'bg-indigo-500'
+            "
+            >{{ getApplicationStatusOptionByValue(application.status)?.label }}</span
+          >
+        </div>
+
         <div class="mt-5 w-full">
           <table class="w-full text-sm table-auto">
             <thead class="">
@@ -380,8 +326,11 @@ function formatDateTime(value: string): string {
                     :href="apiUrl + field.value"
                     class="text-blue-500"
                     target="_blank"
-                    >{{ field.value ?? "-" }}</a
+                    >{{ field.value ? apiUrl + field.value : "-" }}</a
                   >
+                  <span v-else-if="field.type == 7">
+                    {{ field.value ? formatDateTime(field.value) : "-" }}
+                  </span>
 
                   <span v-else>{{ field.value ?? "-" }}</span>
                 </td>
@@ -410,23 +359,15 @@ function formatDateTime(value: string): string {
           <div class="w-full flex justify-end mt-5">
             <button
               class="px-3 py-1 border dark:border-gray-600 border-gray-400 cursor-pointer rounded-md dark:text-gray-200 text-gray-800 mr-3 hover:bg-red-600 text-sm hover:text-white"
-              @click="
-                () => {
-                  isReviewModalOpen = true;
-                  isApplicationApproved = false;
-                }
-              "
+              :disabled="application.status != 0"
+              @click="reviewApplication(application.id, 3)"
             >
               Başvuruyu Reddet
             </button>
             <button
               class="px-3 py-1 border dark:border-gray-600 border-gray-400 cursor-pointer rounded-md dark:text-gray-200 text-gray-800 ml-3 hover:bg-green-600 text-sm hover:text-white"
-              @click="
-                () => {
-                  isReviewModalOpen = true;
-                  isApplicationApproved = true;
-                }
-              "
+              :disabled="application.status != 0"
+              @click="reviewApplication(application.id, 2)"
             >
               Başvuruyu Onayla
             </button>

@@ -6,14 +6,16 @@ import { JobPostingCreateModel } from "../models/job-posting-create.model";
 import organizationService from "../services/unit.service";
 import jobPostingService from "../services/job-posting.service";
 import DOMPurify from "dompurify";
-import EditorComponent from "../components/EditorComponent.vue";
+import EditorComponent from "../components/job-posting-components/EditorComponent.vue";
 import formTemplateService from "../services/form-template.service";
 import { FormFieldDefinition } from "../models/form-field.model";
-import NewFormField from "../components/form-template-create/NewFormField.vue";
-import FieldsFromFormTemplate from "../components/form-template-create/FieldsFromFormTemplate.vue";
-import SelectedFormFields from "../components/form-template-create/SelectedFormFields.vue";
+
 import { Unit } from "../models/unit-node.model";
 import { useRoute, useRouter } from "vue-router";
+import FieldsFromFormTemplate from "../components/form-template-components/form-template-create/FieldsFromFormTemplate.vue";
+import NewFormField from "../components/form-template-components/form-template-create/NewFormField.vue";
+import SelectedFormFields from "../components/form-template-components/form-template-create/SelectedFormFields.vue";
+import JobPostingGroupComponent from "../components/job-posting-components/JobPostingGroupComponent.vue";
 
 const organizations: Ref<Unit[]> = ref([]);
 
@@ -158,7 +160,7 @@ const handleSubmit = async () => {
 
   const res = await jobPostingService.createJobPostings(request);
   if (res) {
-    router.push({ name: "job-posting-list" });
+    router.push("/management/job-postings");
   }
 };
 
@@ -199,6 +201,7 @@ const removeFieldFromRequest = (label: string) => {
       <div class="border-b px-5 py-3 dark:border-gray-800 border-gray-200">
         <span class="text-xl font-base dark:text-gray-50 text-gray-700">İlan Oluştur</span>
       </div>
+      <JobPostingGroupComponent />
       <div class="px-10 py-5">
         <div
           class="dark:bg-gray-700/40 dark:text-gray-300 rounded-md border dark:border-gray-800 border-gray-200 flex flex-col px-20"

@@ -5,20 +5,20 @@ import { PaginatedResponse } from "@/models/response/paginated-response.model";
 import { useToastStore } from "@/modules/toast/store/toast.store";
 
 class FormTeplateSerive {
-  toastSore = useToastStore();
+  toastStore = useToastStore();
 
   async createFormTemplate(request: FormTemplateCreateReqeust): Promise<string | undefined> {
     try {
       const res = await api.post(`${import.meta.env.VITE_API_URL}/form-templates`, request);
 
       if (res.status == 200) {
-        this.toastSore.addToast({
+        this.toastStore.addToast({
           message: res.data.data,
           type: "success",
           duration: 3000,
         });
       } else {
-        this.toastSore.addToast({
+        this.toastStore.addToast({
           message: res.data.data,
           type: "error",
           duration: 3000,
@@ -41,13 +41,13 @@ class FormTeplateSerive {
       );
       console.log("Update res", res);
       if (res.status == 200) {
-        this.toastSore.addToast({
+        this.toastStore.addToast({
           message: res.data.data,
           type: "success",
           duration: 3000,
         });
       } else {
-        this.toastSore.addToast({
+        this.toastStore.addToast({
           message: res.data.data,
           type: "error",
           duration: 3000,

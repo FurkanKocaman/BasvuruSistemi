@@ -5,9 +5,9 @@ import formTemplateService from "../services/form-template.service";
 import { useRoute, useRouter } from "vue-router";
 import { FormFieldDefinition } from "../models/form-field.model";
 import { useDropdown } from "../composables/useDropdown";
-import FieldsFromFormTemplate from "../components/form-template-create/FieldsFromFormTemplate.vue";
-import NewFormField from "../components/form-template-create/NewFormField.vue";
-import SelectedFormFields from "../components/form-template-create/SelectedFormFields.vue";
+import FieldsFromFormTemplate from "../components/form-template-components/form-template-create/FieldsFromFormTemplate.vue";
+import NewFormField from "../components/form-template-components/form-template-create/NewFormField.vue";
+import SelectedFormFields from "../components/form-template-components/form-template-create/SelectedFormFields.vue";
 
 const formFieldAddingType = ref("FormTemplateAll");
 

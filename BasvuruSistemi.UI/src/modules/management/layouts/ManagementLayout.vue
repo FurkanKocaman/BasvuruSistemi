@@ -1,10 +1,15 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
-import ManagementHeader from "../components/ManagementHeader.vue";
+import { onMounted, ref, watch } from "vue";
+import ManagementHeader from "../components/shared/ManagementHeader.vue";
 import { useRoute } from "vue-router";
+import { fetchCurrentUser } from "@/services/current-user.service";
 
 const isRouteChanging = ref(false);
 const route = useRoute();
+
+onMounted(() => {
+  fetchCurrentUser();
+});
 
 watch(
   () => route.fullPath,

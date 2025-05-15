@@ -5,11 +5,15 @@ import { ApplicationByUserModel } from "../models/application-by-user.model";
 import { CircleX } from "lucide-vue-next";
 import { FileSearch } from "lucide-vue-next";
 import ConfirmModal from "@/components/ConfirmModal.vue";
+import { getApplicationStatusOptionByValue } from "@/models/constants/application-status";
+import { useToastStore } from "@/modules/toast/store/toast.store";
 
 const applications = ref<ApplicationByUserModel[]>([]);
 const page = ref(1);
 const pageSize = ref(20);
 const totalCount = ref(0);
+
+const toastStore = useToastStore();
 
 const confirmModal = ref();
 
@@ -40,10 +44,18 @@ function formatDateTime(value: string): string {
   return `${day}.${month}.${year} ${hours}:${minutes}`;
 }
 
-const withdrawApplication = async (id: string) => {
+const withdrawApplication = async (application: ApplicationByUserModel) => {
+  if (application.status != 0) {
+    toastStore.addToast({
+      message: "Sadece beklemede durumunda olan bir başvuru geri çekilebilir",
+      type: "info",
+      duration: 3000,
+    });
+    return;
+  }
   const result = await confirmModal.value.open();
   if (result) {
-    await applicationService.withdrawnApplication(id);
+    await applicationService.withdrawnApplication(application.id);
     getApplications();
   } else {
     console.log("Kullanıcı iptal etti.");
@@ -217,7 +229,21 @@ const withdrawApplication = async (id: string) => {
               {{ application.reviewDate ? formatDateTime(application.reviewDate) : "-" }}
             </td>
             <td class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200">
-              {{ application.status }}
+              <span
+                class="text-sm px-2 py-1 rounded-md text-white"
+                :class="
+                  application.status == 0
+                    ? 'bg-yellow-600'
+                    : application.status == 1
+                    ? 'bg-blue-600'
+                    : application.status == 2
+                    ? 'bg-green-600'
+                    : application.status == 3
+                    ? 'bg-red-500'
+                    : 'bg-indigo-500'
+                "
+                >{{ getApplicationStatusOptionByValue(application.status)?.label }}</span
+              >
             </td>
             <td class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200">
               {{ application.reviewDescription ?? "-" }}
@@ -232,7 +258,7 @@ const withdrawApplication = async (id: string) => {
               <button class="cursor-pointer group">
                 <CircleX
                   class="size-6 stroke-gray-600 dark:stroke-gray-400 dark:group-hover:stroke-red-600 group-hover:stroke-red-600"
-                  @click="withdrawApplication(application.id)"
+                  @click="withdrawApplication(application)"
                 />
               </button>
             </td>

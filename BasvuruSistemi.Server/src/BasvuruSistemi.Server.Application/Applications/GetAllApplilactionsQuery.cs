@@ -1,5 +1,6 @@
 ﻿using BasvuruSistemi.Server.Domain.Applications;
 using BasvuruSistemi.Server.Domain.DTOs;
+using BasvuruSistemi.Server.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,8 +19,9 @@ public sealed class GetAllApplilactionsQueryResponse
     public string UserFullName { get; set; } = default!;
     public string? TCKN { get; set; }
 
+    public string JobPosting { get; set; } = default!;
     public DateTimeOffset AppliedDate { get; set; }
-    public string Status { get; set; } = default!;
+    public ApplicationStatus Status { get; set; } = default!;
     public DateTimeOffset? ReviewDate { get; set; }
     public string? ReviewDescription { get; set; }
 
@@ -46,8 +48,9 @@ internal sealed class GetAllApplilactionsQueryHandler(
             UserFullName = application.User.FullName,
             TCKN = application.User.TCKN,
 
+            JobPosting = application.JobPosting.Title,
             AppliedDate = application.AppliedDate,
-            Status = application.Status.ToString(),
+            Status = application.Status,
             ReviewDate = application.ReviewDate,
             ReviewDescription = application.ReviewDescription,
         }).ToList();

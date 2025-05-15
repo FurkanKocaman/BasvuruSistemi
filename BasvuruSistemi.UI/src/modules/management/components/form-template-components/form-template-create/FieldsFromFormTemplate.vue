@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref, Ref } from "vue";
 import * as icons from "lucide-vue-next";
-import { useDropdown } from "../../composables/useDropdown";
-import { FormFieldResponse } from "../../models/form-filed-response.model";
-import formTemplateService from "../../services/form-template.service";
+import { useDropdown } from "../../../composables/useDropdown";
+import { FormFieldResponse } from "../../../models/form-filed-response.model";
+import formTemplateService from "../../../services/form-template.service";
 import { getFieldTypeOptionByValue } from "@/models/constants/field-type";
-import { FormFieldDefinition } from "../../models/form-field.model";
+import { FormFieldDefinition } from "../../../models/form-field.model";
 
 const formTemplateDropdown = useDropdown();
 

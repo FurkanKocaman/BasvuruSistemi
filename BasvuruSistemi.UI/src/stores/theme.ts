@@ -16,6 +16,7 @@ export const useThemeStore = defineStore("theme", () => {
   function applyTheme() {
     const root = document.documentElement;
     root.classList.remove("dark");
+    console.log(currentTheme.value);
     if (isDark.value) {
       root.classList.add("dark");
     }
@@ -30,6 +31,7 @@ export const useThemeStore = defineStore("theme", () => {
   function initTheme() {
     const saved = localStorage.getItem("theme") as Theme | null;
     currentTheme.value = saved ?? "system";
+
     applyTheme();
   }
 

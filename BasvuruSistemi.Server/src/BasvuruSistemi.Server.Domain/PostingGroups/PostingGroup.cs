@@ -14,7 +14,6 @@ public sealed class PostingGroup : Entity
     public DateTimeOffset? OverallApplicationStartDate { get; private set; } // Grup için genel başvuru başlangıç tarihi
     public DateTimeOffset? OverallApplicationEndDate { get; private set; } // Grup için genel başvuru bitiş tarihi
 
-    // Hiyerarşik gruplar için 
     public Guid? ParentPostingGroupId { get; private set; }
     public PostingGroup? ParentPostingGroup { get; private set; }
 

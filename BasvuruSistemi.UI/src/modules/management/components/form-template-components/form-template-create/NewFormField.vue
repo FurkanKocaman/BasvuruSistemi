@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { reactive, ref, watch } from "vue";
-import { FormFieldDefinition } from "../../models/form-field.model";
-import { useDropdown } from "../../composables/useDropdown";
+import { FormFieldDefinition } from "../../../models/form-field.model";
+import { useDropdown } from "../../../composables/useDropdown";
 import { FieldTypeOptions, getFieldTypeOptionByLabel } from "@/models/constants/field-type";
 import { UserProfileFieldTypeOptions } from "@/models/constants/profile-field-type";
 

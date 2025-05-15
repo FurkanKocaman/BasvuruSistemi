@@ -18,7 +18,6 @@ export const useToastStore = defineStore("toast", () => {
     const id = Date.now();
     const newToast: Toast = { id, ...toast };
     toasts.value.push(newToast);
-    console.log(newToast);
     setTimeout(() => removeToast(id), toast.duration ?? 3000);
   };
 

@@ -19,6 +19,7 @@ public sealed class AppUser : IdentityUser<Guid>
     public string? Nationality { get; private set; }
     public string? TCKN { get; private set; }
     public ProfileStatus ProfileStatus { get; private set; } = ProfileStatus.Draft;
+    public string? AvatarUrl { get; private set; }
     public Contact Contact { get; private set; } = default!;
 
     public Guid? AddressId { get; private set; }
@@ -41,6 +42,7 @@ public sealed class AppUser : IdentityUser<Guid>
     public bool IsDeleted { get; set; }
     public DateTimeOffset? DeleteAt { get; set; }
     public Guid? DeleteUserId { get; set; }
+    #endregion
 
     private AppUser() { }
     public AppUser(string firstName, string lastName, DateOnly? bod, string? nationality, string? tCKN, Contact contact)
@@ -60,7 +62,11 @@ public sealed class AppUser : IdentityUser<Guid>
     {
         AddressId = addressId;
     }
-    #endregion
+
+    public void setAvatar(string url)
+    {
+        AvatarUrl = url;
+    }
 
 
 }

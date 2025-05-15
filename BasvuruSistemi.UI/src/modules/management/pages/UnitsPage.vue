@@ -2,7 +2,7 @@
 import unitService from "../services/unit.service";
 import { onMounted, ref } from "vue";
 import { Unit } from "../models/unit-node.model";
-import UnitNode from "../components/UnitNode.vue";
+import UnitNode from "../components/unit-components/UnitNode.vue";
 import { buildUnitTree } from "../services/build-unit-tree";
 import UnitCreateModal from "../modals/UnitCreateModal.vue";
 

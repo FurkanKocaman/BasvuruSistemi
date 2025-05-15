@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { ApplicationGetSummariesModel } from "../models/application-get-summaries.model";
+import { getApplicationStatusOptionByValue } from "@/models/constants/application-status";
 import applicationService from "@/services/application.service";
 import { FileSearch } from "lucide-vue-next";
 import { useRouter } from "vue-router";
@@ -134,6 +135,22 @@ const goToApplicationDetail = (id: string) => {
                     class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200 cursor-pointer select-none dark:text-gray-400 text-sm"
                   >
                     <div class="flex items-center justify-between">
+                      <span>İlan</span>
+                      <svg
+                        class="size-6 dark:fill-gray-500"
+                        viewBox="0 0 1024 1024"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M620.6 562.3l36.2 36.2L512 743.3 367.2 598.5l36.2-36.2L512 670.9l108.6-108.6zM512 353.1l108.6 108.6 36.2-36.2L512 280.7 367.2 425.5l36.2 36.2L512 353.1z"
+                        />
+                      </svg>
+                    </div>
+                  </td>
+                  <td
+                    class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200 cursor-pointer select-none dark:text-gray-400 text-sm"
+                  >
+                    <div class="flex items-center justify-between">
                       <span>Başvuru Tarihi</span>
                       <svg
                         class="size-6 dark:fill-gray-500"
@@ -213,6 +230,9 @@ const goToApplicationDetail = (id: string) => {
                   <td class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200">
                     {{ application.tckn ?? "-" }}
                   </td>
+                  <td class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200">
+                    {{ application.jobPosting ?? "-" }}
+                  </td>
                   <td class="py-3 px-2 border-r text-sm dark:border-gray-700/30 border-gray-200">
                     {{ formatDateTime(application.appliedDate) }}
                   </td>
@@ -220,7 +240,21 @@ const goToApplicationDetail = (id: string) => {
                     {{ application.reviewDate ? formatDateTime(application.reviewDate) : "-" }}
                   </td>
                   <td class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200">
-                    {{ application.status }}
+                    <span
+                      class="text-sm px-2 py-1 rounded-md text-white"
+                      :class="
+                        application.status == 0
+                          ? 'bg-yellow-600'
+                          : application.status == 1
+                          ? 'bg-blue-600'
+                          : application.status == 2
+                          ? 'bg-green-600'
+                          : application.status == 3
+                          ? 'bg-red-500'
+                          : 'bg-indigo-500'
+                      "
+                      >{{ getApplicationStatusOptionByValue(application.status)?.label }}</span
+                    >
                   </td>
                   <td class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200">
                     {{ application.reviewDescription ?? "-" }}

@@ -48,7 +48,7 @@ const closeModal = () => {
 </script>
 
 <template>
-  <main class="w-full min-h-[100dvh] h-full overflow-auto">
+  <main class="w-full min-h-[100dvh] h-full overflow-auto bg-gray-900">
     <TenantCreateModal v-if="isModalOpen" @on-close="closeModal" />
     <HeaderComponent />
     <div class="min-h-[100dvh] w-full h-full flex justify-center items-center px-10 pt-20 pb-10">
@@ -80,6 +80,12 @@ const closeModal = () => {
             @click="setTenant(tenant)"
           >
             <span class="text-base text-gray-700 dark:text-gray-200">{{ tenant.name }}</span>
+          </div>
+          <div
+            v-if="tenants?.length == 0"
+            class="text-center text-lg text-gray-800 dark:text-gray-200 border rounded-md px-2 py-3 border-gray-200 dark:border-gray-800"
+          >
+            <span>Kayıtlı kurum bulunamadı. </span>
           </div>
         </div>
       </div>

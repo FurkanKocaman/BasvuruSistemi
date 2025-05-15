@@ -25,7 +25,7 @@ export interface ApplicationGetDetailModel {
   unit: string;
 
   appliedDate: string;
-  status: string;
+  status: number;
   reviewDate?: string;
   reviewDescription?: string;
 

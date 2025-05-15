@@ -1,17 +1,13 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import HeaderComponent from "../components/HeaderComponent.vue";
+import { fetchCurrentUser } from "@/services/current-user.service";
 
-// Dark mode toggle
 const isDarkMode = ref(false);
 
-const toggleDarkMode = () => {
-  isDarkMode.value = !isDarkMode.value;
-  document.documentElement.classList.toggle("dark", isDarkMode.value);
-};
-
-// Check system preference for dark mode
 onMounted(() => {
+  fetchCurrentUser();
+
   if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
     isDarkMode.value = true;
     document.documentElement.classList.add("dark");

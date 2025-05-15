@@ -1,6 +1,9 @@
 <template>
   <div v-if="visible" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-    <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6 animate-fadeIn" @click.stop>
+    <div
+      class="bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-md w-full p-6 animate-fadeIn"
+      @click.stop
+    >
       <div class="flex items-center">
         <div class="bg-red-100 rounded-full p-2 mr-4">
           <svg
@@ -17,7 +20,7 @@
             />
           </svg>
         </div>
-        <h3 class="text-lg font-semibold text-gray-900">{{ title }}</h3>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-200">{{ title }}</h3>
       </div>
       <p class="mt-4 text-sm text-gray-600">{{ description }}</p>
 

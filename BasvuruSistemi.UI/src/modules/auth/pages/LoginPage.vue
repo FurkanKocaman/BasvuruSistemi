@@ -86,7 +86,6 @@ async function login() {
                   value=""
                   name="remember"
                   class="w-4 h-4 border accent-blue-600 rounded-sm dark:fill-gray-800 cursor-pointer"
-                  required
                 />
               </div>
 

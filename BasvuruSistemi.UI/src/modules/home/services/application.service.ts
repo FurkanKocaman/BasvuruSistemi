@@ -88,6 +88,26 @@ class ApplicationService {
       throw err;
     }
   }
+  async checkApplicationExist(id: string): Promise<Result<boolean>> {
+    try {
+      const res = await api.get<Result<boolean>>(
+        `${import.meta.env.VITE_API_URL}/api/applications/check-existing/${id}`
+      );
+
+      if (!res.data.data) {
+        this.toastSore.addToast({
+          message: res.data.errorMessages[0],
+          type: res.data.statusCode == 200 ? "success" : "error",
+          duration: 5000,
+        });
+      }
+
+      return res.data;
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  }
 }
 
 export default new ApplicationService();

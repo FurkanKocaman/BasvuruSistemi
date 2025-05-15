@@ -45,8 +45,6 @@ function onDateChange(val: Date | Date[] | (Date | null)[] | null | undefined) {
       :placeholder="field.placeholder"
       :required="field.isRequired"
       :readonly="field.isReadOnly"
-      showTime
-      hourFormat="24"
       showButtonBar
       showIcon
       class="!w-full !border !outline-none !rounded-md !text-gray-800 dark:!text-gray-200 dark:!border-gray-700 !border-gray-200 !py-2 !px-2 !bg-gray-50 dark:!bg-gray-900 dark:!focus:border-indigo-600 focus:border-indigo-600"
