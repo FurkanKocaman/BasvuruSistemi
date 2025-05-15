@@ -22,9 +22,8 @@ export interface JobPostingsByTenantResponse {
   contactInfo?: string;
   isPublic: boolean;
 
-  companyId: string;
-  company: string;
+  unitId: string;
+  unit: string;
 
-  departmentId?: string;
-  department?: string;
+  totalApplicationsCount?: number;
 }
