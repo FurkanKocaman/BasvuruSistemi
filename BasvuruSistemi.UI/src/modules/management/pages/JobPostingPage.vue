@@ -235,7 +235,9 @@ const goToJobPostingEdit = (id: string) => {
                       >{{ jobPosting.vacancyCount ?? "yok" }}</span
                     >
                   </td>
-                  <td class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200">80</td>
+                  <td class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200">
+                    {{ jobPosting.totalApplicationsCount }}
+                  </td>
                   <td class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200">
                     <span class="bg-blue-600 py-0.5 px-1.5 rounded-lg text-gray-100">Status</span>
                   </td>
