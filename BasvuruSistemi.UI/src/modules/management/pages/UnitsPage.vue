@@ -5,9 +5,12 @@ import { Unit } from "../models/unit-node.model";
 import UnitNode from "../components/unit-components/UnitNode.vue";
 import { buildUnitTree } from "../services/build-unit-tree";
 import UnitCreateModal from "../modals/UnitCreateModal.vue";
+import ConfirmModal from "@/components/ConfirmModal.vue";
 
 const unListedUnits = ref<Unit[]>([]);
 const units = ref<Unit[]>([]);
+
+const confirmModal = ref();
 
 const selectedUnitId = ref("");
 const selectedUnit = ref<Unit>({
@@ -38,18 +41,29 @@ const getUnitTree = () => {
 };
 
 async function handleEdit(unitId: string) {
+  selectedUnit.value = {
+    id: "",
+    name: "",
+  };
   updatedUnit.value = getUnitById(unitId);
   if (updatedUnit.value.parentId) selectedUnit.value = getUnitById(updatedUnit.value.parentId);
   isUnitCreateModalOpen.value = true;
 }
 
 async function handleRemove(unitId: string) {
-  await unitService.deleteUnit(unitId);
-  unListedUnits.value = unListedUnits.value.filter((p) => p.id != unitId);
-  getUnitTree();
+  const result = await confirmModal.value.open();
+  if (result) {
+    await unitService.deleteUnit(unitId);
+    unListedUnits.value = unListedUnits.value.filter((p) => p.id != unitId);
+    getUnitTree();
+  }
 }
 
 function handleAdd(unitId: string) {
+  selectedUnit.value = {
+    id: "",
+    name: "",
+  };
   updatedUnit.value = undefined;
   selectedUnitId.value = unitId;
   selectedUnit.value = getUnitById(selectedUnitId.value);
@@ -74,11 +88,17 @@ const updateUnit = (unit: Unit) => {
     existingUnit.parentId = unit.parentId;
     existingUnit.code = unit.code;
   }
+  getUnits();
   getUnitTree();
 };
 </script>
 <template>
   <div class="flex pt-20">
+    <ConfirmModal
+      ref="confirmModal"
+      title="Bu birimi silmek istediğinize emin misiniz?"
+      description="Bu işlem geri alınamaz"
+    />
     <UnitCreateModal
       v-if="isUnitCreateModalOpen"
       :parent-unit="selectedUnit"

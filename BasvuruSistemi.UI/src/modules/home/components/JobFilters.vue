@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { ref, onMounted, defineEmits } from "vue";
-import { GetActiveJobPostingsQueryResponse } from "../models/active-job-posting.model";
+import { GetActiveJobPostingsSummariesQueryResponse } from "../models/active-job-posting-summaries.model";
 
 const emit = defineEmits<{
-  (e: "filter", filteredJobs: GetActiveJobPostingsQueryResponse[]): void;
+  (e: "filter", filteredJobs: GetActiveJobPostingsSummariesQueryResponse[]): void;
 }>();
 
 const props = defineProps<{
-  allJobs: GetActiveJobPostingsQueryResponse[];
+  allJobs: GetActiveJobPostingsSummariesQueryResponse[];
 }>();
 
 const searchQuery = ref("");

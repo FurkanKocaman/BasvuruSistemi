@@ -95,6 +95,9 @@ internal sealed class GetJobPostingsByTenantQueryHandler(
 
         }).ToList();
 
+
+
+
         return Task.FromResult(new PagedResult<GetJobPostingsByTenantQueryResponse>(response, request.page, request.pageSize, totalCount));
     }
 }

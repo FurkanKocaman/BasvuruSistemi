@@ -1,7 +1,7 @@
 ﻿using BasvuruSistemi.Server.Application.Applications;
 using BasvuruSistemi.Server.Application.FormTemplates;
 using BasvuruSistemi.Server.Application.JobPostings;
-
+using BasvuruSistemi.Server.Application.PostingGroups;
 using BasvuruSistemi.Server.Application.Tenants;
 using BasvuruSistemi.Server.Application.Units;
 using BasvuruSistemi.Server.Application.Users;
@@ -49,25 +49,46 @@ public class AppController(ISender sender) : ControllerBase
 
     [AllowAnonymous]
     [HttpGet("job-postings/active")]
-    public async Task<ActionResult<GetActiveJobPostingsQueryResponse>> GetActiveJobPostings(
+    public async Task<ActionResult<GetActiveJobPostingsSummariesQueryResponse>> GetActiveJobPostings(
     [FromQuery] int page = 1,
     [FromQuery] int pageSize = 20, 
     CancellationToken cancellationToken = default)
     {
-        var response = await sender.Send(new GetActiveJobPostingsQuery(page,pageSize), cancellationToken);
+        var response = await sender.Send(new GetActiveJobPostingsSummariesQuery(page,pageSize), cancellationToken);
+        return Ok(response);
+    }
+    [AllowAnonymous]
+    [HttpGet("job-postings/active/{id:guid}")]
+    public async Task<ActionResult<GetActiveJobPostingQueryResponse>> GetActiveJobPostings(
+    Guid? id,
+    CancellationToken cancellationToken = default)
+    {
+        var response = await sender.Send(new GetActiveJobPostingQuery(id), cancellationToken);
         return Ok(response);
     }
 
     [HttpGet("job-postings")]
     [Authorize()]
-    public async Task<ActionResult<GetJobPostingsByTenantQueryResponse>> GetJobPostings(
+    public async Task<IActionResult> GetJobPostings(
+    [FromQuery] string view = "summaries",
     [FromQuery] int page = 1,
     [FromQuery] int pageSize = 20,
     CancellationToken cancellationToken = default)
     {
-        var response = await sender.Send(new GetJobPostingsByTenantQuery(page, pageSize), cancellationToken);
-        return Ok(response);
+        if(view == "summaries")
+        {
+            var response = await sender.Send(new GetJobPostingsSummariesByTenantQuery(page, pageSize), cancellationToken);
+            return Ok(response);
+        }
+        else
+        {
+            var response = await sender.Send(new GetJobPostingsByTenantQuery(page, pageSize), cancellationToken);
+            return Ok(response);
+        }
+           
     }
+
+
     [HttpGet("job-postings/{id:guid}")]
     [Authorize()]
     public async Task<ActionResult<GetJobPostingsQueryResponse>> GetJobPostings(
@@ -76,6 +97,25 @@ public class AppController(ISender sender) : ControllerBase
     {
         var response = await sender.Send(new GetJobPostingsQuery(id), cancellationToken);
         return response.IsSuccessful ? Ok(response) : BadRequest(response);
+    }
+
+    [HttpGet("posting-groups/{id:guid}")]
+    [Authorize()]
+    public async Task<ActionResult<PostingGroupGetQueryResponse>> GetPostingGroup(
+    Guid id,
+    CancellationToken cancellationToken = default)
+    {
+        var response = await sender.Send(new PostingGroupGetQuery(id), cancellationToken);
+        return Ok(response);
+    }
+
+    [HttpGet("posting-groups")]
+    [Authorize()]
+    public async Task<ActionResult<GetAllPostingGroupSummariesByTenantQueryResponse>> GetPostingGroupSummaries(
+    CancellationToken cancellationToken = default)
+    {
+        var response = await sender.Send(new GetAllPostingGroupSummariesByTenantQuery(), cancellationToken);
+        return Ok(response);
     }
 
     [HttpGet("tenants")]

@@ -83,6 +83,28 @@ const router = createRouter({
           ],
         },
         {
+          path: "job-postings-group",
+          name: "job-posting-group",
+          redirect: "create",
+          children: [
+            // {
+            //   path: "",
+            //   name: "job-posting-groups",
+            //   component: () => import("@/modules/management/pages/JobPostingPage.vue"),
+            // },
+            {
+              path: "create",
+              name: "job-posting-group-create",
+              component: () => import("@/modules/management/pages/JobpostingGroupCreatePage.vue"),
+            },
+            {
+              path: "update/:id",
+              name: "job-posting-update",
+              component: () => import("@/modules/management/pages/JobpostingGroupCreatePage.vue"),
+            },
+          ],
+        },
+        {
           path: "form-templates",
           name: "form-templates",
           redirect: "",

@@ -1,16 +1,46 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import { useDropdown } from "../../composables/useDropdown";
+import { useRoute } from "vue-router";
+import jobPostingService from "../../services/job-posting.service";
+import { PostingGroupSummaryGetModel } from "../../models/posting-group-summaries.model";
+
+const route = useRoute();
+const postingGroupId = route.query.postingGroupId;
+
+const postingGroups = ref<PostingGroupSummaryGetModel[]>([]);
 
 const isGroup = ref(false);
-
 const groupDropdown = useDropdown();
 
-const groups = [{ name: "group1" }, { name: "group2" }];
+const emit = defineEmits<{
+  (e: "groupIdSelected", groupId: string): void;
+}>();
 
-const createPostingGroup = () => {
-  console.log("createPostingGroup");
+onMounted(() => {
+  getPostingGroups();
+  if (postingGroupId) {
+    isGroup.value = true;
+    selectGroup(postingGroupId.toLocaleString());
+  }
+});
+
+const getPostingGroups = async () => {
+  const res = await jobPostingService.getPostingGroups();
+  if (res) {
+    postingGroups.value = res;
+    if (postingGroupId) {
+      var group = res.find((p) => p.id == postingGroupId);
+      if (group) {
+        groupDropdown.selectOption(group.name);
+      }
+    }
+  }
 };
+
+function selectGroup(id: string) {
+  emit("groupIdSelected", id);
+}
 </script>
 
 <template>
@@ -59,7 +89,7 @@ const createPostingGroup = () => {
               class="absolute w-fit mt-18 text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow z-10 max-h-60 overflow-auto"
             >
               <div
-                v-for="option in groups"
+                v-for="option in postingGroups"
                 :key="option.name"
                 @mousedown.prevent="groupDropdown.selectOption(option.name)"
                 class="px-4 py-2 hover:bg-gray-300/30 dark:hover:bg-gray-700/40 cursor-pointer text-sm"
@@ -67,31 +97,6 @@ const createPostingGroup = () => {
                 {{ option.name }}
               </div>
             </div>
-          </div>
-          <div v-if="isGroup" class="flex-1 flex w-full ml-3">
-            <form
-              @submit.prevent="createPostingGroup()"
-              class="flex-1 flex flex-col my-2 items-start"
-            >
-              <label for="formTeplate" class="w-full text-sm my-1 dark:text-gray-300 text-gray-600"
-                >İlan Grubu Oluştur</label
-              >
-              <input
-                type="text"
-                name="formTeplate"
-                id="formTeplate"
-                placeholder="Yeni ilan grubunun başlığını girin"
-                autocomplete="off"
-                class="w-full border outline-none rounded-md py-1.5 px-2 dark:border-gray-700 dark:bg-gray-900/50 text-sm border-gray-200 dark:focus:border-indigo-600 focus:border-indigo-600"
-              />
-              <div class="flex justify-end w-full my-3">
-                <button
-                  class="text-sm border rounded-md border-gray-200 dark:border-gray-700 px-2 py-1 cursor-pointer hover:bg-gray-400/10"
-                >
-                  Oluştur
-                </button>
-              </div>
-            </form>
           </div>
         </div>
       </div>

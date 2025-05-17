@@ -71,7 +71,7 @@ class FormTeplateSerive {
   async getFormTemplates(): Promise<PaginatedResponse<FormTemplateGetModel> | undefined> {
     try {
       const res = await api.get(`${import.meta.env.VITE_API_URL}/api/form-templates?view=details`);
-
+      console.log(res);
       return res.data;
     } catch (err) {
       console.error(err);

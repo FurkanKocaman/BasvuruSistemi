@@ -130,6 +130,25 @@ function togglePostingMenu() {
                 </div>
               </div>
             </div>
+            <div class="px-2 py-2">
+              <div
+                class="group relative flex items-center gap-x-6 rounded-lg p-2 text-sm/6 hover:bg-gray-100 dark:hover:bg-gray-700/20"
+              >
+                <div class="flex-auto">
+                  <router-link
+                    to="/management/job-postings-group/create"
+                    class="block font-semibold text-gray-700 dark:text-gray-200"
+                    @click.prevent="togglePostingMenu()"
+                  >
+                    İlan Grubu Oluştur
+                    <span class="absolute inset-0"></span>
+                  </router-link>
+                  <p class="mt-1 text-gray-600 dark:text-gray-500">
+                    İçinde birden çok benzer türde ilanın bulunduğu grup oluşturun
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 

@@ -18,7 +18,7 @@ internal sealed class UnitDeleteCommandHandler(
 {
     public async Task<Result<string>> Handle(UnitDeleteCommand request, CancellationToken cancellationToken)
     {
-        Guid? userId = currentUserService.TenantId;
+        Guid? userId = currentUserService.UserId;
         if (!userId.HasValue)
             return Result<string>.Failure(404, "user not found");
 
@@ -26,7 +26,7 @@ internal sealed class UnitDeleteCommandHandler(
         if (!tenantId.HasValue)
             return Result<string>.Failure(404, "Tenant not found");
 
-        var isAuthorized = await authorizationService.IsTenantManagerAsync(tenantId.Value, userId.Value, cancellationToken);
+        var isAuthorized = await authorizationService.IsTenantManagerAsync(userId.Value, tenantId.Value, cancellationToken);
         if (!isAuthorized)
             return Result<string>.Failure(403, "You do not have permission to delete unit");
 

@@ -191,6 +191,10 @@ const addFieldToRequest = (field: FormFieldDefinition) => {
 const removeFieldFromRequest = (label: string) => {
   fields.value = fields.value.filter((p) => p.label != label);
 };
+
+const selectPostingGroupId = (id: string) => {
+  request.postingGroupId = id;
+};
 </script>
 
 <template>
@@ -201,7 +205,7 @@ const removeFieldFromRequest = (label: string) => {
       <div class="border-b px-5 py-3 dark:border-gray-800 border-gray-200">
         <span class="text-xl font-base dark:text-gray-50 text-gray-700">İlan Oluştur</span>
       </div>
-      <JobPostingGroupComponent />
+      <JobPostingGroupComponent @group-id-selected="selectPostingGroupId" />
       <div class="px-10 py-5">
         <div
           class="dark:bg-gray-700/40 dark:text-gray-300 rounded-md border dark:border-gray-800 border-gray-200 flex flex-col px-20"

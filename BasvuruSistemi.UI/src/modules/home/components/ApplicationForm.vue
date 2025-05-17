@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, defineProps, defineComponent } from "vue";
-import { useJobPostingStore } from "@/stores/job-posting";
+import { ref, onMounted, defineProps, defineComponent } from "vue";
 import { GetActiveJobPostingsQueryResponse } from "../models/active-job-posting.model";
 import formTemplateService from "@/modules/management/services/form-template.service";
 import { getComponentByFieldType } from "../services/getComponentByField.service";
@@ -12,7 +11,7 @@ import applicationService from "../services/application.service";
 import { useToastStore } from "@/modules/toast/store/toast.store";
 
 const props = defineProps<{
-  jobId?: string;
+  job?: GetActiveJobPostingsQueryResponse;
 }>();
 
 const router = useRouter();
@@ -34,18 +33,15 @@ defineComponent({
   emits: ["submit"],
 });
 
-const jobPostingStore = useJobPostingStore();
-const job = ref<GetActiveJobPostingsQueryResponse | null>(null);
-const jobPostings = computed(() => jobPostingStore.jobPostings);
-
 const fields = ref<FormFieldResponse[]>([]);
 
 const getFormTemplate = async () => {
-  if (job.value) {
-    request.value.jobPostingId = job.value.id;
-    const res = await formTemplateService.getFormTemplate(job.value.formTemplateId);
+  if (props.job) {
+    request.value.jobPostingId = props.job.id;
+    const res = await formTemplateService.getFormTemplate(props.job.formTemplateId);
     if (res) {
       fields.value = res.fields;
+      console.log(res);
       res.fields.forEach((element) => {
         values.value[element.id] = undefined;
       });
@@ -54,8 +50,8 @@ const getFormTemplate = async () => {
 };
 
 onMounted(() => {
-  if (props.jobId && jobPostings.value) {
-    job.value = jobPostings.value.find((j) => j.id === props.jobId) || null;
+  console.log(props.job);
+  if (props.job) {
     getFormTemplate();
   }
 });

@@ -16,13 +16,14 @@ export const useThemeStore = defineStore("theme", () => {
   function applyTheme() {
     const root = document.documentElement;
     root.classList.remove("dark");
-    console.log(currentTheme.value);
+
     if (isDark.value) {
       root.classList.add("dark");
     }
   }
 
   function setTheme(theme: Theme) {
+    console.log(currentTheme.value);
     currentTheme.value = theme;
     localStorage.setItem("theme", theme);
     applyTheme();
@@ -30,6 +31,7 @@ export const useThemeStore = defineStore("theme", () => {
 
   function initTheme() {
     const saved = localStorage.getItem("theme") as Theme | null;
+    console.log("Theme initing", saved);
     currentTheme.value = saved ?? "system";
 
     applyTheme();

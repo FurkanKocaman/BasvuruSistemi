@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { type PropType } from "vue";
-import { Unit } from "../models/unit-node.model";
 import { useTenantStore } from "@/stores/tenant";
+import { Unit } from "../../models/unit-node.model";
 
 const tenantStore = useTenantStore();
 

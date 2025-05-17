@@ -3,10 +3,10 @@ import { onMounted, ref } from "vue";
 import JobFilters from "../components/JobFilters.vue";
 import JobCard from "../components/JobCard.vue";
 import jobPostingService from "../services/job-posting.service";
-import { GetActiveJobPostingsQueryResponse } from "../models/active-job-posting.model";
+import { GetActiveJobPostingsSummariesQueryResponse } from "../models/active-job-posting-summaries.model";
 
-const filteredJobs = ref<GetActiveJobPostingsQueryResponse[]>([]);
-const allJobs = ref<GetActiveJobPostingsQueryResponse[]>([]);
+const filteredJobs = ref<GetActiveJobPostingsSummariesQueryResponse[]>([]);
+const allJobs = ref<GetActiveJobPostingsSummariesQueryResponse[]>([]);
 
 onMounted(() => {
   getJobPostings();
@@ -20,7 +20,7 @@ const getJobPostings = async () => {
   }
 };
 
-const handleFilter = (jobs: GetActiveJobPostingsQueryResponse[]) => {
+const handleFilter = (jobs: GetActiveJobPostingsSummariesQueryResponse[]) => {
   console.log(jobs);
   filteredJobs.value = jobs;
 };

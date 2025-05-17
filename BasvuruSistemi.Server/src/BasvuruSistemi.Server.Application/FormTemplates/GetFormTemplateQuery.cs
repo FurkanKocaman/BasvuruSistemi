@@ -42,7 +42,7 @@ internal sealed class GetFormTemplateQueryHandler(
 {
     public Task<GetFormTemplateQueryResponse> Handle(GetFormTemplateQuery request, CancellationToken cancellationToken)
     {
-        var formTemplate = formTemplateRepository.Where(p => p.Id == request.id && !p.IsDeleted && p.IsSaved).Include(p => p.FieldDefinitions).FirstOrDefault();
+        var formTemplate = formTemplateRepository.Where(p => p.Id == request.id && !p.IsDeleted).Include(p => p.FieldDefinitions).FirstOrDefault();
 
         if(formTemplate is null)
             return Task.FromResult(new GetFormTemplateQueryResponse());

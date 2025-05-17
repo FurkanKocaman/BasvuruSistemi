@@ -1,8 +1,10 @@
 ﻿using BasvuruSistemi.Server.Application.Services;
 using BasvuruSistemi.Server.Domain.Enums;
 using BasvuruSistemi.Server.Domain.JobPostings;
+using BasvuruSistemi.Server.Domain.PostingGroups;
 using BasvuruSistemi.Server.Domain.UnitOfWork;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TS.Result;
 
 namespace BasvuruSistemi.Server.Application.JobPostings;
@@ -47,6 +49,7 @@ public sealed record JobPostingCreateCommand(
 internal sealed class JobPostingCreateCommandHandler(
     ICurrentUserService currentUserService,
     IJobPostingRepository jobPostingRepository,
+    IPostingGroupRepository postingGroupRepository,
     IUnitOfWork unitOfWork
     ) : IRequestHandler<JobPostingCreateCommand, Result<string>>
 {
@@ -56,6 +59,21 @@ internal sealed class JobPostingCreateCommandHandler(
 
         if (!tenantId.HasValue)
             return Result<string>.Failure("Tenant not found");
+
+        if(request.postingGroupId is not null && request.unitId is not null)
+        {
+            var postingGroup = await postingGroupRepository.Where(p => p.Id == request.postingGroupId && !p.IsDeleted).Include(p => p.Unit).ThenInclude(p => p!.Children).FirstOrDefaultAsync();
+            if (postingGroup is null)
+                return Result<string>.Failure(404, "Posting group not found or already deleted");
+
+            if(postingGroup.Unit is not null)
+            {
+                if (!postingGroup.Unit.Children.Any(p => p.Id == request.unitId) && postingGroup.Unit.Id != request.unitId)
+                {
+                    return Result<string>.Failure("JobPosting's unit is not a child of parent group or not the same unit");
+                }
+            }
+        }
 
         if (!System.Enum.IsDefined(typeof(JobPostingStatus), request.status))
         {

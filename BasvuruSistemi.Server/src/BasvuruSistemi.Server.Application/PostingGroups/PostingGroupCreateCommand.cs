@@ -1,4 +1,5 @@
 ﻿using BasvuruSistemi.Server.Application.Services;
+using BasvuruSistemi.Server.Domain.Enums;
 using BasvuruSistemi.Server.Domain.PostingGroups;
 using BasvuruSistemi.Server.Domain.UnitOfWork;
 using MediatR;
@@ -8,6 +9,9 @@ namespace BasvuruSistemi.Server.Application.PostingGroups;
 public sealed record PostingGroupCreateCommand(
     string name,
     string? description,
+    Guid? unitId,
+    bool isPublic,
+    int status,
     DateTimeOffset? announcementDate,
     DateTimeOffset? overallApplicationStartDate,
     DateTimeOffset? overallApplicationEndDate
@@ -25,10 +29,20 @@ internal sealed class PostingGroupCreateCommandHandler(
         if (!tenantId.HasValue)
             return Result<string>.Failure("Tenant not found");
 
+        if (!System.Enum.IsDefined(typeof(JobPostingStatus), request.status))
+        {
+            return Result<string>.Failure($"Invalid JobPostingStatus: {request.status}.");
+        }
+        JobPostingStatus status = (JobPostingStatus)request.status;
+
         var postingGroup = new PostingGroup(
             tenantId.Value,
+            request.unitId,
             request.name,
             request.description,
+            true,
+            request.isPublic,
+            status,
             announcementDate: request.announcementDate,
             overallApplicationStartDate: request.overallApplicationStartDate,
             overallApplicationEndDate: request.overallApplicationEndDate
@@ -38,6 +52,6 @@ internal sealed class PostingGroupCreateCommandHandler(
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Result<string>.Succeed("Posting group created successfully");
+        return Result<string>.Succeed(postingGroup.Id.ToString());
     }
 }

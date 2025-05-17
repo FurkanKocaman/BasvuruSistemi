@@ -42,6 +42,7 @@ const createUnit = async () => {
 const updateUnit = async () => {
   if (props.unit) {
     request.value.id = props.unit.id;
+
     if (props.parentUnit) request.value.parentId = props.parentUnit.id;
     const res = await unitService.updateUnit(props.unit?.id, request.value);
     if (res) {

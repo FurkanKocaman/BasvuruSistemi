@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { defineProps, defineComponent } from "vue";
-import { GetActiveJobPostingsQueryResponse } from "../models/active-job-posting.model";
 import applicationService from "../services/application.service";
 import { useRouter } from "vue-router";
+import { GetActiveJobPostingsSummariesQueryResponse } from "../models/active-job-posting-summaries.model";
 
 // TypeScript için Vue bileşeni tanımlama
 defineComponent({
@@ -19,7 +19,7 @@ const router = useRouter();
 
 // Component prop tanımlaması
 const props = defineProps<{
-  job: GetActiveJobPostingsQueryResponse;
+  job: GetActiveJobPostingsSummariesQueryResponse;
 }>();
 
 // Tarih formatı fonksiyonu
@@ -56,7 +56,7 @@ const navigateApplication = async () => {
         job.salaryRange
       }}</span>
       <span class="text-gray-500 dark:text-gray-400 text-xs"
-        >İlan Tarihi: {{ formatDate(job.validFrom!) }}</span
+        >Son Başvuru Tarihi: {{ formatDate(job.validTo!) }}</span
       >
     </div>
 

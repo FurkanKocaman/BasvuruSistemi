@@ -1,3 +1,52 @@
+<script setup lang="ts">
+import { ref, onMounted, defineComponent } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import ApplicationForm from "../components/ApplicationForm.vue";
+import type { Application } from "../data/applications";
+import { GetActiveJobPostingsQueryResponse } from "../models/active-job-posting.model";
+import jobPostingService from "../services/job-posting.service";
+
+defineComponent({
+  name: "JobApplicationPage",
+  components: {
+    ApplicationForm,
+  },
+});
+
+const route = useRoute();
+const router = useRouter();
+
+const job = ref<GetActiveJobPostingsQueryResponse | null>(null);
+
+const formatDate = (dateString: string): string => {
+  const options: Intl.DateTimeFormatOptions = { year: "numeric", month: "long", day: "numeric" };
+  return new Date(dateString).toLocaleDateString("tr-TR", options);
+};
+
+const handleSubmit = (formData: Partial<Application>) => {
+  // Gerçek bir API olmadığı için burada bir şey yapmıyoruz
+  // ApplicationForm component'i zaten kullanıcıyı yönlendiriyor
+  console.log("Başvuru gönderildi:", formData);
+};
+
+onMounted(() => {
+  const jobId = String(route.params.id);
+
+  if (jobId) {
+    getJobPosting(jobId);
+  } else {
+    router.push("/jobs");
+  }
+});
+
+const getJobPosting = async (id: string) => {
+  const res = await jobPostingService.getActiveJobPosting(id);
+  if (res) {
+    job.value = res;
+  }
+};
+</script>
+
 <template>
   <div>
     <div class="mb-6">
@@ -32,14 +81,9 @@
         <div>
           <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ job.title }}</h1>
           <p class="text-gray-600 dark:text-gray-300 mt-1">
-            {{ job.company }}
+            {{ job.unit }}
           </p>
           <div class="mt-2 flex items-center">
-            <span
-              class="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs font-semibold px-2.5 py-0.5 rounded"
-            >
-              {{ job.department }}
-            </span>
             <span class="ml-2 text-gray-500 dark:text-gray-400 text-sm"
               >İlan Tarihi: {{ formatDate(job.validFrom!) }}</span
             >
@@ -62,7 +106,7 @@
     </div>
 
     <!-- Başvuru Formu -->
-    <ApplicationForm v-if="job" :jobId="job.id" @submit="handleSubmit" />
+    <ApplicationForm v-if="job" :job="job" @submit="handleSubmit" />
 
     <!-- İş bulunamadı -->
     <div v-else class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 text-center">
@@ -93,54 +137,3 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref, onMounted, defineComponent, computed } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import ApplicationForm from "../components/ApplicationForm.vue";
-import type { Application } from "../data/applications";
-import { GetActiveJobPostingsQueryResponse } from "../models/active-job-posting.model";
-import { useJobPostingStore } from "@/stores/job-posting";
-
-defineComponent({
-  name: "JobApplicationPage",
-  components: {
-    ApplicationForm,
-  },
-});
-
-const route = useRoute();
-const router = useRouter();
-
-const jobPostingStore = useJobPostingStore();
-const job = ref<GetActiveJobPostingsQueryResponse | null>(null);
-const jobPostings = computed(() => jobPostingStore.jobPostings);
-
-const formatDate = (dateString: string): string => {
-  const options: Intl.DateTimeFormatOptions = { year: "numeric", month: "long", day: "numeric" };
-  return new Date(dateString).toLocaleDateString("tr-TR", options);
-};
-
-const handleSubmit = (formData: Partial<Application>) => {
-  // Gerçek bir API olmadığı için burada bir şey yapmıyoruz
-  // ApplicationForm component'i zaten kullanıcıyı yönlendiriyor
-  console.log("Başvuru gönderildi:", formData);
-};
-
-onMounted(() => {
-  const jobId = String(route.params.id);
-
-  if (jobId && jobPostings.value) {
-    console.log(jobPostings.value);
-    job.value = jobPostings.value.find((j) => j.id === jobId) || null;
-
-    if (!job.value) {
-      setTimeout(() => {
-        router.push("/jobs");
-      }, 3000);
-    }
-  } else {
-    router.push("/jobs");
-  }
-});
-</script>

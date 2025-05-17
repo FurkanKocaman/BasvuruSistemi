@@ -1,13 +1,17 @@
 <script setup lang="ts">
 import { onMounted, ref, Ref } from "vue";
 import jobPostingService from "../services/job-posting.service";
-import { JobPostingsByTenantResponse } from "../models/job-posting-by-tenant.model";
 import { useRouter } from "vue-router";
+import { JobPostingSummariesByTenantResponse } from "../models/job-posting-summaries-by-tenant.model";
+import { getJobPostingStatusOptionByValue } from "@/models/constants/job-posting-status";
+import { formatDateTime } from "../composables/formatDateTime";
+import ConfirmModal from "@/components/ConfirmModal.vue";
 
-const jobPostings: Ref<JobPostingsByTenantResponse[]> = ref([]);
+const jobPostings: Ref<JobPostingSummariesByTenantResponse[]> = ref([]);
 const page = ref(1);
 const pageSize = ref(10);
 const totalCount = ref(0);
+const confirmModal = ref();
 
 const router = useRouter();
 
@@ -25,26 +29,29 @@ const getJobPostings = async () => {
   }
 };
 
-function formatDateTime(value: string): string {
-  const date = new Date(value);
-
-  const day = date.getDate().toString().padStart(2, "0");
-  const month = (date.getMonth() + 1).toString().padStart(2, "0");
-  const year = date.getFullYear();
-
-  const hours = date.getHours().toString().padStart(2, "0");
-  const minutes = date.getMinutes().toString().padStart(2, "0");
-
-  return `${day}.${month}.${year} ${hours}:${minutes}`;
-}
-
 const goToJobPostingEdit = (id: string) => {
   router.push({ name: "job-posting-update", params: { id } });
+};
+
+const handleDelete = async (id: string) => {
+  var result = await confirmModal.value.open();
+  if (result) {
+    console.error("implemet jobPosting delete", id);
+  }
+};
+
+const handlePreview = (id: string) => {
+  console.error("implement preview", id);
 };
 </script>
 
 <template>
   <main class="w-full h-full px-10 pt-20 pb-10">
+    <ConfirmModal
+      ref="confirmModal"
+      title="Bu ilanı silmek istediğinize emin misiniz?"
+      description="Bu işlem geri alınamaz"
+    />
     <div class="w-full flex">
       <!-- Filtreler -->
       <div></div>
@@ -217,12 +224,14 @@ const goToJobPostingEdit = (id: string) => {
                   <td class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200">
                     <span class="cursor-pointer">{{ jobPosting.title }}</span>
                   </td>
-                  <td class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200">Type</td>
-                  <td class="py-3 px-2 border-r text-sm dark:border-gray-700/30 border-gray-200">
-                    {{ formatDateTime(jobPosting.validFrom!) }}
+                  <td class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200">
+                    {{ jobPosting.type }}
                   </td>
                   <td class="py-3 px-2 border-r text-sm dark:border-gray-700/30 border-gray-200">
-                    {{ formatDateTime(jobPosting.validTo!) }}
+                    {{ jobPosting.validFrom ? formatDateTime(jobPosting.validFrom) : "-" }}
+                  </td>
+                  <td class="py-3 px-2 border-r text-sm dark:border-gray-700/30 border-gray-200">
+                    {{ jobPosting.validTo ? formatDateTime(jobPosting.validTo) : "-" }}
                   </td>
                   <td class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200">
                     <span
@@ -232,14 +241,32 @@ const goToJobPostingEdit = (id: string) => {
                           ? 'dark:bg-blue-500/60 bg-blue-500/20 dark:text-gray-200 text-gray-600'
                           : 'dark:bg-red-500/60 bg-red-500/20 dark:text-red-200 text-red-600'
                       "
-                      >{{ jobPosting.vacancyCount ?? "yok" }}</span
+                      >{{ jobPosting.vacancyCount ? jobPosting.vacancyCount : "yok" }}</span
                     >
                   </td>
                   <td class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200">
                     {{ jobPosting.totalApplicationsCount }}
                   </td>
                   <td class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200">
-                    <span class="bg-blue-600 py-0.5 px-1.5 rounded-lg text-gray-100">Status</span>
+                    <span
+                      class="py-0.5 px-1.5 rounded-lg text-gray-100"
+                      :class="
+                        jobPosting.status == 1
+                          ? 'bg-yellow-600'
+                          : jobPosting.status == 2
+                          ? 'bg-green-600'
+                          : jobPosting.status == 3
+                          ? 'bg-red-500'
+                          : jobPosting.status == 4
+                          ? 'bg-red-600'
+                          : jobPosting.status == 5
+                          ? 'bg-orange-500'
+                          : jobPosting.status == 6
+                          ? 'bg-cyan-600'
+                          : 'bg-blue-600'
+                      "
+                      >{{ getJobPostingStatusOptionByValue(jobPosting.status)?.label }}</span
+                    >
                   </td>
                   <td class="py-3 px-2">
                     <button
@@ -256,7 +283,7 @@ const goToJobPostingEdit = (id: string) => {
                         />
                       </svg>
                     </button>
-                    <button class="cursor-pointer pr-1">
+                    <button class="cursor-pointer pr-1" @click.stop="handleDelete(jobPosting.id)">
                       <svg
                         class="size-5 group"
                         viewBox="0 0 24 24"
@@ -294,7 +321,10 @@ const goToJobPostingEdit = (id: string) => {
                         />
                       </svg>
                     </button>
-                    <button class="cursor-pointer pr-1 group">
+                    <button
+                      class="cursor-pointer pr-1 group"
+                      @click.stop="handlePreview(jobPosting.id)"
+                    >
                       <svg
                         class="size-5 group"
                         viewBox="0 0 24 24"

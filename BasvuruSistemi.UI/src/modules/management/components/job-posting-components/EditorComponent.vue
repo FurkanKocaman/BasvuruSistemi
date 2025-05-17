@@ -46,7 +46,6 @@ const createEditor = () => {
   });
 };
 onMounted(() => {
-  console.log("ModelValue", props.modelValue);
   createEditor();
 });
 onBeforeUnmount(() => {

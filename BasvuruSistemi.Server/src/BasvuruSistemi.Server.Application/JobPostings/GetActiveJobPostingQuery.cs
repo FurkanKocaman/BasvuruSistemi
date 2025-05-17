@@ -5,12 +5,11 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace BasvuruSistemi.Server.Application.JobPostings;
-public sealed record GetActiveJobPostingsQuery(
-    int page,
-    int pageSize
-    ) : IRequest<PagedResult<GetActiveJobPostingsQueryResponse>>;
+public sealed record GetActiveJobPostingQuery(
+    Guid? id
+    ) : IRequest<GetActiveJobPostingQueryResponse?>;
 
-public sealed class GetActiveJobPostingsQueryResponse
+public sealed class GetActiveJobPostingQueryResponse
 {
     public Guid Id { get; set; }
 
@@ -31,7 +30,7 @@ public sealed class GetActiveJobPostingsQueryResponse
     public string? ExperienceLevelRequired { get; set; }
     public string? SalaryRange { get; set; }
     public string? SkillsRequired { get; set; }
-
+    
     public string? ContactInfo { get; set; }
     public bool IsPublic { get; set; }
 
@@ -42,23 +41,17 @@ public sealed class GetActiveJobPostingsQueryResponse
 
 }
 
-internal sealed class GetActiveJobPostingsQueryHandler(
+internal sealed class GetActiveJobPostingQueryHandler(
     IJobPostingRepository jobPostingRepository
-    ) : IRequestHandler<GetActiveJobPostingsQuery, PagedResult<GetActiveJobPostingsQueryResponse>>
+    ) : IRequestHandler<GetActiveJobPostingQuery, GetActiveJobPostingQueryResponse?>
 {
-    public Task<PagedResult<GetActiveJobPostingsQueryResponse>> Handle(GetActiveJobPostingsQuery request, CancellationToken cancellationToken)
+    public Task<GetActiveJobPostingQueryResponse?> Handle(GetActiveJobPostingQuery request, CancellationToken cancellationToken)
     {
-        var jobPostings = jobPostingRepository
-            .Where(p => p.Status == JobPostingStatus.Published && p.IsPublic && !p.IsDeleted).Include(p => p.Unit);
+        var jobPosting = jobPostingRepository
+            .Where(p => p.Status == JobPostingStatus.Published && p.IsPublic && !p.IsDeleted && request.id != null ? request.id == p.Id : true).Include(p => p.Unit);
 
-        var totalCount = jobPostings.Count(); 
 
-        var pagedJobPostings = jobPostings
-            .Skip((request.page - 1) * request.pageSize)
-            .Take(request.pageSize)
-            .ToList();
-
-        var response = jobPostings.Select(p => new GetActiveJobPostingsQueryResponse
+        var response = jobPosting.Select(p => new GetActiveJobPostingQueryResponse
         {
             Id = p.Id,
 
@@ -87,8 +80,8 @@ internal sealed class GetActiveJobPostingsQueryHandler(
             Unit = p.Unit != null ? p.Unit.Name : null,
 
             FormTemplateId = p.FormTemplateId,
-        });
+        }).FirstOrDefault();
 
-        return Task.FromResult(new PagedResult<GetActiveJobPostingsQueryResponse>(response, request.page, request.pageSize, totalCount));
+        return Task.FromResult(response ?? null);
     }
 }

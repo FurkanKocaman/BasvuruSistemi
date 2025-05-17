@@ -14,6 +14,12 @@ internal sealed class PostingGroupConfiguration : IEntityTypeConfiguration<Posti
             .OnDelete(DeleteBehavior.NoAction);
 
         builder
+            .HasOne(p => p.Unit)
+            .WithMany()
+            .HasForeignKey(p => p.UnitId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        builder
             .HasOne(p => p.ParentPostingGroup)
             .WithMany(p => p.ChildPostingGroups)
             .HasForeignKey(p => p.ParentPostingGroupId)
