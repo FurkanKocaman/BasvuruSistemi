@@ -55,6 +55,12 @@ const router = createRouter({
       component: () => import("@/modules/management/pages/TenantPage.vue"),
     },
     {
+      path: "/profile",
+      name: "profile",
+      component: () => import("@/modules/profile/pages/ProfilePage.vue"),
+      meta: { title: "Profil Bilgilerim" },
+    },
+    {
       path: "/management",
       name: "management",
       component: () => import("@/modules/management/layouts/ManagementLayout.vue"),

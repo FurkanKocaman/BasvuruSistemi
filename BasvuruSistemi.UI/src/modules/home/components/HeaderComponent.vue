@@ -71,6 +71,9 @@ const setTheme = (theme: Theme) => {
         <router-link to="/tenants" class="text-sm/6 font-semibold text-gray-700 dark:text-gray-50"
           >Yönetim</router-link
         >
+        <router-link to="/profile" class="text-sm/6 font-semibold text-gray-700 dark:text-gray-50"
+          >Profil</router-link
+        >
       </div>
       <div class="hidden lg:flex lg:flex-1 lg:justify-end">
         <div
@@ -135,14 +138,17 @@ const setTheme = (theme: Theme) => {
             </g>
           </svg>
         </div>
-        <div class="flex items-center cursor-pointer select-none">
+        <router-link to="/profile" class="flex items-center cursor-pointer select-none">
           <img
             class="size-10 rounded-full object-cover mx-2"
             src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Alexander_the_Great_Ny_Carlsberg_Glyptotek_IN574_n1.jpg/250px-Alexander_the_Great_Ny_Carlsberg_Glyptotek_IN574_n1.jpg"
             alt=""
           />
-          <span class="dark:text-gray-200 text-gray-700"> {{ userStore.user?.fullName }} </span>
-        </div>
+          <div class="flex flex-col">
+            <span class="dark:text-gray-200 text-gray-700"> {{ userStore.user?.fullName }} </span>
+            <span class="text-xs text-gray-500 dark:text-gray-400">Profil Sayfası</span>
+          </div>
+        </router-link>
       </div>
     </nav>
   </header>
