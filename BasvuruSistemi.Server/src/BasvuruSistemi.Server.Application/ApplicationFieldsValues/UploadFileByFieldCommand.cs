@@ -50,7 +50,7 @@ internal sealed class UploadFileByFieldCommandhandler(
             await request.file.CopyToAsync(stream, cancellationToken);
         }
 
-        var relativePath = $"/uploads/application_files/{userId.Value.ToString()}/{uniqueFileName}";
+        var relativePath = $"/uploads/application_files/{request.applicationId.ToString()}/{userId.Value.ToString()}/{uniqueFileName}";
         return Result<string>.Succeed(relativePath);
     }
 }

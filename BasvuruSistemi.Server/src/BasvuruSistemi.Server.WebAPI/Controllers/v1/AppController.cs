@@ -99,8 +99,8 @@ public class AppController(ISender sender) : ControllerBase
         return response.IsSuccessful ? Ok(response) : BadRequest(response);
     }
 
+    [AllowAnonymous]
     [HttpGet("posting-groups/{id:guid}")]
-    [Authorize()]
     public async Task<ActionResult<PostingGroupGetQueryResponse>> GetPostingGroup(
     Guid id,
     CancellationToken cancellationToken = default)

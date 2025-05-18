@@ -33,13 +33,19 @@ class ApplicationService {
     }
   }
 
-  async uploadFileByField(formFiledId: string, file: File): Promise<Result<string>> {
+  async uploadFileByField(
+    jobPostingId: string,
+    formFiledId: string,
+    file: File
+  ): Promise<Result<string>> {
     const formData = new FormData();
     formData.append("file", file);
 
     try {
       const res = await api.post<Result<string>>(
-        `${import.meta.env.VITE_API_URL}/applications/upload-file/${formFiledId}`,
+        `${
+          import.meta.env.VITE_API_URL
+        }/applications/upload-file/${formFiledId}?applicationId=${jobPostingId}`,
         formData,
         {
           headers: {

@@ -14,10 +14,10 @@ export interface Profile {
 
 // Medeni durum için enum
 export enum MaritalStatus {
-  Single = 'Bekar',
-  Married = 'Evli',
-  Divorced = 'Boşanmış',
-  Widowed = 'Dul'
+  Single = "Bekar",
+  Married = "Evli",
+  Divorced = "Boşanmış",
+  Widowed = "Dul",
 }
 
 // Eğitim bilgileri için arayüz
@@ -64,8 +64,8 @@ export interface Skill {
 
 // Yetenek seviyesi için enum
 export enum SkillLevel {
-  Beginner = 'Başlangıç',
-  Intermediate = 'Orta',
-  Advanced = 'İleri',
-  Expert = 'Uzman'
+  Beginner = "Başlangıç",
+  Intermediate = "Orta",
+  Advanced = "İleri",
+  Expert = "Uzman",
 }

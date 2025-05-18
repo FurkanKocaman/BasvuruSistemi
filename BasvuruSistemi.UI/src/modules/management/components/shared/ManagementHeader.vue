@@ -19,6 +19,7 @@ onMounted(() => {
 
 const setTheme = (theme: Theme) => {
   themeStore.setTheme(theme);
+  console.log(themeStore.currentTheme);
 };
 
 function togglePostingMenu() {

@@ -21,7 +21,6 @@ const getJobPostings = async () => {
 };
 
 const handleFilter = (jobs: GetActiveJobPostingsSummariesQueryResponse[]) => {
-  console.log(jobs);
   filteredJobs.value = jobs;
 };
 
@@ -31,7 +30,7 @@ const resetFilters = () => {
 </script>
 
 <template>
-  <div>
+  <div class="px-20 pt-26 pb-10">
     <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">İş İlanları</h1>
 
     <!-- Filtreler -->

@@ -22,7 +22,6 @@ api.interceptors.request.use(
     if (tenantId) {
       config.headers["X-Current-Tenant"] = tenantId;
     }
-
     return config;
   },
   (error) => {

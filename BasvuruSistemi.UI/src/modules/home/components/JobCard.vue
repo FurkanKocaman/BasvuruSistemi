@@ -31,7 +31,19 @@ const formatDate = (dateString: string): string => {
 const navigateApplication = async () => {
   const res = await applicationService.checkApplicationExist(props.job.id);
   if (res.data) {
-    router.push({ name: "JobApplication", params: { id: props.job.id } });
+    if (props.job.type == 0) {
+      router.push({
+        name: "JobApplication",
+        params: { id: props.job.id },
+        query: { type: props.job.type },
+      });
+    } else if (props.job.type == 1) {
+      router.push({
+        name: "PostingGroupApplication",
+        params: { id: props.job.id },
+        query: { type: props.job.type },
+      });
+    }
   }
 };
 </script>

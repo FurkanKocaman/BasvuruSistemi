@@ -14,12 +14,12 @@ const options = [
 </script>
 
 <template>
-  <div>
+  <div class="px-10 pt-26 pb-10">
     <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Başvurularım</h1>
 
     <!-- Başvuru Filtreleri -->
     <div
-      class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6 border border-gray-200 dark:border-gray-700"
+      class="bg-gray-50 dark:bg-gray-800/40 rounded-lg p-4 mb-6 border border-gray-200 dark:border-gray-700"
     >
       <div class="flex flex-col md:flex-row md:items-center md:justify-start gap-4">
         <!-- Arama -->

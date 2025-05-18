@@ -17,6 +17,7 @@ public sealed class GetActiveJobPostingsSummariesQueryResponse
     public Guid Id { get; set; }
 
     public string Title { get; set; } = default!;
+    public int Type { get; set; } = default!;
     public string? Description { get; set; } = default!;
     public string? Qualifications { get; set; }
 
@@ -53,6 +54,7 @@ internal sealed class GetActiveJobPostingsSummariesQueryHandler(
         {
             Id = p.Id,
 
+            Type=0,
             Title = p.Title,
             Description = p.Description,
             Qualifications = p.Qualifications,
@@ -73,6 +75,8 @@ internal sealed class GetActiveJobPostingsSummariesQueryHandler(
         var postingGroupResponse = postingGroups.Select(p => new GetActiveJobPostingsSummariesQueryResponse
         {
             Id=p.Id,
+
+            Type = 1,
             Title = p.Name,
             Description = p.Description,
             Qualifications = null,

@@ -1,6 +1,7 @@
 export interface GetActiveJobPostingsSummariesQueryResponse {
   id: string;
 
+  type: number;
   title: string;
   description: string;
   qualifications?: string;

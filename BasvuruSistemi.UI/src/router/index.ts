@@ -32,14 +32,21 @@ const router = createRouter({
           path: "jobs",
           name: "Jobs",
           component: () => import("@/modules/home/pages/JobsListingPage.vue"),
-          meta: { title: "İş İlanları" },
+          meta: { title: "İlanlar" },
         },
         {
           path: "jobs/:id/apply",
           name: "JobApplication",
           component: () => import("@/modules/home/pages/JobApplicationPage.vue"),
           props: true,
-          meta: { title: "İş Başvurusu" },
+          meta: { title: "İlan Başvuru" },
+        },
+        {
+          path: "posting-groups/:id/apply",
+          name: "PostingGroupApplication",
+          component: () => import("@/modules/home/pages/PostingGroupApplicationPage.vue"),
+          props: true,
+          meta: { title: "İlan Başvuru" },
         },
         {
           path: "my-applications",

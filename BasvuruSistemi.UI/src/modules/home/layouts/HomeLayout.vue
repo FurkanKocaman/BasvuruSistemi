@@ -1,9 +1,13 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import HeaderComponent from "../components/HeaderComponent.vue";
 import { fetchCurrentUser } from "@/services/current-user.service";
+import { useRoute } from "vue-router";
 
 const isDarkMode = ref(false);
+
+const isRouteChanging = ref(false);
+const route = useRoute();
 
 onMounted(() => {
   fetchCurrentUser();
@@ -13,6 +17,16 @@ onMounted(() => {
     document.documentElement.classList.add("dark");
   }
 });
+
+watch(
+  () => route.fullPath,
+  () => {
+    isRouteChanging.value = true;
+    setTimeout(() => {
+      isRouteChanging.value = false;
+    }, 300);
+  }
+);
 </script>
 
 <template>
@@ -22,9 +36,18 @@ onMounted(() => {
     <header-component></header-component>
 
     <!-- Main Content -->
-    <main class="flex-grow container mx-auto px-4 py-8">
-      <router-view></router-view>
-    </main>
+    <div class="flex-1 overflow-y-auto overflow-x-hidden relative">
+      <router-view v-slot="{ Component }">
+        <transition name="fade" mode="out-in">
+          <div v-if="isRouteChanging" key="loading" class="w-full flex justify-center py-10">
+            <span
+              class="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full"
+            ></span>
+          </div>
+          <component v-else :is="Component" :key="route.fullPath" />
+        </transition>
+      </router-view>
+    </div>
 
     <!-- Footer -->
     <footer class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 py-6">

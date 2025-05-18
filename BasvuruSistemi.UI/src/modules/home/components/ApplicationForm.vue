@@ -41,7 +41,6 @@ const getFormTemplate = async () => {
     const res = await formTemplateService.getFormTemplate(props.job.formTemplateId);
     if (res) {
       fields.value = res.fields;
-      console.log(res);
       res.fields.forEach((element) => {
         values.value[element.id] = undefined;
       });
@@ -50,7 +49,6 @@ const getFormTemplate = async () => {
 };
 
 onMounted(() => {
-  console.log(props.job);
   if (props.job) {
     getFormTemplate();
   }
@@ -65,9 +63,9 @@ const submitForm = async () => {
   for (const field of fields.value) {
     if (field.type === 6 || field.type === 13 || field.type === 15 || field.type === 16) {
       const file = values.value[field.id];
-      if (file) {
+      if (file && props.job) {
         try {
-          const res = await applicationService.uploadFileByField(field.id, file);
+          const res = await applicationService.uploadFileByField(props.job.id, field.id, file);
           if (res.statusCode === 200) {
             values.value[field.id] = res.data;
           } else {

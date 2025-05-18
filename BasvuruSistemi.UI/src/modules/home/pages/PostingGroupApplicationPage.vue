@@ -1,23 +1,15 @@
 <script setup lang="ts">
-import { ref, onMounted, defineComponent } from "vue";
+import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import ApplicationForm from "../components/ApplicationForm.vue";
 import type { Application } from "../data/applications";
-import { GetActiveJobPostingsQueryResponse } from "../models/active-job-posting.model";
 import jobPostingService from "../services/job-posting.service";
 import { PostingGroupGetModel } from "@/modules/management/models/posting-group-get.model";
-
-defineComponent({
-  name: "JobApplicationPage",
-  components: {
-    ApplicationForm,
-  },
-});
+import applicationService from "../services/application.service";
 
 const route = useRoute();
 const router = useRouter();
 
-const job = ref<GetActiveJobPostingsQueryResponse | null>(null);
 const postingGroup = ref<PostingGroupGetModel | null>(null);
 
 const formatDate = (dateString: string): string => {
@@ -35,27 +27,28 @@ onMounted(() => {
   const jobId = String(route.params.id);
   const jobType = Number(route.query.type);
   if (jobId && (jobType == 0 || jobType == 1)) {
-    if (jobType == 0) {
-      getJobPosting(jobId);
-    } else if (jobType == 1) {
-      getPostingGroup(jobId);
-    }
+    getPostingGroup(jobId);
   } else {
     router.push("/jobs");
   }
 });
 
-const getJobPosting = async (id: string) => {
-  const res = await jobPostingService.getActiveJobPosting(id);
-  if (res) {
-    job.value = res;
-  }
-};
 const getPostingGroup = async (id: string) => {
   const res = await jobPostingService.getPostingGroup(id);
   if (res) {
     console.log("PostingGroup res", res);
     postingGroup.value = res;
+  }
+};
+
+const navigateJobPosting = async (id: string) => {
+  const res = await applicationService.checkApplicationExist(id);
+  if (res.data) {
+    router.push({
+      name: "JobApplication",
+      params: { id: id },
+      query: { type: 0 },
+    });
   }
 };
 </script>
@@ -87,40 +80,53 @@ const getPostingGroup = async (id: string) => {
 
     <!-- İş Detayları -->
     <div
-      v-if="job"
+      v-if="postingGroup"
       class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8 border border-gray-200 dark:border-gray-700"
     >
       <div class="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
         <div>
-          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ job.title }}</h1>
+          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ postingGroup.name }}</h1>
           <p class="text-gray-600 dark:text-gray-300 mt-1">
-            {{ job.unit }}
+            {{ postingGroup.unit ?? "-" }}
           </p>
           <div class="mt-2 flex items-center">
             <span class="ml-2 text-gray-500 dark:text-gray-400 text-sm"
-              >İlan Tarihi: {{ formatDate(job.validFrom!) }}</span
+              >İlan Tarihi:
+              {{
+                postingGroup.overallApplicationStartDate
+                  ? formatDate(postingGroup.overallApplicationStartDate)
+                  : "-"
+              }}</span
             >
           </div>
-        </div>
-        <div class="text-right">
-          <p class="text-lg font-semibold text-gray-800 dark:text-white">{{ job.salaryRange }}</p>
         </div>
       </div>
 
       <div class="mt-6">
         <h2 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">İş Açıklaması</h2>
-        <div class="text-gray-600 dark:text-gray-300" v-html="job.description"></div>
-      </div>
-
-      <div class="mt-4">
-        <h2 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">Gereksinimler</h2>
-        <div class="text-gray-800 dark:text-white mb-2" v-html="job.qualifications"></div>
+        <div class="text-gray-600 dark:text-gray-300" v-html="postingGroup.description"></div>
       </div>
     </div>
 
     <!-- Başvuru Formu -->
-    <ApplicationForm v-if="job" :job="job" @submit="handleSubmit" />
+    <!-- <ApplicationForm v-if="job" :job="job" @submit="handleSubmit" /> -->
 
-    <!-- İş bulunamadı -->
+    <div
+      class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700"
+    >
+      <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-6">İlanlar</h2>
+      <div class="flex flex-col w-full">
+        <div
+          v-for="jobPosting in postingGroup?.jobPostings"
+          :key="jobPosting.id"
+          class="w-full border my-2 p-2 rounded-md border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-400/10 transition-all ease-in-out duration-300"
+          @click.stop="navigateJobPosting(jobPosting.id)"
+        >
+          <span class="text-gray-700 dark:text-gray-200 w-full">
+            {{ jobPosting.title }}
+          </span>
+        </div>
+      </div>
+    </div>
   </div>
 </template>

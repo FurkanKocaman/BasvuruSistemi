@@ -43,45 +43,57 @@ public sealed class GetActiveJobPostingQueryResponse
 
 internal sealed class GetActiveJobPostingQueryHandler(
     IJobPostingRepository jobPostingRepository
-    ) : IRequestHandler<GetActiveJobPostingQuery, GetActiveJobPostingQueryResponse?>
+) : IRequestHandler<GetActiveJobPostingQuery, GetActiveJobPostingQueryResponse?>
 {
-    public Task<GetActiveJobPostingQueryResponse?> Handle(GetActiveJobPostingQuery request, CancellationToken cancellationToken)
+    public async Task<GetActiveJobPostingQueryResponse?> Handle(GetActiveJobPostingQuery request, CancellationToken cancellationToken)
     {
-        var jobPosting = jobPostingRepository
-            .Where(p => p.Status == JobPostingStatus.Published && p.IsPublic && !p.IsDeleted && request.id != null ? request.id == p.Id : true).Include(p => p.Unit);
+        var query = jobPostingRepository
+            .Where(p => p.Status == JobPostingStatus.Published && p.IsPublic && !p.IsDeleted);
 
+        if (request.id.HasValue)
+            query = query.Where(p => p.Id == request.id.Value);
 
-        var response = jobPosting.Select(p => new GetActiveJobPostingQueryResponse
+        var jobPosting = await query
+            .Include(p => p.Tenant)
+            .Include(p => p.Unit)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (jobPosting is null)
+            return null;
+
+        var response = new GetActiveJobPostingQueryResponse
         {
-            Id = p.Id,
+            Id = jobPosting.Id,
 
-            Title = p.Title,
-            Description = p.Description,
-            Responsibilities = p.Responsibilities,
-            Qualifications = p.Qualifications,
-            Benefits = p.Benefits,
+            Title = jobPosting.Title,
+            Description = jobPosting.Description,
+            Responsibilities = jobPosting.Responsibilities,
+            Qualifications = jobPosting.Qualifications,
+            Benefits = jobPosting.Benefits,
 
-            ValidFrom = p.ValidFrom,
-            ValidTo = p.ValidTo,
+            ValidFrom = jobPosting.ValidFrom,
+            ValidTo = jobPosting.ValidTo,
 
-            IsRemote = p.IsRemote,
-            LocationText = p.LocationText,
+            IsRemote = jobPosting.IsRemote,
+            LocationText = jobPosting.LocationText,
 
-            VacancyCount = p.VacancyCount,
-            EmploymentType = p.EmploymentType.ToString(),
-            ExperienceLevelRequired = p.ExperienceLevelRequired.ToString(),
-            SalaryRange = p.MinSalary.ToString()+p.Currency + p.MaxSalary.ToString()+p.Currency,
-            SkillsRequired = p.SkillsRequired,
+            VacancyCount = jobPosting.VacancyCount,
+            EmploymentType = jobPosting.EmploymentType?.ToString(),
+            ExperienceLevelRequired = jobPosting.ExperienceLevelRequired?.ToString(),
+            SalaryRange = $"{jobPosting.MinSalary} {jobPosting.Currency} - {jobPosting.MaxSalary} {jobPosting.Currency}",
+            SkillsRequired = jobPosting.SkillsRequired,
 
-            ContactInfo = p.ContactInfo,
-            IsPublic = p.IsPublic,
+            ContactInfo = jobPosting.ContactInfo,
+            IsPublic = jobPosting.IsPublic,
 
-            Tenant = p.Tenant.Name,
-            Unit = p.Unit != null ? p.Unit.Name : null,
+            Tenant = jobPosting.Tenant.Name,
+            Unit = jobPosting.Unit?.Name,
 
-            FormTemplateId = p.FormTemplateId,
-        }).FirstOrDefault();
+            FormTemplateId = jobPosting.FormTemplateId,
+        };
 
-        return Task.FromResult(response ?? null);
+        return response;
     }
+
+
 }
