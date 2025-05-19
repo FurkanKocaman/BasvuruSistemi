@@ -4,6 +4,7 @@ import { useUserStore } from "@/stores/user";
 
 import { computed, onMounted, ref } from "vue";
 
+
 const themeStore = useThemeStore();
 const userStore = useUserStore();
 const user = ref();
@@ -18,6 +19,23 @@ onMounted(() => {
 const setTheme = (theme: Theme) => {
   themeStore.setTheme(theme);
 };
+import {  onBeforeUnmount } from 'vue'
+
+const showNotifications = ref(false)
+
+const notifications = ref([
+  { message: 'Frontend Developer pozisyonuna başvurunuz onaylandı.', status: 'success' },
+  { message: 'Back-End Developer başvurunuz reddedildi.', status: 'error' },
+  { message: 'Yeni ilan: UI/UX Designer yayınlandı.', status: 'info' },
+  { message: 'Mobil Geliştirici başvurunuz inceleniyor.', status: 'pending' },
+  { message: 'Yazılım Test Uzmanı pozisyonu için geri dönüş yapıldı.', status: 'success' },
+  { message: 'Full Stack başvurunuz olumlu değerlendirildi.', status: 'success' },
+  { message: 'Sistem Analisti ilanı yayından kaldırıldı.', status: 'warning' },
+  { message: 'Veri Bilimci başvurunuz eksik bilgi içeriyor.', status: 'warning' },
+  { message: 'Proje Yöneticisi başvurunuz değerlendirme aşamasında.', status: 'pending' },
+  { message: 'Destek Uzmanı başvurunuz reddedildi.', status: 'error' }
+])
+
 </script>
 
 <template>
@@ -62,6 +80,7 @@ const setTheme = (theme: Theme) => {
             İlanlar
           </router-link>
         </div>
+        
 
         <router-link
           to="/my-applications"
@@ -71,10 +90,13 @@ const setTheme = (theme: Theme) => {
         <router-link to="/tenants" class="text-sm/6 font-semibold text-gray-700 dark:text-gray-50"
           >Yönetim</router-link
         >
+        
         <router-link to="/profile" class="text-sm/6 font-semibold text-gray-700 dark:text-gray-50"
           >Profil</router-link
         >
       </div>
+
+      
       <div class="hidden lg:flex lg:flex-1 lg:justify-end">
         <div
           v-if="currentTheme == 'dark'"
@@ -110,6 +132,12 @@ const setTheme = (theme: Theme) => {
           </svg>
         </div>
         <div
+    class="notification-wrapper"
+    @mouseenter="showNotifications = true"
+    @mouseleave="showNotifications = false"
+  >
+    <button class="notification-button">
+      <div
           class="border border-gray-400 dark:border-gray-600 rounded-full w-10 h-10 flex items-center justify-center cursor-pointer mx-3"
         >
           <svg class="size-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -138,6 +166,28 @@ const setTheme = (theme: Theme) => {
             </g>
           </svg>
         </div>
+    </button>
+
+    
+    <div v-if="showNotifications" class="notification-box">
+      <ul>
+        <li v-for="(notif, index) in notifications" :key="index">
+  <span class="icon">
+    <span v-if="notif.status === 'success'"><i class="fa-solid fa-circle-check fa-xl" style="color: #63E6BE;"></i></span>
+    <span v-else-if="notif.status === 'error'"><i class="fa-solid fa-circle-xmark fa-xl" style="color: #f73636;"></i></span>
+    <span v-else-if="notif.status === 'info'"><i class="fa-solid fa-circle-info fa-xl" style="color: #74C0FC;"></i></span>
+    <span v-else-if="notif.status === 'warning'"><i class="fa-solid fa-circle-exclamation fa-xl" style="color: #e2b922;"></i></span>
+    <span v-else-if="notif.status === 'pending'"><i class="fa-solid fa-clock fa-xl" style="color: #808080;"></i></span>
+  </span>
+  {{notif.message }}
+</li>
+
+      </ul>
+    </div>
+  </div>
+    
+          
+       
         <router-link to="/profile" class="flex items-center cursor-pointer select-none">
           <img
             class="size-10 rounded-full object-cover mx-2"
@@ -153,4 +203,49 @@ const setTheme = (theme: Theme) => {
     </nav>
   </header>
 </template>
-<style scoped></style>
+<style scoped>
+
+.notification-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.notification-button {
+  background: none;
+  border: none;
+  font-size: 22px;
+  color: #ffffffcc;
+  cursor: pointer;
+}
+
+.notification-box {
+  position: absolute;
+  top: 36px;
+  right: 7px;
+  width: 300px;
+  max-height: 300px;
+  overflow-y: auto;
+  background-color: #1e2733;
+  border: 1px solid #3b4552;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+.notification-box ul {
+  list-style: none;
+  margin: 0;
+  padding: 10px;
+  color: #ffffffcc;
+}
+
+.notification-box li {
+  padding: 10px;
+  font-size: 14px;
+  border-bottom: 1px solid #2a3441;
+}
+
+.notification-box li:last-child {
+  border-bottom: none;
+}
+</style>
