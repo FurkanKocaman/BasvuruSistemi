@@ -57,12 +57,6 @@ internal sealed class ApplicationDbContext: IdentityDbContext<AppUser, AppRole,G
         modelBuilder.Ignore<IdentityUserLogin<Guid>>();
         modelBuilder.Ignore<IdentityUserToken<Guid>>();
         modelBuilder.Ignore<IdentityUserRole<Guid>>();
-
-        modelBuilder.Entity<Address>()
-            .HasOne(p => p.User)
-            .WithOne(p => p.Address)
-            .HasForeignKey<AppUser>(p => p.AddressId)
-            .OnDelete(DeleteBehavior.NoAction);
     }
 
     public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)

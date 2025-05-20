@@ -1,7 +1,5 @@
 ﻿using BasvuruSistemi.Server.Application.Auth;
-using BasvuruSistemi.Server.Domain.Addresses;
 using BasvuruSistemi.Server.Domain.DTOs;
-using BasvuruSistemi.Server.Domain.UnitOfWork;
 using BasvuruSistemi.Server.Domain.Users;
 using BasvuruSistemi.Server.Domain.ValueObjects;
 using MediatR;
@@ -24,8 +22,6 @@ public sealed record UserCreateCommand(
 
 internal sealed class UserCreateCommandHandler(
     UserManager<AppUser> userManager,
-    IAddressRepository addressRepository,
-    IUnitOfWork unitOfWork,
     ISender sender 
     ) : IRequestHandler<UserCreateCommand, Result<LoginCommandResponse>>
 {
@@ -60,13 +56,6 @@ internal sealed class UserCreateCommandHandler(
         user.Email = request.email;
 
         IdentityResult result = await userManager.CreateAsync(user, request.password);
-
-        Address address = new(request.address.Street,request.address.District,request.address.City,request.address.Country,request.address.PostalCode,request.address.PostalCode,user.Id);
-
-        addressRepository.Add(address);
-        await unitOfWork.SaveChangesAsync(cancellationToken);
-
-        user.AddAddress(address.Id);
 
         await userManager.UpdateAsync(user);
 

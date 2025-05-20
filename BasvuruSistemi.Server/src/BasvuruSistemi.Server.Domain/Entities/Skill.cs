@@ -22,4 +22,10 @@ public sealed class Skill
         Description = description;
         Level = level;
     }
+    public void Update(string name, string? description, SkillLevel level)
+    {
+        Name = name;
+        Description = description;
+        Level = level;
+    }
 }

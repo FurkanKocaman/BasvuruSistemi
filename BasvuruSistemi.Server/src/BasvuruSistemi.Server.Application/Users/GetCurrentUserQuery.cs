@@ -5,6 +5,7 @@ using BasvuruSistemi.Server.Domain.Enums;
 using BasvuruSistemi.Server.Domain.Users;
 using BasvuruSistemi.Server.Domain.ValueObjects;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,18 +20,20 @@ public sealed class GetCurrentUserQueryResponse
     public string LastName { get; set; } = default!;
     public string FullName => FirstName + " " + LastName;
 
+    public string? AvatarUrl { get; set; }
     public string? Nationality { get; set; }
     public string? TCKN { get; set; }
     public ProfileStatus ProfileStatus { get;  set; }
 
-    public AddressDto Address { get; set; } = default!;
+    //public AddressDto Address { get; set; } = default!;
     public Contact Contact { get; set; } = default!;
 }
 
 internal sealed class GetCurrentUserQueryHandler(
     ICurrentUserService currentUserService,
     IAddressRepository addressRepository,
-    UserManager<AppUser> userManager
+    UserManager<AppUser> userManager,
+    IHttpContextAccessor httpContextAccessor
     ) : IRequestHandler<GetCurrentUserQuery, GetCurrentUserQueryResponse?>
 {
     public async Task<GetCurrentUserQueryResponse?> Handle(GetCurrentUserQuery request, CancellationToken cancellationToken)
@@ -47,17 +50,21 @@ internal sealed class GetCurrentUserQueryHandler(
 
         var address = await addressRepository.Where(p => p.UserId == user.Id).FirstOrDefaultAsync();
 
+        var context = httpContextAccessor.HttpContext?.Request;
+
         return new GetCurrentUserQueryResponse
         {
             Id = user!.Id,
             FirstName = user.FirstName,
             LastName = user.LastName,
 
+            AvatarUrl = $"{context?.Scheme}://{context?.Host}/{user.AvatarUrl}",
+
             Nationality = user.Nationality,
             TCKN = user.TCKN,
             ProfileStatus = user.ProfileStatus,
 
-            Address = new(address?.Country,address?.City,address?.District,address?.Street,address?.FullAddress,address?.PostalCode),
+            //Address = new(address?.Id, address?.Country,address?.City,address?.District,address?.Street,address?.FullAddress,address?.PostalCode),
             Contact = user.Contact,
         };
 

@@ -22,10 +22,7 @@ public sealed class AppUser : IdentityUser<Guid>
     public string? AvatarUrl { get; private set; }
     public Contact Contact { get; private set; } = default!;
 
-    public Guid? AddressId { get; private set; }
-    [ForeignKey(nameof(AddressId))]
-    public Address? Address { get; private set; } 
-
+    public ICollection<Address>? Addresses { get; private set; } = new List<Address>();
     public ICollection<Education> EducationHistory { get; private set; } = new List<Education>();
     public ICollection<Experience> WorkExperience { get; private set; } = new List<Experience>();
     public ICollection<Certification> Certifications { get; private set; } = new List<Certification>();
@@ -50,6 +47,7 @@ public sealed class AppUser : IdentityUser<Guid>
         Id = Guid.CreateVersion7();
         FirstName = firstName;
         LastName = lastName;
+        Email = contact.Email;
         BirthOfDate = bod;
         Nationality = nationality;
         TCKN = tCKN;
@@ -57,10 +55,14 @@ public sealed class AppUser : IdentityUser<Guid>
         Contact = contact;
         CreatedAt = DateTimeOffset.Now;
     }
-
-    public void AddAddress(Guid addressId)
-    {
-        AddressId = addressId;
+    public void Update(string firstName, string lastName, DateOnly? bod, string? nationality, string? tCKN, Contact contact){
+        FirstName = firstName;
+        LastName = lastName;
+        BirthOfDate = bod;
+        Nationality = nationality;
+        TCKN = tCKN;
+        ProfileStatus = ProfileStatus.Draft;
+        Contact = contact;
     }
 
     public void setAvatar(string url)
