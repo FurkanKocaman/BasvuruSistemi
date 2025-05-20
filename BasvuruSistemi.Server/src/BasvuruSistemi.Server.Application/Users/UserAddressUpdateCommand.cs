@@ -12,7 +12,7 @@ public sealed record UserAddressUpdateCommand(
     string? City,
     string? Country,
     string? PostalCode, 
-    string? FullAdress, 
+    string? FullAdress,
     Guid UserId
     ) : IRequest<Result<string>>;
 
@@ -29,11 +29,11 @@ internal sealed class UserAddressUpdateCommandHandler(
         if (!userId.HasValue)
             return Result<string>.Failure(404, "User not found");
 
-        var address = await addressRepository.Where(p => p.UserId == request.UserId && !p.IsDeleted && p.IsActive).FirstOrDefaultAsync();
+        var address = await addressRepository.Where(p => p.UserId == userId.Value && !p.IsDeleted && p.IsActive).FirstOrDefaultAsync();
 
         if(address is null)
         {
-            address = new Address(request.Street,request.District,request.City, request.Country, request.PostalCode, request.FullAdress, request.UserId);
+            address = new Address(request.Street,request.District,request.City, request.Country, request.PostalCode, request.FullAdress, userId.Value);
             addressRepository.Add(address);
 
         }

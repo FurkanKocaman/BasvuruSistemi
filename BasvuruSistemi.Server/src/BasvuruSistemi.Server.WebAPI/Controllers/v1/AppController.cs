@@ -23,6 +23,14 @@ public class AppController(ISender sender) : ControllerBase
         return Ok(response);
     }
 
+    [HttpGet("users/profile/{id:guid}")]
+    [Authorize]
+    public async Task<ActionResult<GetUserProfileQueryResponse>> GetUserProfile(Guid id, CancellationToken cancellationToken = default)
+    {
+        var response = await sender.Send(new GetUserProfileQuery(id), cancellationToken);
+        return Ok(response);
+    }
+
     [HttpGet("units")]
     [Authorize()]
     public async Task<ActionResult<GetAllUnitsByTenantQueryResponse>> GetAllUnitsByTenant(CancellationToken cancellationToken = default)
