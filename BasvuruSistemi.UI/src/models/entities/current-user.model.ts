@@ -7,6 +7,8 @@ export interface CurrentUserModel {
   lastName: string;
   fullName: string;
 
+  avatarUrl?: string;
+
   nationality?: string;
   tckn?: string;
   profileStatus: string;
