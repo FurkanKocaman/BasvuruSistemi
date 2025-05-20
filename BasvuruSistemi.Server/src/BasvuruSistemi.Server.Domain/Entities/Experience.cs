@@ -10,12 +10,13 @@ public sealed class Experience
 
     public string CompanyName { get; private set; } = default!;
     public string Position { get; private set; } = default!;
+    public string? Location { get; private set; }
     public DateOnly StartDate { get; private set; }
     public DateOnly? EndDate { get; private set; }
-    public string? Responsibilities { get; private set; }
+    public string? Description { get; private set; }
 
     private Experience() { }
-    public Experience(Guid userId, string company, string position, DateOnly start, DateOnly? end = null, string? resp = null)
+    public Experience(Guid userId, string company, string position, DateOnly start, DateOnly? end = null, string? description = null, string? location = null)
     {
         if (end.HasValue && start > end.Value)
             throw new ArgumentException("StartDate must be before EndDate.");
@@ -25,6 +26,7 @@ public sealed class Experience
         Position = position;
         StartDate = start;
         EndDate = end;
-        Responsibilities = resp;
+        Description = description;
+        Location = location;
     }
 }

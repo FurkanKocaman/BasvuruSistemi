@@ -10,12 +10,14 @@ public sealed class Education
 
     public string Institution { get; private set; } = default!;
     public string Department { get; private set; } = default!;
+    public string? Degree { get; private set; }
+    public string? Description { get; private set; }
     public DateOnly StartDate { get; private set; }
     public DateOnly GraduationDate { get; private set; }
     public double? GPA { get; private set; }
 
     private Education() { }
-    public Education(Guid userId, string institution, string department, DateOnly start, DateOnly grad, double? gpa = null)
+    public Education(Guid userId, string institution, string department,  DateOnly start, DateOnly grad, double? gpa = null, string? degree = null, string? description = null)
     {
         if (start > grad) throw new ArgumentException("StartDate must be before GraduationDate.");
         Id = Guid.CreateVersion7();
@@ -25,5 +27,7 @@ public sealed class Education
         StartDate = start;
         GraduationDate = grad;
         GPA = gpa;
+        Degree = degree;
+        Description = description;
     }
 }
