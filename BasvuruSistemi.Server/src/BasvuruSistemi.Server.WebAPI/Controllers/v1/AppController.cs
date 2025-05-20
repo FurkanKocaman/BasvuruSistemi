@@ -23,9 +23,9 @@ public class AppController(ISender sender) : ControllerBase
         return Ok(response);
     }
 
-    [HttpGet("users/profile/{id:guid}")]
+    [HttpGet("users/profile")]
     [Authorize]
-    public async Task<ActionResult<GetUserProfileQueryResponse>> GetUserProfile(Guid id, CancellationToken cancellationToken = default)
+    public async Task<ActionResult<GetUserProfileQueryResponse>> GetUserProfile([FromQuery]Guid? id, CancellationToken cancellationToken = default)
     {
         var response = await sender.Send(new GetUserProfileQuery(id), cancellationToken);
         return Ok(response);

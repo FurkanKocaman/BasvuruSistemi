@@ -23,4 +23,11 @@ public sealed class Certification
         DateReceived = received;
         ExpiryDate = expiry;
     }
+    public void Update(string title, string issuer, DateOnly received, DateOnly? expiry = null)
+    {
+        Title = title;
+        Issuer = issuer;
+        DateReceived = received;
+        ExpiryDate = expiry;
+    }
 }

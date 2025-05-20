@@ -2,6 +2,7 @@
 using BasvuruSistemi.Server.Domain.DTOs;
 using BasvuruSistemi.Server.Domain.Enums;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting.Internal;
 using TS.Result;
@@ -22,13 +23,6 @@ public sealed class GetApplicationQueryResponse
     public string? Phone { get; set; } 
     public string? TCKN { get; set; }
 
-    public string? Country { get; set; }
-    public string? City { get; set; }
-    public string? District { get; set; }
-    public string? Street { get; set; }
-    public string? FullAddress { get; set; }
-    public string? PostalCode { get; set; }
-
     public Guid JobPostingId { get; set; }
     public string JobPostingTitle { get; set; } = default!;
     public DateTimeOffset JobPostingCreateDate { get; set; } = default!;
@@ -46,14 +40,15 @@ public sealed class GetApplicationQueryResponse
 }
 
 internal sealed class GetApplicationQueryHandler(
-    IApplicationRepository applicationRepository
+    IApplicationRepository applicationRepository,
+    IHttpContextAccessor httpContextAccessor
     ) : IRequestHandler<GetApplicationQuery, Result<GetApplicationQueryResponse>>
 {
     public Task<Result<GetApplicationQueryResponse>> Handle(GetApplicationQuery request, CancellationToken cancellationToken)
     {
         var application = applicationRepository.Where(p => p.Id == request.applicationId)
             .Include(p => p.User)
-            .ThenInclude(p => p.Address)
+            .ThenInclude(p => p.Addresses)
             .Include(p => p.FieldValues)
             .ThenInclude(p => p.FieldDefinition)
             .Include(p => p.JobPosting)
@@ -69,6 +64,7 @@ internal sealed class GetApplicationQueryHandler(
 
         var totalApplicationCount = applicationRepository.Where(p => p.JobPostingId == application.JobPostingId && !p.IsDeleted).Count();
 
+        var context = httpContextAccessor.HttpContext?.Request;
 
         var response = new GetApplicationQueryResponse
         {
@@ -81,12 +77,12 @@ internal sealed class GetApplicationQueryHandler(
             Phone = application.User.Contact.Phone,
             TCKN = application.User.TCKN,
 
-            Country = application.User.Address?.Country,
-            City = application.User.Address?.City,
-            District = application.User.Address?.District,
-            Street = application.User.Address?.Street,
-            FullAddress = application.User.Address?.FullAddress,
-            PostalCode = application.User.Address?.PostalCode,
+            //Country = application.User.Address?.Country,
+            //City = application.User.Address?.City,
+            //District = application.User.Address?.District,
+            //Street = application.User.Address?.Street,
+            //FullAddress = application.User.Address?.FullAddress,
+            //PostalCode = application.User.Address?.PostalCode,
 
             JobPostingId = application.JobPostingId,
             JobPostingTitle = application.JobPosting.Title,
@@ -104,7 +100,7 @@ internal sealed class GetApplicationQueryHandler(
                 p.FieldDefinitionId,
                 p.FieldDefinition.Label,
                 p.FieldDefinition.Type,
-                p.Value
+                (p.FieldDefinition.Type == FieldTypeEnum.File || p.FieldDefinition.Type == FieldTypeEnum.Image || p.FieldDefinition.Type == FieldTypeEnum.EDevletVerifiedFile || p.FieldDefinition.Type == FieldTypeEnum.YoksisAlesDocument) ? $"{context?.Scheme}://{context?.Host}{p.Value}" : p.Value
             )).ToList(),
         };
 
