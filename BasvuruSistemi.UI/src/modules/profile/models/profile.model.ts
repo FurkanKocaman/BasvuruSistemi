@@ -1,18 +1,28 @@
+import { Address } from "@/models/entities/address-model";
+
 // Profil modeli için temel arayüz
 export interface Profile {
   id: string;
+
   firstName: string;
   lastName: string;
-  tcKimlikNo: string;
+  birthOfDate?: string;
+  nationality?: string;
+  tckn?: string;
+  profileStatus: number;
+  avatarUrl?: string;
+  email?: string;
+  phone?: string;
+  addresses: Address[];
+
   maritalStatus: MaritalStatus;
-  profilePicture: string;
-  education: Education[];
+
+  educations: Education[];
   certificates: Certificate[];
-  workExperience: WorkExperience[];
+  experiences: WorkExperience[];
   skills: Skill[];
 }
 
-// Medeni durum için enum
 export enum MaritalStatus {
   Single = "Bekar",
   Married = "Evli",
@@ -20,52 +30,39 @@ export enum MaritalStatus {
   Widowed = "Dul",
 }
 
-// Eğitim bilgileri için arayüz
 export interface Education {
   id: string;
-  schoolName: string;
-  degree: string;
-  fieldOfStudy: string;
+  institution: string;
+  department: string;
+  degree?: string;
+  description?: string;
   startDate: string;
-  endDate: string | null;
-  isCurrentlyStudying: boolean;
-  description: string;
+  graduationDate?: string;
+  gpa?: number;
 }
 
-// Sertifikalar için arayüz
 export interface Certificate {
   id: string;
-  name: string;
-  issuingOrganization: string;
-  issueDate: string;
-  expirationDate: string | null;
-  credentialId: string;
-  credentialUrl: string;
+  title: string;
+  issuer: string;
+  dateReceived: string;
+  expiryDate?: string;
 }
 
-// İş deneyimi için arayüz
 export interface WorkExperience {
   id: string;
-  title: string;
   companyName: string;
-  location: string;
+  position: string;
+  location?: string;
   startDate: string;
-  endDate: string | null;
+  endDate?: string;
   isCurrentlyWorking: boolean;
-  description: string;
+  description?: string;
 }
 
-// Yetenekler için arayüz
 export interface Skill {
   id: string;
   name: string;
-  level: SkillLevel;
-}
-
-// Yetenek seviyesi için enum
-export enum SkillLevel {
-  Beginner = "Başlangıç",
-  Intermediate = "Orta",
-  Advanced = "İleri",
-  Expert = "Uzman",
+  description?: string;
+  level: number;
 }

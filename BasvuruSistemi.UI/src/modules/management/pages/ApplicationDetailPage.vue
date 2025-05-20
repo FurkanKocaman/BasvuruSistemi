@@ -14,8 +14,6 @@ const id = route.params.id as string | undefined;
 const confirmModal = ref();
 const modalTitle = ref("");
 
-const apiUrl = import.meta.env.VITE_API_PUBLIC_URL;
-
 const application = ref<ApplicationGetDetailModel>({
   id: "",
   jobPostingId: "",
@@ -323,10 +321,10 @@ function formatDateTime(value: string): string {
                     v-if="
                       field.type == 6 || field.type == 13 || field.type == 15 || field.type == 16
                     "
-                    :href="apiUrl + field.value"
+                    :href="field.value"
                     class="text-blue-500"
                     target="_blank"
-                    >{{ field.value ? apiUrl + field.value : "-" }}</a
+                    >{{ field.value ? field.value : "-" }}</a
                   >
                   <span v-else-if="field.type == 7">
                     {{ field.value ? formatDateTime(field.value) : "-" }}

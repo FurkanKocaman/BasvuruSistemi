@@ -1,106 +1,335 @@
-import { Profile, MaritalStatus, SkillLevel } from "../models/profile.model";
+import api from "@/services/Axios";
+import { Certificate, Education, Profile, Skill, WorkExperience } from "../models/profile.model";
+import { EducationCreateModel } from "../models/education-create.model";
+import { useToastStore } from "@/modules/toast/store/toast.store";
+import { Result } from "@/models/entities/result.model";
+import { CertificateCreateModel } from "../models/certificate-create.model";
+import { ExperienceCreateModel } from "../models/experience-create.model";
+import { SkillCreateModel } from "../models/skill-create.model";
+import { UserUpdatemodel } from "../models/user-update.model";
+import { AddressUpdateModel } from "../models/address-update.model";
+import { Address } from "@/models/entities/address-model";
 
-// Profil servisi - şu an için statik veriler içeriyor
-// Daha sonra backend bağlantısı eklenecek
-export class ProfileService {
-  // Kullanıcı profil bilgilerini getir
-  static async getUserProfile(): Promise<Profile> {
-    // Şu an için dummy veri dönüyoruz
-    // Gerçek uygulamada bu veri API'den gelecek
-    return {
-      id: "1",
-      firstName: "Ahmet",
-      lastName: "Yılmaz",
-      tcKimlikNo: "12345678910",
-      maritalStatus: MaritalStatus.Married,
-      profilePicture: "https://randomuser.me/api/portraits/women/18.jpg",
-      education: [
+class ProfileService {
+  toastStore = useToastStore();
+
+  async getUserProfile(id?: string): Promise<Profile> {
+    try {
+      const res = id
+        ? await api.get<Profile>(`${import.meta.env.VITE_API_URL}/api/users/profile?id=${id}`)
+        : await api.get<Profile>(`${import.meta.env.VITE_API_URL}/api/users/profile`);
+      return res.data;
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  }
+
+  async updateUser(request: UserUpdatemodel): Promise<string> {
+    try {
+      const res = await api.put<Result<string>>(
+        `${import.meta.env.VITE_API_URL}/users/${request.id}`,
+        request
+      );
+      this.toastStore.addToast({
+        message: res.data.data,
+        type: res.status == 200 ? "success" : "error",
+        duration: 3000,
+      });
+      return res.data.data;
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  }
+
+  async updateUserAvatar(file: File): Promise<string> {
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await api.put<Result<string>>(
+        `${import.meta.env.VITE_API_URL}/users/avatar`,
+        formData
+      );
+      this.toastStore.addToast({
+        message: res.data.data,
+        type: res.status == 200 ? "success" : "error",
+        duration: 3000,
+      });
+      return res.data.data;
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  }
+
+  async createAddress(request: AddressUpdateModel): Promise<Address> {
+    try {
+      const res = await api.post<Result<Address>>(
+        `${import.meta.env.VITE_API_URL}/users/address`,
+        request
+      );
+      this.toastStore.addToast({
+        message: "Adres oluşturuldu",
+        type: res.status == 200 ? "success" : "error",
+        duration: 3000,
+      });
+      return res.data.data;
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  }
+
+  async deleteAddress(id: string): Promise<string> {
+    try {
+      const res = await api.delete<Result<string>>(
+        `${import.meta.env.VITE_API_URL}/users/address/${id}`
+      );
+      this.toastStore.addToast({
+        message: "Adres silindi",
+        type: res.status == 200 ? "success" : "error",
+        duration: 3000,
+      });
+      return res.data.data;
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  }
+
+  async updateAddress(id: string, request: AddressUpdateModel): Promise<string> {
+    try {
+      const res = await api.put<Result<string>>(
+        `${import.meta.env.VITE_API_URL}/users/address/${id}`,
+        request
+      );
+      this.toastStore.addToast({
+        message: "Adres güncellendi",
+        type: res.status == 200 ? "success" : "error",
+        duration: 3000,
+      });
+      return res.data.data;
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  }
+
+  async createSkill(request: SkillCreateModel): Promise<Skill> {
+    try {
+      const res = await api.post<Result<Skill>>(
+        `${import.meta.env.VITE_API_URL}/users/skill`,
+        request
+      );
+      this.toastStore.addToast({
+        message: "Yetenek eklendi",
+        type: res.status == 200 ? "success" : "error",
+        duration: 3000,
+      });
+      return res.data.data;
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  }
+  async updateSkill(request: SkillCreateModel): Promise<string> {
+    try {
+      const res = await api.put<Result<string>>(
+        `${import.meta.env.VITE_API_URL}/users/skill/${request.id}`,
         {
-          id: "1",
-          schoolName: "İstanbul Teknik Üniversitesi",
-          degree: "Lisans",
-          fieldOfStudy: "Bilgisayar Mühendisliği",
-          startDate: "2015-09-01",
-          endDate: "2019-06-30",
-          isCurrentlyStudying: false,
-          description: "Bilgisayar Mühendisliği bölümünden mezun oldum.",
-        },
+          skill: request,
+        }
+      );
+      this.toastStore.addToast({
+        message: "Yetenek güncellendi",
+        type: res.status == 200 ? "success" : "error",
+        duration: 3000,
+      });
+      return res.data.data;
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  }
+
+  async deleteSkill(id: string): Promise<string> {
+    try {
+      const res = await api.delete(`${import.meta.env.VITE_API_URL}/users/skill/${id}`);
+
+      this.toastStore.addToast({
+        message: res.data.data,
+        type: res.status == 200 ? "success" : "error",
+        duration: 3000,
+      });
+
+      return res.data.data;
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  }
+
+  async createExperience(request: ExperienceCreateModel): Promise<WorkExperience> {
+    try {
+      const res = await api.post<Result<WorkExperience>>(
+        `${import.meta.env.VITE_API_URL}/users/experience`,
+        request
+      );
+      this.toastStore.addToast({
+        message: "Deneyim eklendi",
+        type: res.status == 200 ? "success" : "error",
+        duration: 3000,
+      });
+      return res.data.data;
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  }
+  async updateExperience(request: ExperienceCreateModel): Promise<string> {
+    try {
+      const res = await api.put<Result<string>>(
+        `${import.meta.env.VITE_API_URL}/users/experience/${request.id}`,
         {
-          id: "2",
-          schoolName: "Boğaziçi Üniversitesi",
-          degree: "Yüksek Lisans",
-          fieldOfStudy: "Yapay Zeka",
-          startDate: "2019-09-01",
-          endDate: null,
-          isCurrentlyStudying: true,
-          description: "Yapay Zeka alanında yüksek lisans eğitimime devam ediyorum.",
-        },
-      ],
-      certificates: [
+          experience: request,
+        }
+      );
+      this.toastStore.addToast({
+        message: "Deneyim güncellendi",
+        type: res.status == 200 ? "success" : "error",
+        duration: 3000,
+      });
+      return res.data.data;
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  }
+
+  async deleteExperience(id: string): Promise<string> {
+    try {
+      const res = await api.delete(`${import.meta.env.VITE_API_URL}/users/experience/${id}`);
+
+      this.toastStore.addToast({
+        message: res.data.data,
+        type: res.status == 200 ? "success" : "error",
+        duration: 3000,
+      });
+
+      return res.data.data;
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  }
+
+  async createCertificate(request: CertificateCreateModel): Promise<Certificate> {
+    try {
+      const res = await api.post<Result<Certificate>>(
+        `${import.meta.env.VITE_API_URL}/users/certificates`,
+        request
+      );
+      this.toastStore.addToast({
+        message: "Sertifika eklendi",
+        type: res.status == 200 ? "success" : "error",
+        duration: 3000,
+      });
+      return res.data.data;
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  }
+  async updateCertificate(request: CertificateCreateModel): Promise<string> {
+    try {
+      const res = await api.put<Result<string>>(
+        `${import.meta.env.VITE_API_URL}/users/certificates/${request.id}`,
         {
-          id: "1",
-          name: "AWS Certified Solutions Architect",
-          issuingOrganization: "Amazon Web Services",
-          issueDate: "2020-05-15",
-          expirationDate: "2023-05-15",
-          credentialId: "AWS-123456",
-          credentialUrl: "https://aws.amazon.com/certification/",
-        },
+          certificate: request,
+        }
+      );
+      this.toastStore.addToast({
+        message: "Sertifika güncellendi",
+        type: res.status == 200 ? "success" : "error",
+        duration: 3000,
+      });
+      return res.data.data;
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  }
+
+  async deleteCertificate(id: string): Promise<string> {
+    try {
+      const res = await api.delete(`${import.meta.env.VITE_API_URL}/users/certificates/${id}`);
+
+      this.toastStore.addToast({
+        message: res.data.data,
+        type: res.status == 200 ? "success" : "error",
+        duration: 3000,
+      });
+
+      return res.data.data;
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  }
+
+  async createEducation(request: EducationCreateModel): Promise<Education> {
+    try {
+      const res = await api.post<Result<Education>>(
+        `${import.meta.env.VITE_API_URL}/users/education`,
+        request
+      );
+      console.log(res);
+      this.toastStore.addToast({
+        message: "Eğitim bilgisi oluşturuldu",
+        type: res.status == 200 ? "success" : "error",
+        duration: 3000,
+      });
+      return res.data.data;
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  }
+  async updateEducation(request: EducationCreateModel): Promise<string> {
+    try {
+      const res = await api.put<Result<string>>(
+        `${import.meta.env.VITE_API_URL}/users/education/${request.id}`,
         {
-          id: "2",
-          name: "Microsoft Certified: Azure Developer Associate",
-          issuingOrganization: "Microsoft",
-          issueDate: "2021-03-10",
-          expirationDate: null,
-          credentialId: "MS-789012",
-          credentialUrl: "https://learn.microsoft.com/certifications/",
-        },
-      ],
-      workExperience: [
-        {
-          id: "1",
-          title: "Frontend Geliştirici",
-          companyName: "Teknoloji A.Ş.",
-          location: "İstanbul",
-          startDate: "2019-07-15",
-          endDate: "2022-01-31",
-          isCurrentlyWorking: false,
-          description: "Vue.js ve React kullanarak web uygulamaları geliştirdim.",
-        },
-        {
-          id: "2",
-          title: "Kıdemli Frontend Geliştirici",
-          companyName: "Yazılım Ltd. Şti.",
-          location: "İstanbul",
-          startDate: "2022-02-01",
-          endDate: null,
-          isCurrentlyWorking: true,
-          description: "Vue 3 ve TypeScript ile kurumsal web uygulamaları geliştiriyorum.",
-        },
-      ],
-      skills: [
-        {
-          id: "1",
-          name: "Vue.js",
-          level: SkillLevel.Expert,
-        },
-        {
-          id: "2",
-          name: "TypeScript",
-          level: SkillLevel.Advanced,
-        },
-        {
-          id: "3",
-          name: "Tailwind CSS",
-          level: SkillLevel.Advanced,
-        },
-        {
-          id: "4",
-          name: "Node.js",
-          level: SkillLevel.Intermediate,
-        },
-      ],
-    };
+          education: request,
+        }
+      );
+      this.toastStore.addToast({
+        message: "Eğitim bilgisi güncellendi",
+        type: res.status == 200 ? "success" : "error",
+        duration: 3000,
+      });
+      return res.data.data;
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  }
+  async deleteEducation(id: string): Promise<string> {
+    try {
+      const res = await api.delete(`${import.meta.env.VITE_API_URL}/users/education/${id}`);
+
+      this.toastStore.addToast({
+        message: res.data.data,
+        type: res.status == 200 ? "success" : "error",
+        duration: 3000,
+      });
+
+      return res.data.data;
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
   }
 
   // Profil bilgilerini güncelle
@@ -111,3 +340,5 @@ export class ProfileService {
     return true;
   }
 }
+
+export default new ProfileService();

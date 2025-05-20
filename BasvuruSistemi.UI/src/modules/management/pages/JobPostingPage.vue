@@ -269,10 +269,7 @@ const handlePreview = (id: string) => {
                     >
                   </td>
                   <td class="py-3 px-2">
-                    <button
-                      class="cursor-pointer pr-1 group"
-                      @click="goToJobPostingEdit(jobPosting.id)"
-                    >
+                    <button class="cursor-pointer pr-1 group">
                       <svg
                         class="size-5 dark:fill-gray-400 fill-gray-600 group-hover:fill-blue-600 dark:group-hover:fill-blue-600"
                         viewBox="0 0 24 24"
