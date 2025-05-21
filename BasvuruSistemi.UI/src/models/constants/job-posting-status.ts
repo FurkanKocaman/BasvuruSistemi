@@ -8,16 +8,42 @@ export enum JobPostingStatusEnum {
 }
 
 export const JobPostingStatusOptions = [
-  { label: "Taslak", value: JobPostingStatusEnum.Draft, icon: "TextCursorInput" },
-  { label: "Yayında", value: JobPostingStatusEnum.Published, icon: "TextCursorInput" },
-  { label: "Durdurulmuş", value: JobPostingStatusEnum.OnHold, icon: "TextCursorInput" },
-  { label: "Kapatılmış", value: JobPostingStatusEnum.Closed, icon: "TextCursorInput" },
+  {
+    label: "Taslak",
+    value: JobPostingStatusEnum.Draft,
+    class: "bg-yellow-600",
+    icon: "TextCursorInput",
+  },
+  {
+    label: "Yayında",
+    value: JobPostingStatusEnum.Published,
+    class: "bg-green-600",
+    icon: "TextCursorInput",
+  },
+  {
+    label: "Durdurulmuş",
+    value: JobPostingStatusEnum.OnHold,
+    class: "bg-orange-600",
+    icon: "TextCursorInput",
+  },
+  {
+    label: "Kapatılmış",
+    value: JobPostingStatusEnum.Closed,
+    class: "bg-red-600",
+    icon: "TextCursorInput",
+  },
   {
     label: "Son Başvuru Tarihi geçti",
     value: JobPostingStatusEnum.Expired,
+    class: "bg-red-600",
     icon: "TextCursorInput",
   },
-  { label: "Arşivlendi", value: JobPostingStatusEnum.Archived, icon: "TextCursorInput" },
+  {
+    label: "Arşivlendi",
+    value: JobPostingStatusEnum.Archived,
+    class: "bg-blue-600",
+    icon: "TextCursorInput",
+  },
 ];
 
 export function getJobPostingStatusOptionByValue(value: number | string) {

@@ -25,6 +25,9 @@ internal sealed class ChangeJobPostingStatusCommandHandler(
 
         switch (request.status)
         {
+            case JobPostingStatus.Draft:
+                jobPosting.Draft();
+                break;
             case JobPostingStatus.Published:
                 jobPosting.Publish();
                 break;

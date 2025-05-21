@@ -23,8 +23,4 @@
     <ProjectReference Include="..\BasvuruSistemi.Server.ServiceDefaults\BasvuruSistemi.Server.ServiceDefaults.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="wwwroot\" />
-  </ItemGroup>
-
 </Project>

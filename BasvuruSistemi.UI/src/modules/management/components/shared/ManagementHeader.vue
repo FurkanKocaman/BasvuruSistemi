@@ -11,6 +11,8 @@ const currentTheme = computed(() => themeStore.currentTheme);
 
 const isPostingMenuOpen = ref(false);
 
+const apiUrl = import.meta.env.VITE_API_PUBLIC_URL;
+
 type Theme = "light" | "dark" | "system";
 
 onMounted(() => {
@@ -235,7 +237,7 @@ function togglePostingMenu() {
         <div class="flex items-center cursor-pointer select-none">
           <img
             class="size-10 rounded-full object-cover mx-2"
-            src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Alexander_the_Great_Ny_Carlsberg_Glyptotek_IN574_n1.jpg/250px-Alexander_the_Great_Ny_Carlsberg_Glyptotek_IN574_n1.jpg"
+            :src="userStore.user?.avatarUrl ?? apiUrl + '/user.png'"
             alt=""
           />
           <span class="dark:text-gray-200 text-gray-700"> {{ userStore.user?.fullName }} </span>

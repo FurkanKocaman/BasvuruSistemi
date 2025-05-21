@@ -37,7 +37,10 @@ public sealed class GetJobPostingsQueryResponse
 
     public string? ContactInfo { get; set; }
     public bool IsPublic { get; set; }
-
+    public bool IsAnonymous { get; set; }
+    public decimal? MinSalary { get; set; }
+    public decimal? MaxSalary { get; set; }
+    public string? Curreny { get; set; }
 
     public Guid? UnitId { get; set; }
 
@@ -87,6 +90,10 @@ internal sealed class GetJobPostingsQueryHandler(
 
             ContactInfo = jobPosting.ContactInfo,
             IsPublic = jobPosting.IsPublic,
+            IsAnonymous = jobPosting.IsAnonymous,
+            MinSalary = jobPosting.MinSalary,
+            MaxSalary = jobPosting.MaxSalary,
+            Curreny = jobPosting.Currency,
 
             UnitId = jobPosting.UnitId,
 

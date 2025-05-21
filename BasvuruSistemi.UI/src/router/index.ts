@@ -100,11 +100,6 @@ const router = createRouter({
           name: "job-posting-group",
           redirect: "create",
           children: [
-            // {
-            //   path: "",
-            //   name: "job-posting-groups",
-            //   component: () => import("@/modules/management/pages/JobPostingPage.vue"),
-            // },
             {
               path: "create",
               name: "job-posting-group-create",
@@ -112,7 +107,7 @@ const router = createRouter({
             },
             {
               path: "update/:id",
-              name: "job-posting-update",
+              name: "job-posting-group-update",
               component: () => import("@/modules/management/pages/JobpostingGroupCreatePage.vue"),
             },
           ],

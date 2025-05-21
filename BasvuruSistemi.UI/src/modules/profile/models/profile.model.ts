@@ -15,8 +15,6 @@ export interface Profile {
   phone?: string;
   addresses: Address[];
 
-  maritalStatus: MaritalStatus;
-
   educations: Education[];
   certificates: Certificate[];
   experiences: WorkExperience[];

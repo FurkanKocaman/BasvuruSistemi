@@ -9,18 +9,24 @@ import DOMPurify from "dompurify";
 import EditorComponent from "../components/job-posting-components/EditorComponent.vue";
 import formTemplateService from "../services/form-template.service";
 import { FormFieldDefinition } from "../models/form-field.model";
-
 import { Unit } from "../models/unit-node.model";
 import { useRoute, useRouter } from "vue-router";
 import FieldsFromFormTemplate from "../components/form-template-components/form-template-create/FieldsFromFormTemplate.vue";
 import NewFormField from "../components/form-template-components/form-template-create/NewFormField.vue";
 import SelectedFormFields from "../components/form-template-components/form-template-create/SelectedFormFields.vue";
 import JobPostingGroupComponent from "../components/job-posting-components/JobPostingGroupComponent.vue";
+import { useToastStore } from "@/modules/toast/store/toast.store";
+import FormTemplateSaveModal from "../components/FormTemplateSaveModal.vue";
+import { FormTemplateCreateReqeust } from "../models/form-template-create.model";
+import { getJobPostingStatusOptionByValue } from "@/models/constants/job-posting-status";
+import { Pen } from "lucide-vue-next";
+import JobPostingStatusUpdateModal from "../components/JobPostingStatusUpdateModal.vue";
 
 const organizations: Ref<Unit[]> = ref([]);
 
 const organizationsDropdown = useDropdown();
 
+const toastStore = useToastStore();
 const router = useRouter();
 
 const isQuota = ref<boolean>(false);
@@ -34,8 +40,14 @@ const formTemplateSummaries: Ref<{ id: string; name: string }[]> = ref([]);
 const fields = ref<FormFieldDefinition[]>([]);
 
 const allowedNationalIdsText = ref<string>("");
+const selectedFormTemplate = ref("");
+const isNewTemplate = ref(false);
+
+const confirmModal = ref();
+const statusModal = ref();
 
 const request = reactive<JobPostingCreateModel>({
+  id: undefined,
   title: "",
   description: "",
   responsibilities: "",
@@ -60,6 +72,10 @@ const request = reactive<JobPostingCreateModel>({
 
   contactInfo: undefined,
   isPublic: true,
+  isAnonymous: false,
+  minSalary: undefined,
+  maxSalary: undefined,
+  currency: undefined,
 
   unitId: undefined,
 
@@ -67,6 +83,8 @@ const request = reactive<JobPostingCreateModel>({
 
   postingGroupId: undefined,
 });
+
+const response = ref<JobPostingCreateModel | undefined>(undefined);
 
 const route = useRoute();
 const id = route.params.id as string | undefined;
@@ -82,6 +100,10 @@ onMounted(async () => {
 const getJobPosting = async (id: string) => {
   const res = await jobPostingService.getJobPosting(id);
   if (res) {
+    console.log("res", res);
+    response.value = res.data;
+
+    request.id = res.data.id;
     request.title = res.data.title;
     request.description = res.data.description ?? "";
     request.responsibilities = res.data.responsibilities ?? "";
@@ -94,18 +116,25 @@ const getJobPosting = async (id: string) => {
     request.validTo = res.data.validTo ? new Date(res.data.validTo) : undefined;
 
     request.status = res.data.status;
+    if (res.data.status == 2) isJobPostingPublished.value = true;
     request.isRemote = res.data.isRemote;
     request.locationText = res.data.locationText;
 
     request.vacancyCount = res.data.vacancyCount;
+    if (res.data.vacancyCount) isQuota.value = true;
     request.employmentType = res.data.employmentType;
     request.experienceLevelRequired = res.data.experienceLevelRequired;
     request.skillsRequired = res.data.skillsRequired;
 
     request.allowedNationalIds = res.data.allowedNationalIds;
+    if (res.data.allowedNationalIds?.length != 0) onlyDefinedUsers.value = true;
 
     request.contactInfo = res.data.contactInfo;
     request.isPublic = res.data.isPublic;
+    request.isAnonymous = res.data.isAnonymous;
+    request.minSalary = res.data.minSalary;
+    request.maxSalary = res.data.maxSalary;
+    request.currency = res.data.currency;
 
     request.unitId = res.data.unitId;
 
@@ -118,6 +147,24 @@ const getJobPosting = async (id: string) => {
       if (organization) {
         organizationsDropdown.selectOption(organization.name);
       }
+    }
+    getExistingTemplate(res.data.formTemplateId);
+  }
+};
+
+const getExistingTemplate = async (id: string | undefined) => {
+  if (id) {
+    const template = await formTemplateService.getFormTemplate(id);
+    if (template) {
+      if (formTemplateSummaries.value.find((p) => p.id == template.id)) {
+        formTemplateDropdown.selectOption(template.name);
+        selectedFormTemplate.value = template.name;
+      } else {
+        selectedFormTemplate.value = "Özel";
+      }
+
+      fields.value = template.fields;
+      isNewTemplate.value = false;
     }
   }
 };
@@ -149,18 +196,114 @@ const setAllowedNationalIds = () => {
   }
 };
 
-//Form şablonu seçme kısmında var olan şablonun id değerini alıyor ilerde job posting oluşturma sırasında form template oluşturma da eklenir şuanda aktif değiller.
-
 const handleSubmit = async () => {
   request.description = DOMPurify.sanitize(request.description);
+  if (request.responsibilities)
+    request.responsibilities = DOMPurify.sanitize(request.responsibilities);
+  if (request.qualifications) request.qualifications = DOMPurify.sanitize(request.qualifications);
 
   if (isJobPostingPublished.value) request.status = 2;
 
   setAllowedNationalIds();
 
-  const res = await jobPostingService.createJobPostings(request);
-  if (res) {
-    router.push("/management/job-postings");
+  if (request.unitId && request.title && request.validFrom) {
+    if (id) {
+      //Update
+      if (isNewTemplate.value) {
+        const result = await confirmModal.value.open();
+        if (result) {
+          //Eğer template kaydedilmişse
+          const req: FormTemplateCreateReqeust = {
+            name: result,
+            description: undefined,
+            fields: fields.value,
+            isSaved: true,
+          };
+          const formTemplateRes = await formTemplateService.createFormTemplate(req);
+          if (formTemplateRes) {
+            request.formTemplateId = formTemplateRes;
+            const res = await jobPostingService.updateJobPostings(request);
+            if (res) {
+              router.push({ name: "job-posting-list" });
+            }
+          }
+        } else {
+          //Eğer template keydedilmemişse
+          const req: FormTemplateCreateReqeust = {
+            name: request.title + " (" + new Date().toLocaleDateString("tr-TR") + ")",
+            description: undefined,
+            fields: fields.value,
+            isSaved: false,
+          };
+          const formTemplateRes = await formTemplateService.createFormTemplate(req);
+          if (formTemplateRes) {
+            request.formTemplateId = formTemplateRes;
+            const res = await jobPostingService.createJobPostings(request);
+            if (res) {
+              router.push({ name: "job-posting-list" });
+            }
+          }
+        }
+      } else {
+        console.log("Request", request);
+        const res = await jobPostingService.updateJobPostings(request);
+        if (res) {
+          console.log("Response", res);
+          router.push({ name: "job-posting-list" });
+        }
+      }
+    } else {
+      //Create
+      if (isNewTemplate.value) {
+        const result = await confirmModal.value.open();
+        if (result) {
+          //Eğer template kaydedilmişse
+          const req: FormTemplateCreateReqeust = {
+            name: result,
+            description: undefined,
+            fields: fields.value,
+            isSaved: true,
+          };
+          const formTemplateRes = await formTemplateService.createFormTemplate(req);
+          if (formTemplateRes) {
+            request.formTemplateId = formTemplateRes;
+            const res = await jobPostingService.createJobPostings(request);
+            if (res) {
+              router.push({ name: "job-posting-list" });
+            }
+          }
+        } else {
+          //Eğer template keydedilmemişse
+          const req: FormTemplateCreateReqeust = {
+            name: request.title + " (" + new Date().toLocaleDateString("tr-TR") + ")",
+            description: undefined,
+            fields: fields.value,
+            isSaved: false,
+          };
+          const formTemplateRes = await formTemplateService.createFormTemplate(req);
+          if (formTemplateRes) {
+            request.formTemplateId = formTemplateRes;
+            const res = await jobPostingService.createJobPostings(request);
+            if (res) {
+              router.push({ name: "job-posting-list" });
+            }
+          }
+        }
+      } else {
+        console.log("Request", request);
+        const res = await jobPostingService.createJobPostings(request);
+        if (res) {
+          console.log("Response", res);
+          router.push({ name: "job-posting-list" });
+        }
+      }
+    }
+  } else {
+    toastStore.addToast({
+      message: "İlan oluşturmak için formu eksiksiz doldurmanız gerekmektedir.",
+      type: "error",
+      duration: 4000,
+    });
   }
 };
 
@@ -171,6 +314,9 @@ const getFormTemplate = async (label: string) => {
     if (res) {
       request.formTemplateId = res.id;
       fields.value = res.fields;
+
+      selectedFormTemplate.value = label;
+      isNewTemplate.value = false;
     }
   }
 };
@@ -185,6 +331,8 @@ const getFormTemplateSummaries = async () => {
 const addFieldToRequest = (field: FormFieldDefinition) => {
   if (!fields.value.find((p) => p.label == field.label)) {
     fields.value.push({ ...field });
+    selectedFormTemplate.value = "Özel";
+    isNewTemplate.value = true;
   }
 };
 
@@ -192,20 +340,55 @@ const removeFieldFromRequest = (label: string) => {
   fields.value = fields.value.filter((p) => p.label != label);
 };
 
-const selectPostingGroupId = (id: string) => {
+const selectPostingGroupId = (id?: string) => {
   request.postingGroupId = id;
+};
+
+const updateStatus = async () => {
+  const result = await statusModal.value.open();
+  if (result) {
+    await jobPostingService.jobPostingChangeStatus(
+      request.id!,
+      result,
+      result == 2 ? new Date() : undefined
+    );
+  }
 };
 </script>
 
 <template>
   <div class="w-full px-50 pt-20 flex pb-20">
+    <FormTemplateSaveModal
+      ref="confirmModal"
+      title="Oluşturduğunuz şablonu daha sonra kullanmak için kaydetmek ister misiniz?"
+      description=""
+    />
+    <JobPostingStatusUpdateModal ref="statusModal" title="İlanın durumunu güncelleyin" />
     <div
       class="w-full dark:bg-gray-800/40 bg-gray-50 rounded-xl border dark:border-gray-800 border-gray-200"
     >
-      <div class="border-b px-5 py-3 dark:border-gray-800 border-gray-200">
-        <span class="text-xl font-base dark:text-gray-50 text-gray-700">İlan Oluştur</span>
+      <div class="border-b px-5 py-3 dark:border-gray-800 border-gray-200 flex justify-between">
+        <span class="text-xl font-base dark:text-gray-50 text-gray-700">
+          {{ id ? "İlan Düzenle" : "İlan Oluştur" }}
+        </span>
+        <div v-if="id" class="flex items-center gap-3">
+          <span
+            class="text-base font-base text-gray-50 px-2 py-1 rounded-lg"
+            :class="getJobPostingStatusOptionByValue(request.status)?.class"
+          >
+            {{ getJobPostingStatusOptionByValue(request.status)?.label }}
+          </span>
+          <button class="cursor-pointer group" @click.stop="updateStatus()">
+            <Pen
+              class="text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-50"
+            />
+          </button>
+        </div>
       </div>
-      <JobPostingGroupComponent @group-id-selected="selectPostingGroupId" />
+      <JobPostingGroupComponent
+        @group-id-selected="selectPostingGroupId"
+        :group-id="request.postingGroupId"
+      />
       <div class="px-10 py-5">
         <div
           class="dark:bg-gray-700/40 dark:text-gray-300 rounded-md border dark:border-gray-800 border-gray-200 flex flex-col px-20"
@@ -370,6 +553,17 @@ const selectPostingGroupId = (id: string) => {
                   >
                 </label>
               </div>
+              <div class="my-1">
+                <label class="inline-flex items-center cursor-pointer">
+                  <input type="checkbox" v-model="request.isAnonymous" class="sr-only peer" />
+                  <div
+                    class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600 dark:peer-checked:bg-blue-600"
+                  ></div>
+                  <span class="ms-3 text-sm font-medium dark:text-gray-300 text-gray-700"
+                    >Anonim olarak başvuru kabul edilsin mi?</span
+                  >
+                </label>
+              </div>
             </div>
           </div>
           <EditorComponent v-model="request.description" :label="'Açıklama'"></EditorComponent>
@@ -407,6 +601,36 @@ const selectPostingGroupId = (id: string) => {
             </div>
             <div class="flex flex-col border my-5 rounded-lg dark:border-gray-700 border-gray-200">
               <div class="my-1 mx-1">
+                <div class="flex items-center">
+                  <div
+                    v-if="selectedFormTemplate"
+                    class="my-1 bg-gray-400/20 text-gray-700 dark:text-gray-300 rounded-md w-fit px-3 py-1 flex"
+                  >
+                    <span class="text-sm">Seçili Şablon :</span>
+                    <span class="text-sm ml-1">{{ selectedFormTemplate }}</span>
+                  </div>
+                  <button
+                    v-if="id"
+                    class="cursor-pointer group ml-3 outline-none"
+                    @click.stop="getExistingTemplate(response?.formTemplateId)"
+                    title="Sıfırla"
+                  >
+                    <svg
+                      class="size-7 group-hover:rotate-90 transition-all duration-200"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M4.06189 13C4.02104 12.6724 4 12.3387 4 12C4 7.58172 7.58172 4 12 4C14.5006 4 16.7332 5.14727 18.2002 6.94416M19.9381 11C19.979 11.3276 20 11.6613 20 12C20 16.4183 16.4183 20 12 20C9.61061 20 7.46589 18.9525 6 17.2916M9 17H6V17.2916M18.2002 4V6.94416M18.2002 6.94416V6.99993L15.2002 7M6 20V17.2916"
+                        class="stroke-gray-700 dark:stroke-gray-300"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                  </button>
+                </div>
                 <ul
                   class="flex dark:bg-gray-900 bg-gray-200/40 w-fit px-1 py-0.5 rounded-md select-none"
                 >

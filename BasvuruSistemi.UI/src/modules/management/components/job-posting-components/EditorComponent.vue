@@ -6,7 +6,7 @@ import Underline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
 import Color from "@tiptap/extension-color";
 import Highlight from "@tiptap/extension-highlight";
-import { onBeforeUnmount, onMounted, ref } from "vue";
+import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import {
   Bold,
   Italic,
@@ -84,6 +84,15 @@ const commands = [
     isActive: () => editor.value?.isActive({ textAlign: "right" }),
   },
 ];
+
+watch(
+  () => props.modelValue,
+  (newValue) => {
+    if (editor.value && editor.value.getHTML() !== newValue) {
+      editor.value.commands.setContent(newValue || "");
+    }
+  }
+);
 </script>
 
 <template>

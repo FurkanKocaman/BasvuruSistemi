@@ -11,6 +11,7 @@ namespace BasvuruSistemi.Server.Application.FormTemplates;
 public sealed record FormTemplateCreateCommand(
     string name,
     string? description,
+    bool isSaved,
     List<FormFieldDefinitionDto> fields
     ) : IRequest<Result<string>>;
 
@@ -32,7 +33,7 @@ internal sealed class FormTemplateCreateCommandHandler(
                 if (!tenantId.HasValue)
                     return Result<string>.Failure("Tenant not found");
 
-                ApplicationFormTemplate applicationFormTemplate = new(tenantId.Value, request.name, request.description,true);
+                ApplicationFormTemplate applicationFormTemplate = new(tenantId.Value, request.name, request.description,request.isSaved);
 
                 formTemplateRepository.Add(applicationFormTemplate);
 
@@ -66,7 +67,7 @@ internal sealed class FormTemplateCreateCommandHandler(
                 await unitOfWork.SaveChangesAsync(cancellationToken);
                 await unitOfWork.CommitTransactionAsync(transaction);
 
-                return Result<string>.Succeed("Template created successfully");
+                return Result<string>.Succeed(applicationFormTemplate.Id.ToString());
             }
             catch(Exception ex)
             {

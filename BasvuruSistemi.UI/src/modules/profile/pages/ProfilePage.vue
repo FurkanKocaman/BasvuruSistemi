@@ -57,6 +57,7 @@ const loadProfile = async () => {
 
   profile.value = await profileService.getUserProfile();
   if (profile.value) {
+    console.log(profile.value);
     loading.value = false;
   }
 };
@@ -373,7 +374,7 @@ const saveSkill = (skillData: Skill) => {
       <!-- Adres bilgileri -->
       <ProfileSection
         title="Adres Bilgileri"
-        :isEmpty="!profile.educations || profile.educations.length === 0"
+        :isEmpty="!profile.addresses || profile.addresses.length === 0"
         emptyMessage="Henüz adres bilgisi eklenmemiş"
         addButtonText="Adres Bilgisi Ekle"
         @edit="addAddress"

@@ -141,12 +141,16 @@ public sealed class JobPosting : Entity
         if (Status == JobPostingStatus.Draft || Status == JobPostingStatus.OnHold)
         {
             Status = JobPostingStatus.Published;
-            ValidFrom = publishStartDate ?? DateTimeOffset.UtcNow; // Eğer başlangıç tarihi verilmezse hemen
-            DatePosted = DateTimeOffset.UtcNow; // Yayınlama işleminin yapıldığı an olarak güncellenebilir
+            ValidFrom = publishStartDate ?? DateTimeOffset.Now;
+            DatePosted = DateTimeOffset.Now;
         }
         // else: Hata fırlat veya logla (zaten yayınlanmış veya kapatılmış bir ilanı tekrar yayınlayamazsın)
     }
 
+    public void Draft()
+    {
+        Status = JobPostingStatus.Draft;
+    }
     public void Close()
     {
         if (Status == JobPostingStatus.Published || Status == JobPostingStatus.OnHold)
@@ -172,62 +176,72 @@ public sealed class JobPosting : Entity
         }
     }
     public void UpdateDetails(
-        string title, 
+        string title,
         string description,
-        string? responsibilities,
-        string? qualifications,
         DateTimeOffset applicationDeadline,
-        string? locationText,
-        bool isRemote,
-        EmploymentType? employmentType,
-        ExperienceLevel? experienceLevelRequired,
-        int? vacancyCount
+        Guid tenantId,
+        Guid? unitId,
+        Guid formTemplateId,
+        Guid? postingGroupId = null,
+        JobPostingStatus status = JobPostingStatus.Draft,
+        bool isPublic = true,
+        bool isAnonymous = false,
+
+        DateTimeOffset? validFrom = null,
+        DateTimeOffset? validTo = null,
+
+        string? contactInfo = null,
+
+        string? responsibilities = null,
+        string? qualifications = null,
+        string? benefits = null,
+        string? locationText = null,
+        bool isRemote = false,
+        EmploymentType? employmentType = null,
+        ExperienceLevel? experienceLevelRequired = null,
+        int? vacancyCount = null,
+        string? skillsRequired = null,
+
+        decimal? minSalary = null,
+        decimal? maxSalary = null,
+        string? currency = null
         )
     {
-        // Sadece belirli durumlarda güncellemeye izin verilebilir (örn: taslak iken)
-        if (Status == JobPostingStatus.Draft || Status == JobPostingStatus.OnHold) // Veya admin yetkisine bağlı olarak her zaman
+      
+        if (Status == JobPostingStatus.Draft || Status == JobPostingStatus.OnHold)
         {
             Title = title;
             Description = description;
+            ApplicationDeadline = applicationDeadline;
+            TenantId = tenantId;
+            UnitId = unitId;
+            FormTemplateId = formTemplateId;
+            PostingGroupId = postingGroupId;
+            Status = status;
+            IsPublic = isPublic;
+            IsAnonymous = isAnonymous;
+
+            ContactInfo = contactInfo;
+
             Responsibilities = responsibilities;
             Qualifications = qualifications;
-            ApplicationDeadline = applicationDeadline;
+            Benefits = benefits;
             LocationText = locationText;
             IsRemote = isRemote;
             EmploymentType = employmentType;
             ExperienceLevelRequired = experienceLevelRequired;
             VacancyCount = vacancyCount;
-            // ... diğer alanların güncellenmesi
+            SkillsRequired = skillsRequired;
+
+            MinSalary = minSalary;
+            MaxSalary = maxSalary;
+            Currency = currency;
+
+            ValidFrom = validFrom;
+            ValidTo = validTo ?? applicationDeadline;
         }
     }
-    public void UpdateAdditionalFields(
-    DateTimeOffset datePosted,
-    DateTimeOffset? validFrom,
-    DateTimeOffset? validTo,
-
-    decimal? minSalary,
-    decimal? maxSalary,
-    string? currency,
-
-    string? skillsRequired,
-    string? contactInfo,
-    bool isPublic,
-    Guid? postingGroupId)
-    {
-        DatePosted = datePosted;
-        ValidFrom = validFrom;
-        ValidTo = validTo;
-
-        MinSalary = minSalary;
-        MaxSalary = maxSalary;
-        Currency = currency;
-
-        SkillsRequired = skillsRequired;
-        ContactInfo = contactInfo;
-        IsPublic = isPublic;
-        PostingGroupId = postingGroupId;
-    }
-
+    
     public void SetAllowedNationalIds(IEnumerable<string> nationalIds)
     {
         AllowedNationalIds.Clear();

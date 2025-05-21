@@ -86,8 +86,6 @@ const getPostingGroup = async (id: string) => {
   }
 };
 
-//Form şablonu seçme kısmında var olan şablonun id değerini alıyor ilerde job posting oluşturma sırasında form template oluşturma da eklenir şuanda aktif değiller.
-
 const handleSubmit = async () => {
   if (unitsDropdown.selectedLabel) {
     const unit = units.value.find((p) => p.name == unitsDropdown.selectedLabel.value);
@@ -126,7 +124,6 @@ const addJobPostingToGroup = () => {
       name: "job-posting-create",
       query: { postingGroupId: request.id },
     });
-    console.error("route to jobPostingCreate with groupId");
   }
 };
 

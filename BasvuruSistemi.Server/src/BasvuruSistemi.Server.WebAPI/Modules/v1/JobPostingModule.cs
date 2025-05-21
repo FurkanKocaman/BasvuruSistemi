@@ -1,5 +1,4 @@
 ﻿using BasvuruSistemi.Server.Application.JobPostings;
-using BasvuruSistemi.Server.Application.PostingGroups;
 using BasvuruSistemi.Server.Domain.DTOs;
 using MediatR;
 using TS.Result;
@@ -16,7 +15,7 @@ public static class JobPostingModule
             async (ISender sender, JobPostingCreateCommand request, CancellationToken cancellationToken) =>
             {
                 var response = await sender.Send(request, cancellationToken);
-                return response.IsSuccessful ? Results.Ok(response) : Results.InternalServerError(response);
+                return response.IsSuccessful ? Results.Ok(response) : response.StatusCode == 404 ? Results.NotFound(response) : Results.InternalServerError(response);
             })
             .RequireAuthorization().Produces<Result<string>>();
 
@@ -25,19 +24,27 @@ public static class JobPostingModule
            {
                var request = new ChangeJobPostingStatusCommand(id, dto.NewStatus, dto.PublishStartDate);
                var response = await sender.Send(request, cancellationToken);
-               return response.IsSuccessful ? Results.Ok(response) : Results.InternalServerError(response);
+               return response.IsSuccessful ? Results.Ok(response) : response.StatusCode == 404 ? Results.NotFound(response) : Results.InternalServerError(response);
            })
            .RequireAuthorization().Produces<Result<string>>();
 
-        group.MapPatch("{id:guid}",
+        group.MapPut("{id:guid}",
            async (ISender sender, Guid id, JobPostingUpdateCommand request, CancellationToken cancellationToken) =>
            {
-               var command = request with { id = id };
-               var response = await sender.Send(command, cancellationToken);
-               return response.IsSuccessful ? Results.Ok(response) : Results.InternalServerError(response);
+              if(id != request.Id)
+                   return Results.BadRequest("Id in the URL and body do not match");
+               var response = await sender.Send(request, cancellationToken);
+               return response.IsSuccessful ? Results.Ok(response) : response.StatusCode == 404 ? Results.NotFound(response) : Results.InternalServerError(response);
            })
            .RequireAuthorization().Produces<Result<string>>();
 
+        group.MapDelete("{id:guid}",
+           async (ISender sender, Guid id, CancellationToken cancellationToken) =>
+           {
+               var response = await sender.Send(new JobPostingDeleteCommand(id), cancellationToken);
+               return response.IsSuccessful ? Results.Ok(response) : response.StatusCode == 404 ? Results.NotFound(response) : Results.InternalServerError(response);
+           })
+           .RequireAuthorization().Produces<Result<string>>();
 
 
     }

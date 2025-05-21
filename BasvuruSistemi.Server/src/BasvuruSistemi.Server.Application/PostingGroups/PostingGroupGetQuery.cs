@@ -42,7 +42,15 @@ internal sealed class PostingGroupGetQueryHandler(
 {
     public Task<PostingGroupGetQueryResponse> Handle(PostingGroupGetQuery request, CancellationToken cancellationToken)
     {
-        var postingGroup = postingGroupRepository.Where(p => p.Id == request.id && !p.IsDeleted).Include(p => p.JobPostings).ThenInclude(p => p.Applications).Include(p => p.Tenant).Include(p => p.Unit).Include(p => p.ParentPostingGroup).FirstOrDefault();
+        var postingGroup = postingGroupRepository.Where(p => p.Id == request.id && !p.IsDeleted)
+            .Include(p => p.JobPostings)
+                .ThenInclude(p => p.Applications)
+            .Include(p => p.JobPostings)
+                .ThenInclude(p => p.Unit)
+            .Include(p => p.Tenant)
+            .Include(p => p.Unit)
+            .Include(p => p.ParentPostingGroup)
+            .FirstOrDefault();
 
         if (postingGroup == null)
             return Task.FromResult(new PostingGroupGetQueryResponse());
@@ -73,6 +81,9 @@ internal sealed class PostingGroupGetQueryHandler(
             JobPostings = postingGroup.JobPostings.Select(jobPosting => new JobPostingSummaryDto(
                 jobPosting.Id,
                 jobPosting.Title,
+                jobPosting.Description,
+                jobPosting.Responsibilities,
+                jobPosting.Qualifications,
                 jobPosting.ValidFrom,
                 jobPosting.ValidTo,
                 jobPosting.Applications.Count(),

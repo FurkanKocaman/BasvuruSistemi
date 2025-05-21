@@ -19,6 +19,7 @@ const request = reactive<FormTemplateCreateReqeust>({
   id: undefined,
   name: "",
   description: undefined,
+  isSaved: true,
   fields: [],
 });
 

@@ -2,7 +2,7 @@ export interface JobPostingSummariesByTenantResponse {
   id: string;
 
   title: string;
-  type: string;
+  type: number;
 
   validFrom?: string;
   validTo?: string;

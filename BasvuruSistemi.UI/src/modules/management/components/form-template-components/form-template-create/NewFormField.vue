@@ -33,11 +33,10 @@ const sendField = () => {
 };
 
 const addFieldToReqeust = () => {
-  // if (!fields.value.find((p) => p.label == newField.label)) {
-  //   fields.value.push({ ...newField });
-  sendField();
-  resetNewField();
-  // }
+  if (newField.label.trim() !== "" && newField.type !== 0) {
+    sendField();
+    resetNewField();
+  }
 };
 
 const resetNewField = () => {

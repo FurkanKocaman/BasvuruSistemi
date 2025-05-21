@@ -6,6 +6,7 @@ import { JobPostingSummariesByTenantResponse } from "../models/job-posting-summa
 import { getJobPostingStatusOptionByValue } from "@/models/constants/job-posting-status";
 import { formatDateTime } from "../composables/formatDateTime";
 import ConfirmModal from "@/components/ConfirmModal.vue";
+import { getJobPostingtypeOptionByValue } from "@/models/constants/job-posting-type";
 
 const jobPostings: Ref<JobPostingSummariesByTenantResponse[]> = ref([]);
 const page = ref(1);
@@ -29,14 +30,30 @@ const getJobPostings = async () => {
   }
 };
 
-const goToJobPostingEdit = (id: string) => {
-  router.push({ name: "job-posting-update", params: { id } });
+const goToJobPostingEdit = (id: string, type: number) => {
+  if (type == 1) {
+    router.push({ name: "job-posting-update", params: { id } });
+  } else if (type == 2) {
+    router.push({ name: "job-posting-group-update", params: { id } });
+  }
 };
 
-const handleDelete = async (id: string) => {
+const handleDelete = async (id: string, type: number) => {
   var result = await confirmModal.value.open();
-  if (result) {
-    console.error("implemet jobPosting delete", id);
+  if (type == 1) {
+    if (result) {
+      const res = await jobPostingService.deleteJobPosting(id);
+      if (res) {
+        jobPostings.value = jobPostings.value.filter((p) => p.id != id);
+      }
+    }
+  } else if (type == 2) {
+    if (result) {
+      const res = await jobPostingService.deleteJobPosting(id);
+      if (res) {
+        jobPostings.value = jobPostings.value.filter((p) => p.id != id);
+      }
+    }
   }
 };
 
@@ -225,7 +242,7 @@ const handlePreview = (id: string) => {
                     <span class="cursor-pointer">{{ jobPosting.title }}</span>
                   </td>
                   <td class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200">
-                    {{ jobPosting.type }}
+                    {{ getJobPostingtypeOptionByValue(jobPosting.type)?.label }}
                   </td>
                   <td class="py-3 px-2 border-r text-sm dark:border-gray-700/30 border-gray-200">
                     {{ jobPosting.validFrom ? formatDateTime(jobPosting.validFrom) : "-" }}
@@ -269,7 +286,10 @@ const handlePreview = (id: string) => {
                     >
                   </td>
                   <td class="py-3 px-2">
-                    <button class="cursor-pointer pr-1 group">
+                    <button
+                      class="cursor-pointer pr-1 group"
+                      @click.stop="goToJobPostingEdit(jobPosting.id, jobPosting.type)"
+                    >
                       <svg
                         class="size-5 dark:fill-gray-400 fill-gray-600 group-hover:fill-blue-600 dark:group-hover:fill-blue-600"
                         viewBox="0 0 24 24"

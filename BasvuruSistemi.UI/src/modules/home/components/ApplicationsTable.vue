@@ -231,17 +231,7 @@ const withdrawApplication = async (application: ApplicationByUserModel) => {
             <td class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200">
               <span
                 class="text-sm px-2 py-1 rounded-md text-white"
-                :class="
-                  application.status == 0
-                    ? 'bg-yellow-600'
-                    : application.status == 1
-                    ? 'bg-blue-600'
-                    : application.status == 2
-                    ? 'bg-green-600'
-                    : application.status == 3
-                    ? 'bg-red-500'
-                    : 'bg-indigo-500'
-                "
+                :class="getApplicationStatusOptionByValue(application.status)?.class"
                 >{{ getApplicationStatusOptionByValue(application.status)?.label }}</span
               >
             </td>
