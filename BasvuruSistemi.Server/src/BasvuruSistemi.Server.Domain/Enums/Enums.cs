@@ -28,7 +28,7 @@ public enum ApplicationStatus
     Rejected = 3,
     Withdrawn = 4,      // Kullanıcı tarafından geri çekildi
     Expired = 5,        // İlan süresi geçti, otomatik reddedildi
-    InterviewScheduled = 6,
+    InterviewScheduled = 6, 
     OfferMade = 7,      // İş teklifi yapıldı
     Hired = 8,           // Süreç tamamlandı
     JobPostingClosed = 9,

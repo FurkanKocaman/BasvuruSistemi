@@ -29,4 +29,15 @@ public sealed class Experience
         Description = description;
         Location = location;
     }
+    public void Update(string company, string position, DateOnly start, DateOnly? end = null, string? description = null, string? location = null)
+    {
+        if (end.HasValue && start > end.Value)
+            throw new ArgumentException("StartDate must be before EndDate.");
+        CompanyName = company;
+        Position = position;
+        StartDate = start;
+        EndDate = end;
+        Description = description;
+        Location = location;
+    }
 }

@@ -10,7 +10,7 @@ namespace BasvuruSistemi.Server.Application.Users;
 public sealed record UserUpdateProfileImageCommand(
     IFormFile file
     ) : IRequest<Result<string>>;
-
+ 
 internal sealed class UserUpdateProfileImageCommandHandler(
     IWebHostEnvironment webHostEnvironment,
     ICurrentUserService currentUserService,
@@ -40,7 +40,7 @@ internal sealed class UserUpdateProfileImageCommandHandler(
         if (!Directory.Exists(uploadsRoot))
             Directory.CreateDirectory(uploadsRoot);
 
-        var uniqueFileName = $"{Guid.CreateVersion7()}";
+        var uniqueFileName = $"{Guid.CreateVersion7()}{extension}";
         var filePath = Path.Combine(uploadsRoot, uniqueFileName);
 
         using (var stream = new FileStream(filePath, FileMode.Create))

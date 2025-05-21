@@ -5,9 +5,9 @@ public sealed class Contact
     public string? Phone { get; set; }
 
     private Contact() { }
-    public Contact(string email, string phone)
+    public Contact(string email, string? phone)
     {
-        if (!email.Contains("@")) throw new ArgumentException("Email is invalid.");
+        if (email is not null && !email.Contains("@")) throw new ArgumentException("Email is invalid.");
         Email = email;
         Phone = phone;
     }
