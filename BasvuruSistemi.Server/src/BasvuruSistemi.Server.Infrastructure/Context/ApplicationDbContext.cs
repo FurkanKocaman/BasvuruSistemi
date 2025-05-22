@@ -8,6 +8,7 @@ using BasvuruSistemi.Server.Domain.FormFieldDefinitions;
 using BasvuruSistemi.Server.Domain.JobPostings;
 using BasvuruSistemi.Server.Domain.PostingGroups;
 using BasvuruSistemi.Server.Domain.Roles;
+using BasvuruSistemi.Server.Domain.Tokens;
 using BasvuruSistemi.Server.Domain.Units;
 using BasvuruSistemi.Server.Domain.UserRoles;
 using BasvuruSistemi.Server.Domain.Users;
@@ -47,6 +48,8 @@ internal sealed class ApplicationDbContext: IdentityDbContext<AppUser, AppRole,G
     public DbSet<AppUserTenantRole> AppUserTenantRoles { get; set; }
 
     public DbSet<Address> Addresses { get; set; }
+
+    public DbSet<InvitationToken> InvitationTokens { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

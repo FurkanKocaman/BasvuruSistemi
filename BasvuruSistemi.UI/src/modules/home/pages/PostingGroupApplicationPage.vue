@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import ApplicationForm from "../components/ApplicationForm.vue";
-import type { Application } from "../data/applications";
 import jobPostingService from "../services/job-posting.service";
 import { PostingGroupGetModel } from "@/modules/management/models/posting-group-get.model";
 import applicationService from "../services/application.service";
@@ -15,12 +13,6 @@ const postingGroup = ref<PostingGroupGetModel | null>(null);
 const formatDate = (dateString: string): string => {
   const options: Intl.DateTimeFormatOptions = { year: "numeric", month: "long", day: "numeric" };
   return new Date(dateString).toLocaleDateString("tr-TR", options);
-};
-
-const handleSubmit = (formData: Partial<Application>) => {
-  // Gerçek bir API olmadığı için burada bir şey yapmıyoruz
-  // ApplicationForm component'i zaten kullanıcıyı yönlendiriyor
-  console.log("Başvuru gönderildi:", formData);
 };
 
 onMounted(() => {
@@ -115,16 +107,74 @@ const navigateJobPosting = async (id: string) => {
       class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700"
     >
       <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-6">İlanlar</h2>
-      <div class="flex flex-col w-full">
+      <div class="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div
-          v-for="jobPosting in postingGroup?.jobPostings"
-          :key="jobPosting.id"
-          class="w-full border my-2 p-2 rounded-md border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-400/10 transition-all ease-in-out duration-300"
-          @click.stop="navigateJobPosting(jobPosting.id)"
+          v-for="job in postingGroup?.jobPostings"
+          :key="job.id"
+          class="w-full border my-2 p-2 rounded-md border-gray-200 dark:border-gray-700 hover:bg-gray-400/10 transition-all ease-in-out duration-300"
         >
-          <span class="text-gray-700 dark:text-gray-200 w-full">
-            {{ jobPosting.title }}
-          </span>
+          <div
+            class="p-6 transition-shadow duration-300 min-h-[15rem] flex flex-col justify-between"
+          >
+            <!-- İş kartı başlık bölümü -->
+            <div class="flex justify-between items-start mb-4">
+              <h3 class="text-xl font-bold text-gray-800 dark:text-white">{{ job.title }}</h3>
+            </div>
+
+            <!-- Şirket ve lokasyon bilgisi -->
+            <div class="mb-4">
+              <p class="text-gray-600 dark:text-gray-300 font-medium">{{ job.unit }}</p>
+            </div>
+
+            <!-- Maaş ve tarih bilgisi -->
+            <div class="flex justify-between items-center mb-4">
+              <span class="text-gray-500 dark:text-gray-400 text-xs"
+                >Son Başvuru Tarihi: {{ formatDate(job.validTo!) }}</span
+              >
+            </div>
+
+            <!-- İş açıklaması -->
+            <div
+              class="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-3"
+              v-html="job.description"
+            ></div>
+
+            <!-- Gereksinimler -->
+            <div class="mb-6">
+              <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                Gereksinimler:
+              </h4>
+              <div v-if="job.qualifications" class="flex flex-wrap gap-1">
+                <div
+                  class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs px-2 py-1 rounded"
+                  v-html="job.qualifications"
+                ></div>
+              </div>
+            </div>
+
+            <div class="flex justify-end">
+              <button
+                class="cursor-pointer inline-flex items-center px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white text-sm font-medium rounded-lg hover:bg-blue-700 dark:hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors duration-200"
+                @click.stop="navigateJobPosting(job.id)"
+              >
+                Başvur
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-4 w-4 ml-1"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M14 5l7 7m0 0l-7 7m7-7H3"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

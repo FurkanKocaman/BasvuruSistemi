@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { FormFieldDefinition } from "../../models/form-field.model";
+import { FormFieldDefinition } from "../../../models/form-field.model";
 import * as icons from "lucide-vue-next";
 import { getFieldTypeOptionByValue } from "@/models/constants/field-type";
 
@@ -8,12 +8,12 @@ const props = defineProps<{ fields: FormFieldDefinition[] }>();
 
 const emit = defineEmits<{
   (e: "remove:field", payload: string): void;
+  (e: "selectField", payload: string): void;
 }>();
 
 const removeField = (label: string) => {
   emit("remove:field", label);
 };
-
 const selectedRows = ref([]);
 </script>
 
@@ -44,10 +44,10 @@ const selectedRows = ref([]);
               </span>
             </label>
           </td>
-          <td class="w-14 py-3 flex items-center">
+          <td class="px-2 py-3 flex items-center">
             <component
               :is="icons[getFieldTypeOptionByValue(row.type)?.icon]"
-              class="w-4 h-4 text-gray-500"
+              class="w-5 h-5 text-gray-500"
             />
           </td>
           <td class="flex-1 flex flex-col justify-center py-3">

@@ -1,16 +1,23 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { ApplicationGetSummariesModel } from "../models/application-get-summaries.model";
 import { getApplicationStatusOptionByValue } from "@/models/constants/application-status";
 import applicationService from "@/services/application.service";
 import { FileSearch } from "lucide-vue-next";
 import { useRouter } from "vue-router";
+import { useVisiblePages } from "@/services/pagination.service";
 
 const applications = ref<ApplicationGetSummariesModel[]>([]);
 const page = ref(1);
 const pageSize = ref(20);
 const totalCount = ref(0);
 const jobPostingId = ref("");
+
+const totalPages = computed(() => {
+  return Math.ceil(totalCount.value / pageSize.value);
+});
+
+const visiblePages = useVisiblePages(totalPages, page);
 
 const router = useRouter();
 
@@ -47,10 +54,17 @@ function formatDateTime(value: string): string {
 const goToApplicationDetail = (id: string) => {
   router.push({ name: "application-detail", params: { id } });
 };
+
+const changePage = (pageNumber: number) => {
+  if (!(pageNumber <= 0 || pageNumber > totalPages.value)) {
+    page.value = pageNumber;
+    getFormApplications();
+  }
+};
 </script>
 
 <template>
-  <main class="w-full h-full px-10 pt-20 pb-10">
+  <main class="w-full h-full px-10 pt-20 pb-10 overflow-x-auto">
     <div class="w-full flex">
       <!-- Filtreler -->
       <div></div>
@@ -72,6 +86,7 @@ const goToApplicationDetail = (id: string) => {
                 name="pageSize"
                 id="pageSize"
                 v-model.number="pageSize"
+                @change="getFormApplications()"
                 class="text-sm dark:text-gray-300 text-gray-700 dark:bg-gray-800 px-3 py-1 outline-none focus:border-indigo-600 rounded-md border dark:border-gray-700 border-gray-300"
               >
                 <option :value="10">10</option>
@@ -80,7 +95,7 @@ const goToApplicationDetail = (id: string) => {
               </select>
               <span class="ml-2 dark:text-gray-400 text-gray-600"> kayıt göster</span>
             </div>
-            <table class="w-full text-sm">
+            <table class="w-full text-sm overflow-x-auto">
               <thead class="">
                 <tr class="border-b border-t dark:border-gray-700/30 border-gray-200">
                   <td
@@ -286,24 +301,29 @@ const goToApplicationDetail = (id: string) => {
               </div>
               <div class="flex">
                 <button
-                  class="border rounded-md p-2 text-sm dark:border-gray-700 border-gray-200 dark:text-gray-300 cursor-pointer"
+                  class="border rounded-md p-2 text-sm dark:border-gray-700 border-gray-200 dark:text-gray-300 cursor-pointer select-none"
+                  @click.stop="changePage(page - 1)"
                 >
                   Önceki
                 </button>
                 <div class="mx-3">
                   <button
-                    class="rounded-md p-2 text-sm dark:text-blue-500 bg-blue-600/10 cursor-pointer mx-1 w-8 hover:bg-blue-600/10 dark:hover:text-blue-500 hover:text-blue-700"
+                    v-for="pageNumber in visiblePages"
+                    :key="pageNumber.label"
+                    class="rounded-md p-2 text-sm cursor-pointer mx-1 w-8 select-none"
+                    @click.stop="() => pageNumber.type === 'page' && changePage(pageNumber.page)"
+                    :class="
+                      pageNumber.label == page
+                        ? 'text-blue-700 dark:text-blue-500 hover:bg-blue-600/10 dark:hover:text-blue-500 hover:text-blue-700 bg-blue-600/10'
+                        : 'text-gray-800 dark:text-gray-300 hover:bg-blue-600/10 dark:hover:text-blue-500 hover:text-blue-700'
+                    "
                   >
-                    1
-                  </button>
-                  <button
-                    class="rounded-md p-2 text-sm dark:text-gray-300 cursor-pointer mx-1 w-8 hover:bg-blue-600/10 dark:hover:text-blue-500 hover:text-blue-700"
-                  >
-                    2
+                    {{ pageNumber.label }}
                   </button>
                 </div>
                 <button
-                  class="border rounded-md p-2 text-sm dark:border-gray-700 border-gray-200 dark:text-gray-300 cursor-pointer"
+                  class="border rounded-md p-2 text-sm dark:border-gray-700 border-gray-200 dark:text-gray-300 cursor-pointer select-none"
+                  @click.stop="changePage(page + 1)"
                 >
                   Sonraki
                 </button>

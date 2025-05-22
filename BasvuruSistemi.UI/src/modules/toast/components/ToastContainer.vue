@@ -7,13 +7,13 @@ const toastStore = useToastStore();
 function getToastClasses(type: ToastType) {
   switch (type) {
     case "success":
-      return "bg-gray-50 dark:bg-gray-800 border-green-600 text-gray-800 dark:text-gray-200";
+      return "bg-gray-50 dark:bg-gray-800 border-green-600 text-gray-800 dark:text-gray-200 shadow-green-800";
     case "error":
-      return "bg-gray-50 dark:bg-gray-800 border-red-600 text-gray-800 dark:text-gray-200";
+      return "bg-gray-50 dark:bg-gray-800 border-red-600 text-gray-800 dark:text-gray-200 shadow-red-600";
     case "info":
-      return "bg-gray-50 dark:bg-gray-800 border-blue-600 text-gray-800 dark:text-gray-200";
+      return "bg-gray-50 dark:bg-gray-800 border-blue-600 text-gray-800 dark:text-gray-200 shadow-blue-600";
     case "warning":
-      return "bg-gray-50 dark:bg-gray-800 border-yellow-600 text-gray-800 dark:text-gray-200";
+      return "bg-gray-50 dark:bg-gray-800 border-yellow-600 text-gray-800 dark:text-gray-200 shadow-yellow-600";
     default:
       return "";
   }
@@ -50,11 +50,11 @@ function getToastIcon(type: ToastType) {
 }
 </script>
 <template>
-  <div class="fixed top-5 right-5 space-y-3 z-[99] w-[320px]">
+  <div class="fixed top-5 right-5 space-y-3 z-[99] min-w-md">
     <div
       v-for="toast in toastStore.toasts"
       :key="toast.id"
-      class="flex items-start p-3 rounded-lg shadow border animate-fade-in-down"
+      class="flex items-start p-3 rounded-lg shadow-xs animate-fade-in-down"
       :class="getToastClasses(toast.type)"
     >
       <div class="mr-3" :class="getToastIconClasses(toast.type)">

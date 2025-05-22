@@ -1,8 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using BasvuruSistemi.Server.Domain.Addresses;
+﻿using BasvuruSistemi.Server.Domain.Addresses;
 using BasvuruSistemi.Server.Domain.Applications;
 using BasvuruSistemi.Server.Domain.Entities;
 using BasvuruSistemi.Server.Domain.Enums;
+using BasvuruSistemi.Server.Domain.UserRoles;
 using BasvuruSistemi.Server.Domain.ValueObjects;
 using Microsoft.AspNetCore.Identity;
 
@@ -29,6 +29,8 @@ public sealed class AppUser : IdentityUser<Guid>
     public ICollection<Skill> SkillSet { get; private set; } = new List<Skill>();
 
     public ICollection<Application> Applications { get; private set; } = new List<Application>();
+
+    public ICollection<AppUserTenantRole> Roles { get; private set; } = new List<AppUserTenantRole>();
 
 
     #region Audit Log
@@ -58,6 +60,7 @@ public sealed class AppUser : IdentityUser<Guid>
     public void Update(string firstName, string lastName, DateOnly? bod, string? nationality, string? tCKN, Contact contact){
         FirstName = firstName;
         LastName = lastName;
+        Email = contact.Email;
         BirthOfDate = bod;
         Nationality = nationality;
         TCKN = tCKN;

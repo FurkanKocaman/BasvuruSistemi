@@ -5,6 +5,8 @@ defineProps<{
   profile: Profile;
 }>();
 
+const apiUrl = import.meta.env.VITE_API_PUBLIC_URL;
+
 defineEmits(["editProfile", "editPhoto"]);
 </script>
 
@@ -14,11 +16,7 @@ defineEmits(["editProfile", "editPhoto"]);
       <!-- Profil resmi -->
       <div class="relative">
         <img
-          :src="
-            profile.avatarUrl
-              ? profile.avatarUrl
-              : 'https://static.vecteezy.com/system/resources/previews/019/879/186/non_2x/user-icon-on-transparent-background-free-png.png'
-          "
+          :src="profile.avatarUrl ?? apiUrl + '/user.png'"
           alt="Profil Fotoğrafı"
           width="240"
           height="240"

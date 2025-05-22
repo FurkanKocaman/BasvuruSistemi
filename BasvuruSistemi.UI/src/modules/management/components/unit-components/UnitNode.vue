@@ -24,8 +24,12 @@ const props = defineProps({
       "
     >
       <span>{{ unit.name }}</span>
-      <div v-if="tenantStore.tenantId != unit.id" class="flex items-center">
-        <button @click.stop="$emit('add', unit.id)" class="group cursor-pointer mr-3">
+      <div class="flex items-center">
+        <button
+          @click.stop="$emit('add', unit.id)"
+          class="group cursor-pointer mr-3"
+          title="Alt Birim Ekle"
+        >
           <svg class="size-6 fill-none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <circle
               cx="12"
@@ -42,7 +46,12 @@ const props = defineProps({
             />
           </svg>
         </button>
-        <button @click.stop="$emit('edit', unit.id)" class="group cursor-pointer mr-3">
+        <button
+          v-if="tenantStore.tenantId != unit.id"
+          @click.stop="$emit('edit', unit.id)"
+          class="group cursor-pointer mr-3"
+          title="Düzenle"
+        >
           <svg
             class="size-6 dark:fill-gray-400 fill-gray-600 group-hover:fill-blue-600 dark:group-hover:fill-blue-600"
             viewBox="0 0 24 24"
@@ -53,7 +62,12 @@ const props = defineProps({
             />
           </svg>
         </button>
-        <button @click.stop="$emit('remove', unit.id)" class="cursor-pointer">
+        <button
+          v-if="tenantStore.tenantId != unit.id"
+          @click.stop="$emit('remove', unit.id)"
+          class="cursor-pointer"
+          title="Sil"
+        >
           <svg
             class="size-6 group"
             viewBox="0 0 24 24"

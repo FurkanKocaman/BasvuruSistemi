@@ -62,13 +62,13 @@ internal sealed class JobPostingCreateCommandHandler(
 
         if(request.postingGroupId is not null && request.unitId is not null)
         {
-            var postingGroup = await postingGroupRepository.Where(p => p.Id == request.postingGroupId && !p.IsDeleted).Include(p => p.Unit).ThenInclude(p => p!.Children).FirstOrDefaultAsync();
+            var postingGroup = await postingGroupRepository.Where(p => p.Id == request.postingGroupId && !p.IsDeleted).Include(p => p.Unit).ThenInclude(p => p!.Children).ThenInclude(p => p.Children).ThenInclude(p => p.Children).FirstOrDefaultAsync();
             if (postingGroup is null)
                 return Result<string>.Failure(404, "Posting group not found or already deleted");
 
             if(postingGroup.Unit is not null)
             {
-                if (!postingGroup.Unit.Children.Any(p => p.Id == request.unitId) && postingGroup.Unit.Id != request.unitId)
+                if (!postingGroup.Unit.Children.Any(p => p.Id == request.unitId) && !postingGroup.Unit.Children.Any(p => p.Children.Any(p => p.Id == request.unitId)) && postingGroup.Unit.Id != request.unitId)
                 {
                     return Result<string>.Failure("JobPosting's unit is not a child of parent group or not the same unit");
                 }

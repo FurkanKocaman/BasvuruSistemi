@@ -44,6 +44,12 @@ public enum VerificationStatus
     Expired = 5          // Süresi dolmuş belge
 }
 
+public enum JobPostingType
+{
+    JobPosting = 1,     // İş ilanı
+    PostingGroup = 2,   // İlan grubu
+}
+
 public enum FieldTypeEnum
 {
     Textbox = 1,

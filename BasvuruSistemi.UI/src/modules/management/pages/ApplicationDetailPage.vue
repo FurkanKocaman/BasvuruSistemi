@@ -7,12 +7,30 @@ import { ApplicationGetDetailModel } from "../models/application-get-detail.mode
 import { getFieldTypeOptionByValue } from "@/models/constants/field-type";
 import ConfirmModal from "@/components/ConfirmModal.vue";
 import { getApplicationStatusOptionByValue } from "@/models/constants/application-status";
+import profileService from "@/modules/profile/services/profile.service";
+import { Profile } from "@/modules/profile/models/profile.model";
 
 const route = useRoute();
 const id = route.params.id as string | undefined;
 
 const confirmModal = ref();
 const modalTitle = ref("");
+
+const userData = ref<Profile>({
+  id: "",
+  firstName: "",
+  lastName: "",
+  profileStatus: 0,
+  addresses: [],
+  educations: [],
+  certificates: [],
+  experiences: [],
+  skills: [],
+});
+
+const apiUrl = import.meta.env.VITE_API_PUBLIC_URL;
+
+const windowType = ref(0);
 
 const application = ref<ApplicationGetDetailModel>({
   id: "",
@@ -37,7 +55,7 @@ const getApplicationDetail = async () => {
     const res = await applicationService.getApplication(id);
     if (res.statusCode == 200) {
       application.value = res.data;
-      console.log("Res.data", application.value);
+      userData.value = await profileService.getUserProfile(res.data.userId);
     }
   }
 };
@@ -85,14 +103,14 @@ function formatDateTime(value: string): string {
       >
         <img
           class="size-16 rounded-full object-cover"
-          src="https://picsum.photos/200/300"
+          :src="userData.avatarUrl ?? apiUrl + '/user.png'"
           alt="profile image"
         />
         <div class="flex flex-col">
           <span class="text-base dark:text-gray-100 font-semibold ml-5">{{
-            application.firstName + " " + application.lastName
+            userData.firstName + " " + userData.lastName
           }}</span>
-          <span class="text-sm dark:text-gray-400 font-normal ml-5">{{ application.email }}</span>
+          <span class="text-sm dark:text-gray-400 font-normal ml-5">{{ userData.email }}</span>
         </div>
       </div>
       <div
@@ -103,68 +121,343 @@ function formatDateTime(value: string): string {
           <div class="flex flex-col mr-20">
             <div class="flex flex-col mb-3">
               <label class="text-xs dark:text-gray-400 text-gray-700 mb-1.5">Ad</label>
-              <span class="dark:text-gray-200 text-gray-800">{{ application.firstName }} </span>
+              <span class="dark:text-gray-200 text-gray-800">{{ userData.firstName }} </span>
             </div>
             <div class="flex flex-col mb-3">
               <label class="text-xs dark:text-gray-400 text-gray-700 mb-1.5">E-posta</label>
-              <span class="dark:text-gray-200 text-gray-800">{{ application.email ?? "-" }}</span>
+              <span class="dark:text-gray-200 text-gray-800">{{ userData.email ?? "-" }}</span>
             </div>
             <div class="flex flex-col mb-3">
               <label class="text-xs dark:text-gray-400 text-gray-700 mb-1.5">TC Kimlik No</label>
-              <span class="dark:text-gray-200 text-gray-800">{{ application.tckn ?? "-" }} </span>
+              <span class="dark:text-gray-200 text-gray-800">{{ userData.tckn ?? "-" }} </span>
             </div>
           </div>
           <div class="flex flex-col">
             <div class="flex flex-col mb-3">
               <label class="text-xs dark:text-gray-400 text-gray-700 mb-1.5">Soyad</label>
-              <span class="dark:text-gray-200 text-gray-800">{{ application.lastName }} </span>
+              <span class="dark:text-gray-200 text-gray-800">{{ userData.lastName }} </span>
             </div>
             <div class="flex flex-col mb-3">
               <label class="text-xs dark:text-gray-400 text-gray-700 mb-1.5">Telefon</label>
-              <span class="dark:text-gray-200 text-gray-800">{{ application.phone ?? "-" }}</span>
+              <span class="dark:text-gray-200 text-gray-800">{{ userData.phone ?? "-" }}</span>
             </div>
           </div>
         </div>
       </div>
-      <div
-        class="w-full border dark:border-gray-800 border-gray-200 rounded-lg mb-5 py-3 px-5 flex flex-col items-start"
-      >
-        <span class="text-lg dark:text-gray-100 font-semibold">Adres Bilgileri</span>
-        <div class="flex flex-row mt-5">
-          <div class="flex flex-col mr-20">
-            <div class="flex flex-col mb-3">
-              <label class="text-xs dark:text-gray-400 text-gray-700 mb-1.5">Ülke</label>
-              <span class="dark:text-gray-200 text-gray-800"
-                >{{ application.country ?? "-" }}
-              </span>
-            </div>
-            <div class="flex flex-col mb-3">
-              <label class="text-xs dark:text-gray-400 text-gray-700 mb-1.5">İlçe</label>
-              <span class="dark:text-gray-200 text-gray-800">{{
-                application.district ?? "-"
-              }}</span>
-            </div>
-            <div class="flex flex-col mb-3">
-              <label class="text-xs dark:text-gray-400 text-gray-700 mb-1.5">Tam Adres</label>
-              <span class="dark:text-gray-200 text-gray-800">{{
-                application.fullAddress ?? "-"
-              }}</span>
+      <div class="w-full border dark:border-gray-800 border-gray-200 rounded-md mb-5">
+        <ul
+          class="flex dark:bg-gray-800/50 bg-gray-100 w-fit px-1 py-0.5 rounded-md select-none mb-3"
+        >
+          <li
+            class="px-2 py-1.5 dark:hover:text-gray-50 hover:text-gray-900 cursor-pointer mr-2 rounded-md text-sm"
+            :class="
+              windowType === 0
+                ? 'dark:bg-gray-700 bg-gray-200 text-gray-900 dark:text-gray-50'
+                : 'text-gray-600 dark:text-gray-400'
+            "
+            @click="
+              () => {
+                windowType = 0;
+              }
+            "
+          >
+            Adres
+          </li>
+          <li
+            class="px-2 py-1.5 dark:hover:text-gray-50 hover:text-gray-900 cursor-pointer mr-2 rounded-md text-sm"
+            :class="
+              windowType === 1
+                ? 'dark:bg-gray-700 bg-gray-200 text-gray-900 dark:text-gray-50'
+                : 'text-gray-600 dark:text-gray-400'
+            "
+            @click="
+              () => {
+                windowType = 1;
+              }
+            "
+          >
+            Eğitim
+          </li>
+          <li
+            class="px-2 py-1.5 dark:hover:text-gray-50 hover:text-gray-900 cursor-pointer mr-2 rounded-md text-sm"
+            :class="
+              windowType === 2
+                ? 'dark:bg-gray-700 bg-gray-200 text-gray-900 dark:text-gray-50'
+                : 'text-gray-600 dark:text-gray-400'
+            "
+            @click="
+              () => {
+                windowType = 2;
+              }
+            "
+          >
+            Sertifika
+          </li>
+          <li
+            class="px-2 py-1.5 dark:hover:text-gray-50 hover:text-gray-900 cursor-pointer rounded-md text-sm"
+            :class="
+              windowType === 3
+                ? 'dark:bg-gray-700 bg-gray-200 text-gray-900 dark:text-gray-50'
+                : 'text-gray-600 dark:text-gray-400'
+            "
+            @click="
+              () => {
+                windowType = 3;
+              }
+            "
+          >
+            Deneyim
+          </li>
+          <li
+            class="px-2 py-1.5 dark:hover:text-gray-50 hover:text-gray-900 cursor-pointer rounded-md text-sm"
+            :class="
+              windowType === 4
+                ? 'dark:bg-gray-700 bg-gray-200 text-gray-900 dark:text-gray-50'
+                : 'text-gray-600 dark:text-gray-400'
+            "
+            @click="
+              () => {
+                windowType = 4;
+              }
+            "
+          >
+            Yetenekler
+          </li>
+        </ul>
+        <!-- Address -->
+        <div v-if="windowType === 0" class="flex gap-3 px-3">
+          <div
+            v-for="address in userData.addresses"
+            :key="address.id"
+            class="rounded-lg mb-5 py-3 px-5 flex flex-col items-start border dark:border-gray-800 border-gray-200 w-fit"
+          >
+            <span class="text-lg dark:text-gray-100 font-semibold"
+              >Adres Bilgileri
+              <span class="text-gray-500 dark:text-gray-600">({{ address.name }})</span></span
+            >
+            <div class="flex flex-row mt-5">
+              <div class="flex flex-col mr-20">
+                <div class="flex flex-col mb-3">
+                  <label class="text-xs dark:text-gray-400 text-gray-700 mb-1.5">Ülke</label>
+                  <span class="dark:text-gray-200 text-gray-800"
+                    >{{ address.country ?? "-" }}
+                  </span>
+                </div>
+                <div class="flex flex-col mb-3">
+                  <label class="text-xs dark:text-gray-400 text-gray-700 mb-1.5">İlçe</label>
+                  <span class="dark:text-gray-200 text-gray-800">{{
+                    address.district ?? "-"
+                  }}</span>
+                </div>
+                <div class="flex flex-col mb-3">
+                  <label class="text-xs dark:text-gray-400 text-gray-700 mb-1.5">Tam Adres</label>
+                  <span class="dark:text-gray-200 text-gray-800">{{
+                    address.fullAddress ?? "-"
+                  }}</span>
+                </div>
+              </div>
+              <div class="flex flex-col">
+                <div class="flex flex-col mb-3">
+                  <label class="text-xs dark:text-gray-400 text-gray-700 mb-1.5">İl</label>
+                  <span class="dark:text-gray-200 text-gray-800">{{ address.city ?? "-" }} </span>
+                </div>
+                <div class="flex flex-col mb-3">
+                  <label class="text-xs dark:text-gray-400 text-gray-700 mb-1.5">Posta Kodu</label>
+                  <span class="dark:text-gray-200 text-gray-800"
+                    >{{ address.postalCode ?? "-" }}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
-          <div class="flex flex-col">
-            <div class="flex flex-col mb-3">
-              <label class="text-xs dark:text-gray-400 text-gray-700 mb-1.5">İl</label>
-              <span class="dark:text-gray-200 text-gray-800">{{ application.city ?? "-" }} </span>
+          <div
+            v-if="userData.addresses.length == 0"
+            class="w-full flex justify-center items-center py-5 border rounded-md my-3 border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300"
+          >
+            Adres Bulunamadı
+          </div>
+        </div>
+        <!-- Education  -->
+        <div v-if="windowType === 1" class="flex gap-3 px-3">
+          <div
+            v-for="education in userData.educations"
+            :key="education.id"
+            class="rounded-lg mb-5 py-3 px-5 flex flex-col items-start border dark:border-gray-800 border-gray-200 w-fit"
+          >
+            <span class="text-lg dark:text-gray-100 font-semibold">Eğitim Bilgileri</span>
+            <div class="flex flex-row mt-5">
+              <div class="flex flex-col mr-20">
+                <div class="flex flex-col mb-3">
+                  <label class="text-xs dark:text-gray-400 text-gray-700 mb-1.5">Kurum</label>
+                  <span class="dark:text-gray-200 text-gray-800"
+                    >{{ education.institution ?? "-" }}
+                  </span>
+                </div>
+                <div class="flex flex-col mb-3">
+                  <label class="text-xs dark:text-gray-400 text-gray-700 mb-1.5">Seviye</label>
+                  <span class="dark:text-gray-200 text-gray-800">{{
+                    education.degree ?? "-"
+                  }}</span>
+                </div>
+                <div class="flex flex-col mb-3">
+                  <label class="text-xs dark:text-gray-400 text-gray-700 mb-1.5">Dönem</label>
+
+                  <span class="dark:text-gray-200 text-gray-800">{{
+                    new Date(education.startDate).toLocaleDateString("tr-TR") +
+                    "  -  " +
+                    (education.graduationDate
+                      ? new Date(education.graduationDate).toLocaleDateString("tr-TR")
+                      : "Devam Ediyor")
+                  }}</span>
+                </div>
+              </div>
+              <div class="flex flex-col">
+                <div class="flex flex-col mb-3">
+                  <label class="text-xs dark:text-gray-400 text-gray-700 mb-1.5">Bölüm</label>
+                  <span class="dark:text-gray-200 text-gray-800"
+                    >{{ education.department ?? "-" }}
+                  </span>
+                </div>
+              </div>
             </div>
-            <div class="flex flex-col mb-3">
-              <label class="text-xs dark:text-gray-400 text-gray-700 mb-1.5">Posta Kodu</label>
-              <span class="dark:text-gray-200 text-gray-800"
-                >{{ application.postalCode ?? "-" }}
-              </span>
+          </div>
+          <div
+            v-if="userData.educations.length == 0"
+            class="w-full flex justify-center items-center py-5 border rounded-md my-3 border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300"
+          >
+            Eğitim Bulunamadı
+          </div>
+        </div>
+        <!-- Certificate  -->
+        <div v-if="windowType === 2" class="flex gap-3 px-3">
+          <div
+            v-for="certificate in userData.certificates"
+            :key="certificate.id"
+            class="rounded-lg mb-5 py-3 px-5 flex flex-col items-start border dark:border-gray-800 border-gray-200 w-fit"
+          >
+            <span class="text-lg dark:text-gray-100 font-semibold">Sertifika Bilgileri</span>
+            <div class="flex flex-row mt-5">
+              <div class="flex flex-col mr-20">
+                <div class="flex flex-col mb-3">
+                  <label class="text-xs dark:text-gray-400 text-gray-700 mb-1.5">Kurum</label>
+                  <span class="dark:text-gray-200 text-gray-800"
+                    >{{ certificate.title ?? "-" }}
+                  </span>
+                </div>
+
+                <div class="flex flex-col mb-3">
+                  <label class="text-xs dark:text-gray-400 text-gray-700 mb-1.5">Dönem</label>
+
+                  <span class="dark:text-gray-200 text-gray-800">{{
+                    new Date(certificate.dateReceived).toLocaleDateString("tr-TR") +
+                    " - " +
+                    (certificate.expiryDate
+                      ? new Date(certificate.expiryDate).toLocaleDateString("tr-TR")
+                      : "Devam Ediyor")
+                  }}</span>
+                </div>
+              </div>
+              <div class="flex flex-col">
+                <div class="flex flex-col mb-3">
+                  <label class="text-xs dark:text-gray-400 text-gray-700 mb-1.5">Bölüm</label>
+                  <span class="dark:text-gray-200 text-gray-800"
+                    >{{ certificate.issuer ?? "-" }}
+                  </span>
+                </div>
+              </div>
             </div>
+          </div>
+          <div
+            v-if="userData.certificates.length == 0"
+            class="w-full flex justify-center items-center py-5 border rounded-md my-3 border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300"
+          >
+            Sertifika Bulunamadı
+          </div>
+        </div>
+        <!-- Experience  -->
+        <div v-if="windowType === 3" class="flex gap-3 px-3">
+          <div
+            v-for="experience in userData.experiences"
+            :key="experience.id"
+            class="rounded-lg mb-5 py-3 px-5 flex flex-col items-start border dark:border-gray-800 border-gray-200 w-fit"
+          >
+            <span class="text-lg dark:text-gray-100 font-semibold">Deneyim Bilgileri</span>
+            <div class="flex flex-row mt-5">
+              <div class="flex flex-col mr-20">
+                <div class="flex flex-col mb-3">
+                  <label class="text-xs dark:text-gray-400 text-gray-700 mb-1.5">Kurum</label>
+                  <span class="dark:text-gray-200 text-gray-800"
+                    >{{ experience.companyName ?? "-" }}
+                  </span>
+                </div>
+
+                <div class="flex flex-col mb-3">
+                  <label class="text-xs dark:text-gray-400 text-gray-700 mb-1.5">Dönem</label>
+
+                  <span class="dark:text-gray-200 text-gray-800">{{
+                    new Date(experience.startDate).toLocaleDateString("tr-TR") +
+                    " - " +
+                    (experience.endDate
+                      ? new Date(experience.endDate).toLocaleDateString("tr-TR")
+                      : "Devam Ediyor")
+                  }}</span>
+                </div>
+              </div>
+              <div class="flex flex-col">
+                <div class="flex flex-col mb-3">
+                  <label class="text-xs dark:text-gray-400 text-gray-700 mb-1.5">Departman</label>
+                  <span class="dark:text-gray-200 text-gray-800"
+                    >{{ experience.position ?? "-" }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            v-if="userData.experiences.length == 0"
+            class="w-full flex justify-center items-center py-5 border rounded-md my-3 border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300"
+          >
+            Deneyim Bulunamadı
+          </div>
+        </div>
+        <!-- Skill  -->
+        <div v-if="windowType === 4" class="flex gap-3 px-3">
+          <div
+            v-for="skill in userData.skills"
+            :key="skill.id"
+            class="rounded-lg mb-5 py-3 px-5 flex flex-col items-start border dark:border-gray-800 border-gray-200 w-fit"
+          >
+            <span class="text-lg dark:text-gray-100 font-semibold">Yetenek Bilgileri</span>
+            <div class="flex flex-row mt-5">
+              <div class="flex flex-col mr-20">
+                <div class="flex flex-col mb-3">
+                  <label class="text-xs dark:text-gray-400 text-gray-700 mb-1.5">Ad</label>
+                  <span class="dark:text-gray-200 text-gray-800">{{ skill.name ?? "-" }} </span>
+                </div>
+
+                <div class="flex flex-col mb-3">
+                  <label class="text-xs dark:text-gray-400 text-gray-700 mb-1.5">Açıklama</label>
+
+                  <span class="dark:text-gray-200 text-gray-800">{{ skill.description }}</span>
+                </div>
+              </div>
+              <div class="flex flex-col">
+                <div class="flex flex-col mb-3">
+                  <label class="text-xs dark:text-gray-400 text-gray-700 mb-1.5">Seviye</label>
+                  <span class="dark:text-gray-200 text-gray-800">{{ skill.level ?? "-" }} </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            v-if="userData.skills.length == 0"
+            class="w-full flex justify-center items-center py-5 border rounded-md my-3 border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300"
+          >
+            Yetenek Bulunamadı
           </div>
         </div>
       </div>
+
       <div
         class="w-full border dark:border-gray-800 border-gray-200 rounded-lg mb-5 py-3 px-5 flex flex-col items-start"
       >

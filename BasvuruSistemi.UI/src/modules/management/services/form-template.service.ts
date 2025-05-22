@@ -3,13 +3,17 @@ import { FormTemplateCreateReqeust } from "../models/form-template-create.model"
 import { FormTemplateGetModel } from "../models/form-template-get.model";
 import { PaginatedResponse } from "@/models/response/paginated-response.model";
 import { useToastStore } from "@/modules/toast/store/toast.store";
+import { Result } from "@/models/entities/result.model";
 
 class FormTeplateSerive {
   toastStore = useToastStore();
 
-  async createFormTemplate(request: FormTemplateCreateReqeust): Promise<string | undefined> {
+  async createFormTemplate(request: FormTemplateCreateReqeust): Promise<string> {
     try {
-      const res = await api.post(`${import.meta.env.VITE_API_URL}/form-templates`, request);
+      const res = await api.post<Result<string>>(
+        `${import.meta.env.VITE_API_URL}/form-templates`,
+        request
+      );
 
       if (res.status == 200) {
         this.toastStore.addToast({
@@ -25,9 +29,10 @@ class FormTeplateSerive {
         });
       }
 
-      return res.data;
+      return res.data.data;
     } catch (err) {
       console.error(err);
+      throw err;
     }
   }
   async updateFormTemplate(
@@ -68,10 +73,16 @@ class FormTeplateSerive {
       console.error(err);
     }
   }
-  async getFormTemplates(): Promise<PaginatedResponse<FormTemplateGetModel> | undefined> {
+  async getFormTemplates(
+    page: number,
+    pageSize: number
+  ): Promise<PaginatedResponse<FormTemplateGetModel> | undefined> {
     try {
-      const res = await api.get(`${import.meta.env.VITE_API_URL}/api/form-templates?view=details`);
-      console.log(res);
+      const res = await api.get(
+        `${
+          import.meta.env.VITE_API_URL
+        }/api/form-templates?view=details&page?${page}&pageSize=${pageSize}`
+      );
       return res.data;
     } catch (err) {
       console.error(err);

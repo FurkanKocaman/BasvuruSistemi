@@ -4,18 +4,11 @@ import HeaderComponent from "../components/HeaderComponent.vue";
 import { fetchCurrentUser } from "@/services/current-user.service";
 import { useRoute } from "vue-router";
 
-const isDarkMode = ref(false);
-
 const isRouteChanging = ref(false);
 const route = useRoute();
 
 onMounted(() => {
   fetchCurrentUser();
-
-  if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
-    isDarkMode.value = true;
-    document.documentElement.classList.add("dark");
-  }
 });
 
 watch(

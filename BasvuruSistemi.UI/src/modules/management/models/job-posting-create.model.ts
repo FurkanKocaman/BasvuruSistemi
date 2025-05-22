@@ -1,5 +1,6 @@
 export interface JobPostingCreateModel {
   id?: string;
+
   title: string;
   description: string;
   responsibilities?: string;
@@ -24,6 +25,7 @@ export interface JobPostingCreateModel {
 
   contactInfo?: string;
   isPublic: boolean;
+  isAnonymous: boolean;
 
   minSalary?: number;
   maxSalary?: number;

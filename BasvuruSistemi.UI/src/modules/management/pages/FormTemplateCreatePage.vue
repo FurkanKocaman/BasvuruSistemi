@@ -8,6 +8,7 @@ import { useDropdown } from "../composables/useDropdown";
 import FieldsFromFormTemplate from "../components/form-template-components/form-template-create/FieldsFromFormTemplate.vue";
 import NewFormField from "../components/form-template-components/form-template-create/NewFormField.vue";
 import SelectedFormFields from "../components/form-template-components/form-template-create/SelectedFormFields.vue";
+import { useToastStore } from "@/modules/toast/store/toast.store";
 
 const formFieldAddingType = ref("FormTemplateAll");
 
@@ -19,8 +20,11 @@ const request = reactive<FormTemplateCreateReqeust>({
   id: undefined,
   name: "",
   description: undefined,
+  isSaved: true,
   fields: [],
 });
+
+const toastStore = useToastStore();
 
 const route = useRoute();
 const router = useRouter();
@@ -43,19 +47,27 @@ onMounted(async () => {
 });
 
 const handleSubmit = async () => {
-  if (!isUpdate.value) {
-    const res = await formTemplateService.createFormTemplate(request);
-    if (res) {
-      router.push({ name: "form-templates-list" });
-    }
-  } else {
-    if (request.id) {
-      console.log(request);
-      const res = await formTemplateService.updateFormTemplate(request.id, request);
+  if (request.name.trim() !== "" && request.fields.length != 0) {
+    if (!isUpdate.value) {
+      const res = await formTemplateService.createFormTemplate(request);
       if (res) {
         router.push({ name: "form-templates-list" });
       }
+    } else {
+      if (request.id) {
+        console.log(request);
+        const res = await formTemplateService.updateFormTemplate(request.id, request);
+        if (res) {
+          router.push({ name: "form-templates-list" });
+        }
+      }
     }
+  } else {
+    toastStore.addToast({
+      message: "Şablon adı boş olamaz ve en az 1 alan olmak zorunda",
+      type: "error",
+      duration: 3000,
+    });
   }
 };
 

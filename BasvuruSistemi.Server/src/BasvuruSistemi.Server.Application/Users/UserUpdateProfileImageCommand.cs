@@ -35,6 +35,10 @@ internal sealed class UserUpdateProfileImageCommandHandler(
         if (!allowedExtensions.Contains(extension))
             return Result<string>.Failure("İnvalid file extension.");
 
+        var wwwrootPath = webHostEnvironment.WebRootPath;
+        if (!Directory.Exists(wwwrootPath))
+            Directory.CreateDirectory(wwwrootPath);
+
         var uploadsRoot = Path.Combine(webHostEnvironment.WebRootPath, "uploads", "profile_images", userId.Value.ToString());
 
         if (!Directory.Exists(uploadsRoot))

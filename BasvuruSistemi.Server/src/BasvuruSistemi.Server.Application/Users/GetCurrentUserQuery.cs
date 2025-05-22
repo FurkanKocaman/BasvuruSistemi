@@ -58,7 +58,7 @@ internal sealed class GetCurrentUserQueryHandler(
             FirstName = user.FirstName,
             LastName = user.LastName,
 
-            AvatarUrl = $"{context?.Scheme}://{context?.Host}/{user.AvatarUrl}",
+            AvatarUrl = user.AvatarUrl != null ? $"{context?.Scheme}://{context?.Host}/{user.AvatarUrl}" : null,
 
             Nationality = user.Nationality,
             TCKN = user.TCKN,

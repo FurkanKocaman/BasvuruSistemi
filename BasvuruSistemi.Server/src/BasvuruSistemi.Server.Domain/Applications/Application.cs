@@ -53,6 +53,13 @@ public sealed class Application : Entity
         ReviewerId = null;
     }
 
+    public void SetStatus(ApplicationStatus status)
+    {
+        Status = status;
+        ReviewDescription = null;
+        ReviewDate = null;
+        ReviewerId = null;
+    }
     public void AddFieldValue(ApplicationFieldValue value)
     {
         FieldValues.Add(value);

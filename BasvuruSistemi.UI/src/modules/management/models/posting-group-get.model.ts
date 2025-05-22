@@ -26,6 +26,9 @@ export interface PostingGroupGetModel {
 export interface JobPostingSummaryDto {
   id: string;
   title: string;
+  description: string;
+  responsibilities?: string;
+  qualifications?: string;
   validFrom?: string;
   validTo?: string;
   totalApplicationsCount: number;

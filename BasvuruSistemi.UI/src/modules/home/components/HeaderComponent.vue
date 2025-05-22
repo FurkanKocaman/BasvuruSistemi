@@ -4,7 +4,6 @@ import { useUserStore } from "@/stores/user";
 
 import { computed, onMounted, ref } from "vue";
 
-
 const themeStore = useThemeStore();
 const userStore = useUserStore();
 const user = ref();
@@ -16,26 +15,26 @@ onMounted(() => {
   user.value = userStore.user;
 });
 
+const apiUrl = import.meta.env.VITE_API_PUBLIC_URL;
+
 const setTheme = (theme: Theme) => {
   themeStore.setTheme(theme);
 };
-import {  onBeforeUnmount } from 'vue'
 
-const showNotifications = ref(false)
+const showNotifications = ref(false);
 
 const notifications = ref([
-  { message: 'Frontend Developer pozisyonuna başvurunuz onaylandı.', status: 'success' },
-  { message: 'Back-End Developer başvurunuz reddedildi.', status: 'error' },
-  { message: 'Yeni ilan: UI/UX Designer yayınlandı.', status: 'info' },
-  { message: 'Mobil Geliştirici başvurunuz inceleniyor.', status: 'pending' },
-  { message: 'Yazılım Test Uzmanı pozisyonu için geri dönüş yapıldı.', status: 'success' },
-  { message: 'Full Stack başvurunuz olumlu değerlendirildi.', status: 'success' },
-  { message: 'Sistem Analisti ilanı yayından kaldırıldı.', status: 'warning' },
-  { message: 'Veri Bilimci başvurunuz eksik bilgi içeriyor.', status: 'warning' },
-  { message: 'Proje Yöneticisi başvurunuz değerlendirme aşamasında.', status: 'pending' },
-  { message: 'Destek Uzmanı başvurunuz reddedildi.', status: 'error' }
-])
-
+  { message: "Frontend Developer pozisyonuna başvurunuz onaylandı.", status: "success" },
+  { message: "Back-End Developer başvurunuz reddedildi.", status: "error" },
+  { message: "Yeni ilan: UI/UX Designer yayınlandı.", status: "info" },
+  { message: "Mobil Geliştirici başvurunuz inceleniyor.", status: "pending" },
+  { message: "Yazılım Test Uzmanı pozisyonu için geri dönüş yapıldı.", status: "success" },
+  { message: "Full Stack başvurunuz olumlu değerlendirildi.", status: "success" },
+  { message: "Sistem Analisti ilanı yayından kaldırıldı.", status: "warning" },
+  { message: "Veri Bilimci başvurunuz eksik bilgi içeriyor.", status: "warning" },
+  { message: "Proje Yöneticisi başvurunuz değerlendirme aşamasında.", status: "pending" },
+  { message: "Destek Uzmanı başvurunuz reddedildi.", status: "error" },
+]);
 </script>
 
 <template>
@@ -80,7 +79,6 @@ const notifications = ref([
             İlanlar
           </router-link>
         </div>
-        
 
         <router-link
           to="/my-applications"
@@ -90,13 +88,12 @@ const notifications = ref([
         <router-link to="/tenants" class="text-sm/6 font-semibold text-gray-700 dark:text-gray-50"
           >Yönetim</router-link
         >
-        
+
         <router-link to="/profile" class="text-sm/6 font-semibold text-gray-700 dark:text-gray-50"
           >Profil</router-link
         >
       </div>
 
-      
       <div class="hidden lg:flex lg:flex-1 lg:justify-end">
         <div
           v-if="currentTheme == 'dark'"
@@ -132,66 +129,77 @@ const notifications = ref([
           </svg>
         </div>
         <div
-    class="notification-wrapper"
-    @mouseenter="showNotifications = true"
-    @mouseleave="showNotifications = false"
-  >
-    <button class="notification-button">
-      <div
-          class="border border-gray-400 dark:border-gray-600 rounded-full w-10 h-10 flex items-center justify-center cursor-pointer mx-3"
+          class="notification-wrapper"
+          @mouseenter="showNotifications = true"
+          @mouseleave="showNotifications = false"
         >
-          <svg class="size-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <g clip-path="url(#clip0_429_11023)">
-              <path
-                d="M6 19V10C6 6.68629 8.68629 4 12 4V4C15.3137 4 18 6.68629 18 10V19M6 19H18M6 19H4M18 19H20"
-                class="dark:stroke-gray-400 stroke-gray-500"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-              <path
-                d="M11 22L13 22"
-                class="dark:stroke-gray-400 stroke-gray-500"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-              <circle
-                cx="12"
-                cy="3"
-                r="1"
-                class="dark:stroke-gray-400 stroke-gray-500"
-                stroke-width="1.5"
-              />
-            </g>
-          </svg>
+          <button class="notification-button">
+            <div
+              class="border border-gray-400 dark:border-gray-600 rounded-full w-10 h-10 flex items-center justify-center cursor-pointer mx-3"
+            >
+              <svg
+                class="size-5"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <g clip-path="url(#clip0_429_11023)">
+                  <path
+                    d="M6 19V10C6 6.68629 8.68629 4 12 4V4C15.3137 4 18 6.68629 18 10V19M6 19H18M6 19H4M18 19H20"
+                    class="dark:stroke-gray-400 stroke-gray-500"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M11 22L13 22"
+                    class="dark:stroke-gray-400 stroke-gray-500"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <circle
+                    cx="12"
+                    cy="3"
+                    r="1"
+                    class="dark:stroke-gray-400 stroke-gray-500"
+                    stroke-width="1.5"
+                  />
+                </g>
+              </svg>
+            </div>
+          </button>
+
+          <div v-if="showNotifications" class="notification-box">
+            <ul>
+              <li v-for="(notif, index) in notifications" :key="index">
+                <span class="icon">
+                  <span v-if="notif.status === 'success'"
+                    ><i class="fa-solid fa-circle-check fa-xl" style="color: #63e6be"></i
+                  ></span>
+                  <span v-else-if="notif.status === 'error'"
+                    ><i class="fa-solid fa-circle-xmark fa-xl" style="color: #f73636"></i
+                  ></span>
+                  <span v-else-if="notif.status === 'info'"
+                    ><i class="fa-solid fa-circle-info fa-xl" style="color: #74c0fc"></i
+                  ></span>
+                  <span v-else-if="notif.status === 'warning'"
+                    ><i class="fa-solid fa-circle-exclamation fa-xl" style="color: #e2b922"></i
+                  ></span>
+                  <span v-else-if="notif.status === 'pending'"
+                    ><i class="fa-solid fa-clock fa-xl" style="color: #808080"></i
+                  ></span>
+                </span>
+                {{ notif.message }}
+              </li>
+            </ul>
+          </div>
         </div>
-    </button>
 
-    
-    <div v-if="showNotifications" class="notification-box">
-      <ul>
-        <li v-for="(notif, index) in notifications" :key="index">
-  <span class="icon">
-    <span v-if="notif.status === 'success'"><i class="fa-solid fa-circle-check fa-xl" style="color: #63E6BE;"></i></span>
-    <span v-else-if="notif.status === 'error'"><i class="fa-solid fa-circle-xmark fa-xl" style="color: #f73636;"></i></span>
-    <span v-else-if="notif.status === 'info'"><i class="fa-solid fa-circle-info fa-xl" style="color: #74C0FC;"></i></span>
-    <span v-else-if="notif.status === 'warning'"><i class="fa-solid fa-circle-exclamation fa-xl" style="color: #e2b922;"></i></span>
-    <span v-else-if="notif.status === 'pending'"><i class="fa-solid fa-clock fa-xl" style="color: #808080;"></i></span>
-  </span>
-  {{notif.message }}
-</li>
-
-      </ul>
-    </div>
-  </div>
-    
-          
-       
         <router-link to="/profile" class="flex items-center cursor-pointer select-none">
           <img
             class="size-10 rounded-full object-cover mx-2"
-            :src="userStore.user?.avatarUrl"
+            :src="userStore.user?.avatarUrl ?? apiUrl + '/user.png'"
             alt=""
           />
           <div class="flex flex-col">
@@ -204,7 +212,6 @@ const notifications = ref([
   </header>
 </template>
 <style scoped>
-
 .notification-wrapper {
   position: relative;
   display: inline-block;

@@ -48,7 +48,7 @@ const closeModal = () => {
 </script>
 
 <template>
-  <main class="w-full min-h-[100dvh] h-full overflow-auto bg-gray-900">
+  <main class="w-full min-h-[100dvh] h-full overflow-auto dark:bg-gray-900 bg-gray-100">
     <TenantCreateModal v-if="isModalOpen" @on-close="closeModal" />
     <HeaderComponent />
     <div class="min-h-[100dvh] w-full h-full flex justify-center items-center px-10 pt-20 pb-10">

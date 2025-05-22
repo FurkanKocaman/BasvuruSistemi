@@ -1,4 +1,5 @@
-﻿using BasvuruSistemi.Server.Domain.Enums;
+﻿using BasvuruSistemi.Server.Application.Services;
+using BasvuruSistemi.Server.Domain.Enums;
 using BasvuruSistemi.Server.Domain.JobPostings;
 using BasvuruSistemi.Server.Domain.UnitOfWork;
 using MediatR;
@@ -7,68 +8,114 @@ using TS.Result;
 namespace BasvuruSistemi.Server.Application.JobPostings;
 
 public sealed record JobPostingUpdateCommand(
-    Guid id,
-    string title,
-    string description,
-    string? responsibilities,
-    string? qualifications,
-    string? benefits,
+    Guid Id,
+
+    string Title,
+    string Description,
+    string? Responsibilities,
+    string? Qualifications,
+    string? Benefits,
 
     DateTimeOffset datePosted,
-    DateTimeOffset applicationDeadLine,
-    DateTimeOffset? validFrom,
-    DateTimeOffset? validTo,
+    DateTimeOffset ApplicationDeadline,
+    DateTimeOffset? ValidFrom,
+    DateTimeOffset? ValidTo,
 
-    bool isRemote,
-    string? locationText,
+    int Status, //JobPostingStatus Enum
+    bool IsRemote,
+    string? LocationText,
 
-    int? vacancyCount,
-    int? employmentType, // EmploymentType Enum
-    int? experienceLevelRequired, // ExperienceLevel Enum
-    string? salaryRange,
-    string? skillsRequired,
+    int? VacancyCount,
+    int? EmploymentType, //EmploymentType Enum
+    int? ExperienceLevelRequired, //ExperienceLevel Enum
+    string? SkillsRequired,
 
-    string? contactInfo,
-    bool isPublic,
+    List<string>? AllowedNationalIds,
 
-    Guid? postingGroupId
+    string? ContactInfo,
+    bool IsPublic,
+    bool IsAnonymous,
+
+    decimal? MinSalary,
+    decimal? MaxSalary,
+    string? Currency,
+
+    Guid? UnitId,
+
+    Guid FormTemplateId,
+
+    Guid? PostingGroupId
 ) : IRequest<Result<string>>;
 
 internal sealed class JobPostingUpdateCommandHandler(
     IJobPostingRepository jobPostingRepository,
-    IUnitOfWork unitOfWork
+    IUnitOfWork unitOfWork,
+    ICurrentUserService currentUserService
 ) : IRequestHandler<JobPostingUpdateCommand, Result<string>>
 {
     public async Task<Result<string>> Handle(JobPostingUpdateCommand request, CancellationToken cancellationToken)
     {
-        var jobPosting = await jobPostingRepository.FirstOrDefaultAsync(p => p.Id == request.id, cancellationToken);
+        Guid? tenantId = currentUserService.TenantId;
+
+        if (!tenantId.HasValue)
+            return Result<string>.Failure("Tenant not found");
+
+        var jobPosting = await jobPostingRepository.FirstOrDefaultAsync(p => p.Id == request.Id, cancellationToken);
         if (jobPosting is null)
             return Result<string>.Failure("Job posting nor found");
 
-        jobPosting.UpdateDetails(
-            request.title,
-            request.description,
-            request.responsibilities,
-            request.qualifications,
-            request.applicationDeadLine,
-            request.locationText,
-            request.isRemote,
-            request.employmentType.HasValue ? (EmploymentType)request.employmentType.Value : null,
-            request.experienceLevelRequired.HasValue ? (ExperienceLevel)request.experienceLevelRequired.Value : null,
-            request.vacancyCount
-        );
+        if (!System.Enum.IsDefined(typeof(JobPostingStatus), request.Status))
+        {
+            return Result<string>.Failure($"Invalid JobPostingStatus: {request.Status}.");
+        }
+        JobPostingStatus status = (JobPostingStatus)request.Status;
 
-        typeof(JobPosting).GetProperty("DatePosted")?.SetValue(jobPosting, request.datePosted);
-        typeof(JobPosting).GetProperty("ValidFrom")?.SetValue(jobPosting, request.validFrom);
-        typeof(JobPosting).GetProperty("ValidTo")?.SetValue(jobPosting, request.validTo);
-        typeof(JobPosting).GetProperty("SalaryRange")?.SetValue(jobPosting, request.salaryRange);
-        typeof(JobPosting).GetProperty("SkillsRequired")?.SetValue(jobPosting, request.skillsRequired);
-        typeof(JobPosting).GetProperty("ContactInfo")?.SetValue(jobPosting, request.contactInfo);
-        typeof(JobPosting).GetProperty("IsPublic")?.SetValue(jobPosting, request.isPublic);
-        typeof(JobPosting).GetProperty("PostingGroupId")?.SetValue(jobPosting, request.postingGroupId);
+        if (request.EmploymentType is not null && !System.Enum.IsDefined(typeof(EmploymentType), request.EmploymentType))
+        {
+            return Result<string>.Failure($"Invalid EmploymentType: {request.EmploymentType}.");
+        }
+        EmploymentType? employmentType = (EmploymentType?)request.EmploymentType;
+
+        if (request.ExperienceLevelRequired is not null && !System.Enum.IsDefined(typeof(ExperienceLevel), request.ExperienceLevelRequired))
+        {
+            return Result<string>.Failure($"Invalid ExperienceLevelRequired: {request.ExperienceLevelRequired}.");
+        }
+        ExperienceLevel? experienceLevelRequired = (ExperienceLevel?)request.ExperienceLevelRequired;
+
+        jobPosting.UpdateDetails(
+            request.Title,
+            request.Description,
+            request.ApplicationDeadline,
+            tenantId.Value,
+            request.UnitId,
+            request.FormTemplateId,
+            request.PostingGroupId,
+            status,
+            request.IsPublic,
+            request.IsAnonymous,
+
+            request.ValidFrom,
+            request.ValidTo,
+            
+            request.ContactInfo,
+
+            request.Responsibilities,
+            request.Qualifications,
+            request.Benefits,
+            request.LocationText,
+            request.IsRemote,
+            employmentType,
+            experienceLevelRequired,
+            request.VacancyCount,
+            request.SkillsRequired,
+
+            request.MinSalary,
+            request.MaxSalary,
+            request.Currency
+        );
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Result<string>.Succeed("Post saved successfully");
+        return Result<string>.Succeed("JobPosting saved successfully");
     }
 }

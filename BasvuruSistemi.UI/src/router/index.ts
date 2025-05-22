@@ -100,11 +100,6 @@ const router = createRouter({
           name: "job-posting-group",
           redirect: "create",
           children: [
-            // {
-            //   path: "",
-            //   name: "job-posting-groups",
-            //   component: () => import("@/modules/management/pages/JobPostingPage.vue"),
-            // },
             {
               path: "create",
               name: "job-posting-group-create",
@@ -112,7 +107,7 @@ const router = createRouter({
             },
             {
               path: "update/:id",
-              name: "job-posting-update",
+              name: "job-posting-group-update",
               component: () => import("@/modules/management/pages/JobpostingGroupCreatePage.vue"),
             },
           ],
@@ -169,7 +164,24 @@ const router = createRouter({
             },
           ],
         },
+        {
+          path: "users",
+          name: "users",
+          redirect: { name: "users-list" },
+          children: [
+            {
+              path: "",
+              name: "users-list",
+              component: () => import("@/modules/management/pages/UsersPage.vue"),
+            },
+          ],
+        },
       ],
+    },
+    {
+      path: "/invitation",
+      name: "role-invitation",
+      component: () => import("@/modules/management/pages/RoleInviteVerifyPage.vue"),
     },
   ],
 });

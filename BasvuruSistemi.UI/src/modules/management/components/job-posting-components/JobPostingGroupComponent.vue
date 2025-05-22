@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { useDropdown } from "../../composables/useDropdown";
 import { useRoute } from "vue-router";
 import jobPostingService from "../../services/job-posting.service";
@@ -13,8 +13,12 @@ const postingGroups = ref<PostingGroupSummaryGetModel[]>([]);
 const isGroup = ref(false);
 const groupDropdown = useDropdown();
 
+const props = defineProps<{
+  groupId: string | undefined;
+}>();
+
 const emit = defineEmits<{
-  (e: "groupIdSelected", groupId: string): void;
+  (e: "groupIdSelected", groupId?: string): void;
 }>();
 
 onMounted(() => {
@@ -29,8 +33,8 @@ const getPostingGroups = async () => {
   const res = await jobPostingService.getPostingGroups();
   if (res) {
     postingGroups.value = res;
-    if (postingGroupId) {
-      var group = res.find((p) => p.id == postingGroupId);
+    if (postingGroupId || props.groupId) {
+      var group = res.find((p) => p.id == postingGroupId || p.id == props.groupId);
       if (group) {
         groupDropdown.selectOption(group.name);
       }
@@ -38,9 +42,24 @@ const getPostingGroups = async () => {
   }
 };
 
-function selectGroup(id: string) {
+const getPostingGroupByName = (name: string) => {
+  const group = postingGroups.value.find((p) => p.name == name);
+  if (group) {
+    selectGroup(group.id);
+  }
+};
+
+function selectGroup(id?: string) {
   emit("groupIdSelected", id);
 }
+
+watch(groupDropdown.selectedLabel, () => {
+  getPostingGroupByName(groupDropdown.selectedLabel.value);
+});
+watch(isGroup, () => {
+  selectGroup(undefined);
+  groupDropdown.selectOption("");
+});
 </script>
 
 <template>

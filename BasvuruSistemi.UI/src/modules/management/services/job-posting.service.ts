@@ -10,31 +10,36 @@ import { PostingGroupSummaryGetModel } from "../models/posting-group-summaries.m
 
 class JobPostingService {
   toastSore = useToastStore();
-  async getJobPostings(): Promise<
-    PaginatedResponse<JobPostingSummariesByTenantResponse> | undefined
-  > {
+  async getJobPostings(
+    page: number,
+    pageSize: number
+  ): Promise<PaginatedResponse<JobPostingSummariesByTenantResponse> | undefined> {
     try {
       const res = await api.get(
-        `${import.meta.env.VITE_API_URL}/api/job-postings?page=1&pageSize=20&view=summaries`
+        `${
+          import.meta.env.VITE_API_URL
+        }/api/job-postings?page=${page}&pageSize=${pageSize}&view=summaries`
       );
-      console.log("Job posting res", res);
       return res.data;
     } catch (err) {
       console.error(err);
+      throw err;
     }
   }
   async getJobPosting(id: string): Promise<Result<JobPostingCreateModel> | undefined> {
     try {
       const res = await api.get(`${import.meta.env.VITE_API_URL}/api/job-postings/${id}`);
-      console.log(res);
       return res.data;
     } catch (err) {
       console.error(err);
     }
   }
-  async createJobPostings(request: JobPostingCreateModel): Promise<undefined> {
+  async createJobPostings(request: JobPostingCreateModel): Promise<string> {
     try {
-      const res = await api.post(`${import.meta.env.VITE_API_URL}/api/job-postings`, request);
+      const res = await api.post<Result<string>>(
+        `${import.meta.env.VITE_API_URL}/api/job-postings`,
+        request
+      );
 
       if (res.status == 200) {
         this.toastSore.addToast({
@@ -50,9 +55,37 @@ class JobPostingService {
         });
       }
 
-      console.log("Job posting response", res);
+      return res.data.data;
     } catch (err) {
       console.error(err);
+      throw err;
+    }
+  }
+  async updateJobPostings(request: JobPostingCreateModel): Promise<string> {
+    try {
+      const res = await api.put<Result<string>>(
+        `${import.meta.env.VITE_API_URL}/api/job-postings/${request.id}`,
+        request
+      );
+
+      if (res.status == 200) {
+        this.toastSore.addToast({
+          message: "İlan başarıyla güncellendi",
+          type: "success",
+          duration: 3000,
+        });
+      } else {
+        this.toastSore.addToast({
+          message: "İlan güncellenirken hata oluştu",
+          type: "error",
+          duration: 3000,
+        });
+      }
+
+      return res.data.data;
+    } catch (err) {
+      console.error(err);
+      throw err;
     }
   }
   async createJobPostingGroup(request: PostingGroupCreateModel): Promise<string | undefined> {
@@ -87,13 +120,13 @@ class JobPostingService {
 
       if (res.status == 200) {
         this.toastSore.addToast({
-          message: res.data.data,
+          message: "İlan başarıyla gruba eklendi",
           type: "success",
           duration: 3000,
         });
       } else {
         this.toastSore.addToast({
-          message: res.data.data,
+          message: "İlan gruba eklenirken hata oluştu",
           type: "error",
           duration: 3000,
         });
@@ -123,6 +156,48 @@ class JobPostingService {
       return res.data;
     } catch (err) {
       console.error(err);
+    }
+  }
+
+  async deleteJobPosting(id: string): Promise<string> {
+    try {
+      const res = await api.delete<Result<string>>(
+        `${import.meta.env.VITE_API_URL}/api/job-postings/${id}`
+      );
+      this.toastSore.addToast({
+        message:
+          res.data.statusCode == 200 ? "İlan başarıyla silindi" : "İlan silinirken hata oluştu",
+        type: res.data.statusCode == 200 ? "success" : "error",
+        duration: 3000,
+      });
+      return res.data.data;
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  }
+  async jobPostingChangeStatus(
+    id: string,
+    status: number,
+    publishStartDate?: Date
+  ): Promise<string> {
+    try {
+      const res = await api.patch<Result<string>>(
+        `${import.meta.env.VITE_API_URL}/api/job-postings/${id}/status`,
+        { newStatus: status, publishStartDate: publishStartDate }
+      );
+      this.toastSore.addToast({
+        message:
+          res.data.statusCode == 200
+            ? "İlan başarıyla güncellendi"
+            : "İlan güncellenirken hata oluştu",
+        type: res.data.statusCode == 200 ? "success" : "error",
+        duration: 3000,
+      });
+      return res.data.data;
+    } catch (err) {
+      console.error(err);
+      throw err;
     }
   }
 }

@@ -16,7 +16,7 @@ public sealed class GetJobPostingsSummariesByTenantQueryResponse
     public Guid Id { get; set; }
 
     public string Title { get; set; } = default!;
-    public string Type { get; set; } = default!;
+    public JobPostingType Type { get; set; } = default!;
 
 
     public DateTimeOffset? ValidFrom { get; set; }
@@ -59,7 +59,7 @@ internal sealed class GetJobPostingsSummariesByTenantQueryHandler(
             Id = jobPosting.Id,
 
             Title = jobPosting.Title,
-            Type = "İlan",
+            Type = JobPostingType.JobPosting,
 
             ValidFrom = jobPosting.ValidFrom,
             ValidTo = jobPosting.ValidTo,
@@ -81,7 +81,7 @@ internal sealed class GetJobPostingsSummariesByTenantQueryHandler(
             Id = postingGroup.Id,
 
             Title = postingGroup.Name,
-            Type = "İlan Grubu",
+            Type = JobPostingType.PostingGroup,
 
             ValidFrom = postingGroup.OverallApplicationStartDate,
             ValidTo = postingGroup.OverallApplicationEndDate,
