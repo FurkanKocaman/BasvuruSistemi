@@ -1,17 +1,19 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
-import { ApplicationGetSummariesModel } from "../models/application-get-summaries.model";
-import { getApplicationStatusOptionByValue } from "@/models/constants/application-status";
-import applicationService from "@/services/application.service";
-import { FileSearch } from "lucide-vue-next";
-import { useRouter } from "vue-router";
+import { UserSummariesModel } from "../models/user-summaries.model";
+import { FileSearch, KeyRound } from "lucide-vue-next";
+import ManageRolesModal from "../components/ManageRolesModal.vue";
+import userService from "../services/user.service";
 import { useVisiblePages } from "@/services/pagination.service";
 
-const applications = ref<ApplicationGetSummariesModel[]>([]);
+const rolesModal = ref();
+
+const apiUrl = import.meta.env.VITE_API_PUBLIC_URL;
+
+const users = ref<UserSummariesModel[]>([]);
 const page = ref(1);
 const pageSize = ref(20);
 const totalCount = ref(0);
-const jobPostingId = ref("");
 
 const totalPages = computed(() => {
   return Math.ceil(totalCount.value / pageSize.value);
@@ -19,24 +21,20 @@ const totalPages = computed(() => {
 
 const visiblePages = useVisiblePages(totalPages, page);
 
-const router = useRouter();
-
 onMounted(() => {
-  getFormApplications();
+  getUsers();
 });
 
-const getFormApplications = async () => {
-  const res = await applicationService.getAllApplications(
-    jobPostingId.value,
-    page.value,
-    pageSize.value
-  );
-  if (res) {
-    applications.value = res.items;
-    totalCount.value = res.totalCount;
-    pageSize.value = res.pageSize;
-    page.value = res.page;
-  }
+const getUsers = async () => {
+  const res = await userService.getAllUsers(page.value, pageSize.value);
+  users.value = res.items;
+  page.value = res.page;
+  pageSize.value = res.pageSize;
+  totalCount.value = res.totalCount;
+};
+
+const manageRoles = async (user: UserSummariesModel) => {
+  rolesModal.value.open(user);
 };
 
 function formatDateTime(value: string): string {
@@ -51,20 +49,17 @@ function formatDateTime(value: string): string {
 
   return `${day}.${month}.${year} ${hours}:${minutes}`;
 }
-const goToApplicationDetail = (id: string) => {
-  router.push({ name: "application-detail", params: { id } });
-};
 
 const changePage = (pageNumber: number) => {
   if (!(pageNumber <= 0 || pageNumber > totalPages.value)) {
     page.value = pageNumber;
-    getFormApplications();
+    getUsers();
   }
 };
 </script>
-
 <template>
-  <main class="w-full h-full px-10 pt-20 pb-10 overflow-x-auto">
+  <main class="w-full h-full px-10 pt-20 pb-10">
+    <ManageRolesModal ref="rolesModal" />
     <div class="w-full flex">
       <!-- Filtreler -->
       <div></div>
@@ -75,7 +70,7 @@ const changePage = (pageNumber: number) => {
         <div
           class="border-b px-5 py-3 dark:border-gray-800 border-gray-200 flex justify-between items-center"
         >
-          <span class="text-xl font-base dark:text-gray-50 text-gray-700">Başvurular</span>
+          <span class="text-xl font-base dark:text-gray-50 text-gray-700">Kullanıcılar</span>
         </div>
         <div class="px-5 py-5">
           <div
@@ -86,7 +81,7 @@ const changePage = (pageNumber: number) => {
                 name="pageSize"
                 id="pageSize"
                 v-model.number="pageSize"
-                @change="getFormApplications()"
+                @change="getUsers()"
                 class="text-sm dark:text-gray-300 text-gray-700 dark:bg-gray-800 px-3 py-1 outline-none focus:border-indigo-600 rounded-md border dark:border-gray-700 border-gray-300"
               >
                 <option :value="10">10</option>
@@ -95,11 +90,11 @@ const changePage = (pageNumber: number) => {
               </select>
               <span class="ml-2 dark:text-gray-400 text-gray-600"> kayıt göster</span>
             </div>
-            <table class="w-full text-sm overflow-x-auto">
+            <table class="w-full text-sm">
               <thead class="">
                 <tr class="border-b border-t dark:border-gray-700/30 border-gray-200">
                   <td
-                    class="py-3 pr-2 pl-4 border-r dark:border-gray-700/30 border-gray-200 cursor-pointer select-none dark:text-gray-400 text-sm"
+                    class="py-3 pr-2 pl-4 border-r dark:border-gray-700/30 border-gray-200 cursor-pointer select-none dark:text-gray-400 text-sm w-10"
                   >
                     <div class="flex items-center justify-between">
                       <span>Sıra</span>
@@ -150,7 +145,7 @@ const changePage = (pageNumber: number) => {
                     class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200 cursor-pointer select-none dark:text-gray-400 text-sm"
                   >
                     <div class="flex items-center justify-between">
-                      <span>İlan</span>
+                      <span>E-posta</span>
                       <svg
                         class="size-6 dark:fill-gray-500"
                         viewBox="0 0 1024 1024"
@@ -166,7 +161,7 @@ const changePage = (pageNumber: number) => {
                     class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200 cursor-pointer select-none dark:text-gray-400 text-sm"
                   >
                     <div class="flex items-center justify-between">
-                      <span>Başvuru Tarihi</span>
+                      <span>Roller</span>
                       <svg
                         class="size-6 dark:fill-gray-500"
                         viewBox="0 0 1024 1024"
@@ -182,23 +177,7 @@ const changePage = (pageNumber: number) => {
                     class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200 cursor-pointer select-none dark:text-gray-400 text-sm"
                   >
                     <div class="flex items-center justify-between">
-                      <span>Değerlendirilme Tarihi</span>
-                      <svg
-                        class="size-6 dark:fill-gray-500"
-                        viewBox="0 0 1024 1024"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M620.6 562.3l36.2 36.2L512 743.3 367.2 598.5l36.2-36.2L512 670.9l108.6-108.6zM512 353.1l108.6 108.6 36.2-36.2L512 280.7 367.2 425.5l36.2 36.2L512 353.1z"
-                        />
-                      </svg>
-                    </div>
-                  </td>
-                  <td
-                    class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200 cursor-pointer select-none dark:text-gray-400 text-sm"
-                  >
-                    <div class="flex items-center justify-between">
-                      <span>Değerlendirilme Durumu</span>
+                      <span>Oluşturulma</span>
                       <svg
                         class="size-6 dark:fill-gray-500"
                         viewBox="0 0 1024 1024"
@@ -211,78 +190,62 @@ const changePage = (pageNumber: number) => {
                     </div>
                   </td>
 
-                  <td
-                    class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200 cursor-pointer select-none dark:text-gray-400 text-sm"
-                  >
-                    <div class="flex items-center justify-between">
-                      <span>Değerlendirme Açıklaması</span>
-                      <svg
-                        class="size-6 dark:fill-gray-500"
-                        viewBox="0 0 1024 1024"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M620.6 562.3l36.2 36.2L512 743.3 367.2 598.5l36.2-36.2L512 670.9l108.6-108.6zM512 353.1l108.6 108.6 36.2-36.2L512 280.7 367.2 425.5l36.2 36.2L512 353.1z"
-                        />
-                      </svg>
-                    </div>
-                  </td>
                   <td class="py-3 px-2">İşlemler</td>
                 </tr>
               </thead>
               <tbody class="">
                 <tr
-                  v-for="(application, index) in applications"
-                  :key="application.id"
+                  v-for="(user, index) in users"
+                  :key="user.id"
                   class="border-b dark:border-gray-700/30 border-gray-200"
                 >
-                  <td class="py-3 pr-2 pl-4 border-r dark:border-gray-700/30 border-gray-200">
+                  <td class="py-3 pr-2 pl-4 border-r dark:border-gray-700/30 border-gray-200 w-10">
                     {{ index + 1 }}
                   </td>
                   <td class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200">
-                    <span class="cursor-pointer">{{ application.userFullName }}</span>
+                    <div class="flex items-center">
+                      <img
+                        :src="user.avatarUrl ?? apiUrl + '/user.png'"
+                        alt=""
+                        class="size-10 rounded-lg object-cover mr-1"
+                      />
+
+                      <span class="cursor-pointer">{{ user.firstName + " " + user.lastName }}</span>
+                    </div>
                   </td>
                   <td class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200">
-                    {{ application.tckn ?? "-" }}
+                    {{ user.tckn ?? "-" }}
                   </td>
                   <td class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200">
-                    {{ application.jobPosting ?? "-" }}
+                    {{ user.email ?? "-" }}
                   </td>
-                  <td class="py-3 px-2 border-r text-sm dark:border-gray-700/30 border-gray-200">
-                    {{ formatDateTime(application.appliedDate) }}
-                  </td>
-                  <td class="py-3 px-2 border-r text-sm dark:border-gray-700/30 border-gray-200">
-                    {{ application.reviewDate ? formatDateTime(application.reviewDate) : "-" }}
-                  </td>
-                  <td class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200">
+                  <td
+                    class="py-3 px-2 border-r text-sm dark:border-gray-700/30 border-gray-200 wrap-anywhere max-w-lg 2xl:max-w-xl text-gray-50"
+                  >
                     <span
-                      class="text-sm px-2 py-1 rounded-md text-white"
-                      :class="
-                        application.status == 0
-                          ? 'bg-yellow-600'
-                          : application.status == 1
-                          ? 'bg-blue-600'
-                          : application.status == 2
-                          ? 'bg-green-600'
-                          : application.status == 3
-                          ? 'bg-red-500'
-                          : 'bg-indigo-500'
-                      "
-                      >{{ getApplicationStatusOptionByValue(application.status)?.label }}</span
+                      class="text-xs mx-1 p-1 bg-blue-500 rounded-md"
+                      v-for="role in user.roles"
+                      :key="role.id"
+                      >{{ role.name }}</span
                     >
                   </td>
-                  <td class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200">
-                    {{ application.reviewDescription ?? "-" }}
+                  <td class="py-3 px-2 border-r text-sm dark:border-gray-700/30 border-gray-200">
+                    {{ user.createdAt ? formatDateTime(user.createdAt) : "-" }}
                   </td>
 
                   <td class="py-3 px-2">
-                    <button
-                      class="cursor-pointer pr-1 group"
-                      title="Düzenle"
-                      @click="goToApplicationDetail(application.id)"
-                    >
+                    <button class="cursor-pointer pr-1 group" title="Önizleme">
                       <FileSearch
                         class="size-5 stroke-gray-600 dark:stroke-gray-400 dark:group-hover:stroke-sky-600 group-hover:stroke-sky-600"
+                      />
+                    </button>
+                    <button
+                      class="cursor-pointer pr-1 group"
+                      title="Rolleri Düzenle"
+                      @click="manageRoles(user)"
+                    >
+                      <KeyRound
+                        class="size-5 stroke-gray-600 dark:stroke-gray-400 dark:group-hover:stroke-orange-600 group-hover:stroke-orange-600"
                       />
                     </button>
                   </td>
@@ -335,4 +298,3 @@ const changePage = (pageNumber: number) => {
     </div>
   </main>
 </template>
-<style scoped></style>

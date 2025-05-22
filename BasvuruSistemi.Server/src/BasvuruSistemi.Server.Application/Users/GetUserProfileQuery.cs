@@ -72,7 +72,7 @@ internal sealed class GetUserProfileQueryHandler(
             Nationality = user.Nationality,
             TCKN = user.TCKN,
             ProfileStatus = user.ProfileStatus,
-            AvatarUrl = $"{context?.Scheme}://{context?.Host}/{user.AvatarUrl}",
+            AvatarUrl = user.AvatarUrl != null ? $"{context?.Scheme}://{context?.Host}/{user.AvatarUrl}" : null,
             Email = user.Email,
             Phone = user.Contact.Phone,
             Addresses = addresses.Select(address => new AddressDto(address.Id, address.Name, address.Country, address.City, address.District, address.Street, address.FullAddress, address.PostalCode)).ToList(),

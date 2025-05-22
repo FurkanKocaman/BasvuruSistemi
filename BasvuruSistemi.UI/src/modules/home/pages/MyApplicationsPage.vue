@@ -47,7 +47,7 @@ const options = [
             <input
               id="search"
               type="text"
-              placeholder="İş başlığı ara"
+              placeholder="İlan başlığı ara"
               class="pl-10 w-full rounded-md border-gray-200 dark:border-gray-700 outline-none dark:focus:border-indigo-600 focus:border-indigo-600 border py-1.5 text-gray-800 dark:text-gray-100"
             />
           </div>

@@ -164,7 +164,24 @@ const router = createRouter({
             },
           ],
         },
+        {
+          path: "users",
+          name: "users",
+          redirect: { name: "users-list" },
+          children: [
+            {
+              path: "",
+              name: "users-list",
+              component: () => import("@/modules/management/pages/UsersPage.vue"),
+            },
+          ],
+        },
       ],
+    },
+    {
+      path: "/invitation",
+      name: "role-invitation",
+      component: () => import("@/modules/management/pages/RoleInviteVerifyPage.vue"),
     },
   ],
 });

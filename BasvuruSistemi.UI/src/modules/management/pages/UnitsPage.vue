@@ -6,9 +6,12 @@ import UnitNode from "../components/unit-components/UnitNode.vue";
 import { buildUnitTree } from "../services/build-unit-tree";
 import UnitCreateModal from "../modals/UnitCreateModal.vue";
 import ConfirmModal from "@/components/ConfirmModal.vue";
+import { useTenantStore } from "@/stores/tenant";
 
 const unListedUnits = ref<Unit[]>([]);
 const units = ref<Unit[]>([]);
+
+const tenantStore = useTenantStore();
 
 const confirmModal = ref();
 
@@ -64,9 +67,12 @@ function handleAdd(unitId: string) {
     id: "",
     name: "",
   };
+  if (unitId !== tenantStore.tenantId) {
+    selectedUnitId.value = unitId;
+    selectedUnit.value = getUnitById(selectedUnitId.value);
+  }
   updatedUnit.value = undefined;
-  selectedUnitId.value = unitId;
-  selectedUnit.value = getUnitById(selectedUnitId.value);
+
   isUnitCreateModalOpen.value = true;
 }
 

@@ -15,5 +15,6 @@ public static class RouteRegistrar
         app.RegisterApplicationRoutes();
         app.RegisterUnitRoutes();
         app.RegisterPostingGroupRoutes();
+        app.RegisterRoleRoutes();
     }
 }

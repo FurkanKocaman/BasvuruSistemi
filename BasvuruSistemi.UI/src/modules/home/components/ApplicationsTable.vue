@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import applicationService from "../services/application.service";
 import { ApplicationByUserModel } from "../models/application-by-user.model";
 import { CircleX } from "lucide-vue-next";
@@ -7,11 +7,18 @@ import { FileSearch } from "lucide-vue-next";
 import ConfirmModal from "@/components/ConfirmModal.vue";
 import { getApplicationStatusOptionByValue } from "@/models/constants/application-status";
 import { useToastStore } from "@/modules/toast/store/toast.store";
+import { useVisiblePages } from "@/services/pagination.service";
 
 const applications = ref<ApplicationByUserModel[]>([]);
 const page = ref(1);
 const pageSize = ref(20);
 const totalCount = ref(0);
+
+const totalPages = computed(() => {
+  return Math.ceil(totalCount.value / pageSize.value);
+});
+
+const visiblePages = useVisiblePages(totalPages, page);
 
 const toastStore = useToastStore();
 
@@ -20,6 +27,13 @@ const confirmModal = ref();
 onMounted(() => {
   getApplications();
 });
+
+const changePage = (pageNumber: number) => {
+  if (!(pageNumber <= 0 || pageNumber > totalPages.value)) {
+    page.value = pageNumber;
+    getApplications();
+  }
+};
 
 const getApplications = async () => {
   const res = await applicationService.getApplicationsByUser(page.value, pageSize.value);
@@ -57,8 +71,6 @@ const withdrawApplication = async (application: ApplicationByUserModel) => {
   if (result) {
     await applicationService.withdrawnApplication(application.id);
     getApplications();
-  } else {
-    console.log("Kullanıcı iptal etti.");
   }
 };
 </script>
@@ -80,6 +92,7 @@ const withdrawApplication = async (application: ApplicationByUserModel) => {
           name="pageSize"
           id="pageSize"
           v-model.number="pageSize"
+          @change="getApplications()"
           class="text-sm dark:text-gray-300 text-gray-700 dark:bg-gray-800 px-3 py-1 outline-none focus:border-indigo-600 rounded-md border dark:border-gray-700 border-gray-300"
         >
           <option :value="10">10</option>
@@ -265,24 +278,29 @@ const withdrawApplication = async (application: ApplicationByUserModel) => {
         </div>
         <div class="flex">
           <button
-            class="border rounded-md p-2 text-sm dark:border-gray-700 border-gray-200 dark:text-gray-300 cursor-pointer"
+            class="border rounded-md p-2 text-sm dark:border-gray-700 border-gray-200 dark:text-gray-300 cursor-pointer select-none"
+            @click.stop="changePage(page - 1)"
           >
             Önceki
           </button>
           <div class="mx-3">
             <button
-              class="rounded-md p-2 text-sm dark:text-blue-500 bg-blue-600/10 cursor-pointer mx-1 w-8 hover:bg-blue-600/10 dark:hover:text-blue-500 hover:text-blue-700"
+              v-for="pageNumber in visiblePages"
+              :key="pageNumber.label"
+              class="rounded-md p-2 text-sm cursor-pointer mx-1 w-8 select-none"
+              @click.stop="() => pageNumber.type === 'page' && changePage(pageNumber.page)"
+              :class="
+                pageNumber.label == page
+                  ? 'text-blue-700 dark:text-blue-500 hover:bg-blue-600/10 dark:hover:text-blue-500 hover:text-blue-700 bg-blue-600/10'
+                  : 'text-gray-800 dark:text-gray-300 hover:bg-blue-600/10 dark:hover:text-blue-500 hover:text-blue-700'
+              "
             >
-              1
-            </button>
-            <button
-              class="rounded-md p-2 text-sm dark:text-gray-300 cursor-pointer mx-1 w-8 hover:bg-blue-600/10 dark:hover:text-blue-500 hover:text-blue-700"
-            >
-              2
+              {{ pageNumber.label }}
             </button>
           </div>
           <button
-            class="border rounded-md p-2 text-sm dark:border-gray-700 border-gray-200 dark:text-gray-300 cursor-pointer"
+            class="border rounded-md p-2 text-sm dark:border-gray-700 border-gray-200 dark:text-gray-300 cursor-pointer select-none"
+            @click.stop="changePage(page + 1)"
           >
             Sonraki
           </button>

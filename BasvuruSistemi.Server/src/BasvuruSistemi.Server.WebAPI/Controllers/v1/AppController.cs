@@ -2,9 +2,11 @@
 using BasvuruSistemi.Server.Application.FormTemplates;
 using BasvuruSistemi.Server.Application.JobPostings;
 using BasvuruSistemi.Server.Application.PostingGroups;
+using BasvuruSistemi.Server.Application.RoleAssignments;
 using BasvuruSistemi.Server.Application.Tenants;
 using BasvuruSistemi.Server.Application.Units;
 using BasvuruSistemi.Server.Application.Users;
+using BasvuruSistemi.Server.Domain.DTOs;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,10 +18,20 @@ namespace BasvuruSistemi.Server.WebAPI.Controllers.v1;
 public class AppController(ISender sender) : ControllerBase
 {
     [HttpGet("user/current")]
-    [Authorize]
+    [Authorize()]
     public async Task<ActionResult<GetCurrentUserQueryResponse>> GetCurrentUser(CancellationToken cancellationToken = default)
     {
         var response = await sender.Send(new GetCurrentUserQuery(), cancellationToken);
+        return Ok(response);
+    }
+    [HttpGet("users")]
+    [Authorize()]
+    public async Task<ActionResult<PagedResult<GetAllUsersQueryResponse>>> GetAllUsers(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken cancellationToken = default)
+    {
+        var response = await sender.Send(new GetAllUsersQuery(page,pageSize), cancellationToken);
         return Ok(response);
     }
 
@@ -29,6 +41,23 @@ public class AppController(ISender sender) : ControllerBase
     {
         var response = await sender.Send(new GetUserProfileQuery(id), cancellationToken);
         return Ok(response);
+    }
+
+    [HttpGet("roles")]
+    [Authorize]
+    public async Task<ActionResult<List<GetAllRolesByTenantQueryResponse>>> GetRoles(CancellationToken cancellationToken)
+    {
+        var response = await sender.Send(new GetAllRolesByTenantQuery(), cancellationToken);
+        return Ok(response);
+    }
+
+
+    [HttpGet("token/{token}")]
+    [Authorize]
+    public async Task<ActionResult<Result<GetInformationByTokenQueryResponse>>> GetTokenInformation(string token, CancellationToken cancellationToken)
+    {
+        var response = await sender.Send(new GetInformationByTokenQuery(token), cancellationToken);
+        return StatusCode(response.StatusCode,response);
     }
 
     [HttpGet("units")]

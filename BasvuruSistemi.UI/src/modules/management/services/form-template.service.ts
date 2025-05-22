@@ -73,10 +73,16 @@ class FormTeplateSerive {
       console.error(err);
     }
   }
-  async getFormTemplates(): Promise<PaginatedResponse<FormTemplateGetModel> | undefined> {
+  async getFormTemplates(
+    page: number,
+    pageSize: number
+  ): Promise<PaginatedResponse<FormTemplateGetModel> | undefined> {
     try {
-      const res = await api.get(`${import.meta.env.VITE_API_URL}/api/form-templates?view=details`);
-      console.log(res);
+      const res = await api.get(
+        `${
+          import.meta.env.VITE_API_URL
+        }/api/form-templates?view=details&page?${page}&pageSize=${pageSize}`
+      );
       return res.data;
     } catch (err) {
       console.error(err);

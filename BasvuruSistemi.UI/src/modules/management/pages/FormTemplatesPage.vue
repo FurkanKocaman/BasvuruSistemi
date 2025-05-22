@@ -1,13 +1,20 @@
 <script setup lang="ts">
-import { onMounted, ref, Ref } from "vue";
+import { computed, onMounted, ref, Ref } from "vue";
 import { FormTemplateGetModel } from "../models/form-template-get.model";
 import formTemplateService from "../services/form-template.service";
 import { useRouter } from "vue-router";
+import { useVisiblePages } from "@/services/pagination.service";
 
 const formTemplates: Ref<FormTemplateGetModel[] | undefined> = ref([]);
 const page = ref(0);
-const pageSize = ref(10);
+const pageSize = ref(20);
 const totalCount = ref(0);
+
+const totalPages = computed(() => {
+  return Math.ceil(totalCount.value / pageSize.value);
+});
+
+const visiblePages = useVisiblePages(totalPages, page);
 
 const router = useRouter();
 
@@ -16,7 +23,7 @@ onMounted(() => {
 });
 
 const getFormTemplates = async () => {
-  const res = await formTemplateService.getFormTemplates();
+  const res = await formTemplateService.getFormTemplates(page.value, pageSize.value);
   if (res) {
     formTemplates.value = res.items;
     totalCount.value = res.totalCount;
@@ -40,6 +47,20 @@ function formatDateTime(value: string): string {
 
 const goToFormTemplate = (id: string) => {
   router.push({ name: "form-templates-update", params: { id } });
+};
+
+const handleDelete = (id: string) => {
+  console.error("implement template delete", id);
+};
+const handlePreview = (id: string) => {
+  console.error("implement template preview", id);
+};
+
+const changePage = (pageNumber: number) => {
+  if (!(pageNumber <= 0 || pageNumber > totalPages.value)) {
+    page.value = pageNumber;
+    getFormTemplates();
+  }
 };
 </script>
 
@@ -72,11 +93,12 @@ const goToFormTemplate = (id: string) => {
                 name="pageSize"
                 id="pageSize"
                 v-model="pageSize"
+                @change="getFormTemplates()"
                 class="text-sm dark:text-gray-300 text-gray-700 dark:bg-gray-800 px-3 py-1 outline-none focus:border-indigo-600 rounded-md border dark:border-gray-700 border-gray-300"
               >
-                <option value="10">10</option>
-                <option value="20">20</option>
-                <option value="30">30</option>
+                <option :value="10">10</option>
+                <option :value="20">20</option>
+                <option :value="30">30</option>
               </select>
               <span class="ml-2 dark:text-gray-400 text-gray-600"> kayıt göster</span>
             </div>
@@ -245,7 +267,11 @@ const goToFormTemplate = (id: string) => {
                         />
                       </svg>
                     </button>
-                    <button class="cursor-pointer pr-1" title="Sil">
+                    <button
+                      class="cursor-pointer pr-1"
+                      title="Sil"
+                      @click.stop="handleDelete(formTemplate.id)"
+                    >
                       <svg
                         class="size-5 group"
                         viewBox="0 0 24 24"
@@ -283,7 +309,11 @@ const goToFormTemplate = (id: string) => {
                         />
                       </svg>
                     </button>
-                    <button class="cursor-pointer pr-1 group" title="Önizleme">
+                    <button
+                      class="cursor-pointer pr-1 group"
+                      title="Önizleme"
+                      @click.stop="handlePreview(formTemplate.id)"
+                    >
                       <svg
                         class="size-5 group"
                         viewBox="0 0 24 24"
@@ -331,24 +361,29 @@ const goToFormTemplate = (id: string) => {
               </div>
               <div class="flex">
                 <button
-                  class="border rounded-md p-2 text-sm dark:border-gray-700 border-gray-200 dark:text-gray-300 cursor-pointer"
+                  class="border rounded-md p-2 text-sm dark:border-gray-700 border-gray-200 dark:text-gray-300 cursor-pointer select-none"
+                  @click.stop="changePage(page - 1)"
                 >
                   Önceki
                 </button>
                 <div class="mx-3">
                   <button
-                    class="rounded-md p-2 text-sm dark:text-blue-500 bg-blue-600/10 cursor-pointer mx-1 w-8 hover:bg-blue-600/10 dark:hover:text-blue-500 hover:text-blue-700"
+                    v-for="pageNumber in visiblePages"
+                    :key="pageNumber.label"
+                    class="rounded-md p-2 text-sm cursor-pointer mx-1 w-8 select-none"
+                    @click.stop="() => pageNumber.type === 'page' && changePage(pageNumber.page)"
+                    :class="
+                      pageNumber.label == page
+                        ? 'text-blue-700 dark:text-blue-500 hover:bg-blue-600/10 dark:hover:text-blue-500 hover:text-blue-700 bg-blue-600/10'
+                        : 'text-gray-800 dark:text-gray-300 hover:bg-blue-600/10 dark:hover:text-blue-500 hover:text-blue-700'
+                    "
                   >
-                    1
-                  </button>
-                  <button
-                    class="rounded-md p-2 text-sm dark:text-gray-300 cursor-pointer mx-1 w-8 hover:bg-blue-600/10 dark:hover:text-blue-500 hover:text-blue-700"
-                  >
-                    2
+                    {{ pageNumber.label }}
                   </button>
                 </div>
                 <button
-                  class="border rounded-md p-2 text-sm dark:border-gray-700 border-gray-200 dark:text-gray-300 cursor-pointer"
+                  class="border rounded-md p-2 text-sm dark:border-gray-700 border-gray-200 dark:text-gray-300 cursor-pointer select-none"
+                  @click.stop="changePage(page + 1)"
                 >
                   Sonraki
                 </button>

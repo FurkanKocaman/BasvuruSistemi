@@ -26,6 +26,7 @@ const request: Ref<RegisterRequest> = ref({
   tckn: undefined,
   birthOfDate: new Date(),
   address: {
+    name: "",
     country: undefined,
     city: undefined,
     district: undefined,

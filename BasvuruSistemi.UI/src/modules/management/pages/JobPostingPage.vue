@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, Ref } from "vue";
+import { computed, onMounted, ref, Ref } from "vue";
 import jobPostingService from "../services/job-posting.service";
 import { useRouter } from "vue-router";
 import { JobPostingSummariesByTenantResponse } from "../models/job-posting-summaries-by-tenant.model";
@@ -7,12 +7,19 @@ import { getJobPostingStatusOptionByValue } from "@/models/constants/job-posting
 import { formatDateTime } from "../composables/formatDateTime";
 import ConfirmModal from "@/components/ConfirmModal.vue";
 import { getJobPostingtypeOptionByValue } from "@/models/constants/job-posting-type";
+import { useVisiblePages } from "@/services/pagination.service";
 
 const jobPostings: Ref<JobPostingSummariesByTenantResponse[]> = ref([]);
 const page = ref(1);
 const pageSize = ref(10);
 const totalCount = ref(0);
 const confirmModal = ref();
+
+const totalPages = computed(() => {
+  return Math.ceil(totalCount.value / pageSize.value);
+});
+
+const visiblePages = useVisiblePages(totalPages, page);
 
 const router = useRouter();
 
@@ -21,12 +28,19 @@ onMounted(async () => {
 });
 
 const getJobPostings = async () => {
-  const res = await jobPostingService.getJobPostings();
+  const res = await jobPostingService.getJobPostings(page.value, pageSize.value);
   if (res) {
     jobPostings.value = res.items;
     totalCount.value = res.totalCount;
     page.value = res.page;
     pageSize.value = res.pageSize;
+  }
+};
+
+const changePage = (pageNumber: number) => {
+  if (!(pageNumber <= 0 || pageNumber > totalPages.value)) {
+    page.value = pageNumber;
+    getJobPostings();
   }
 };
 
@@ -87,11 +101,13 @@ const handlePreview = (id: string) => {
               <select
                 name="pageSize"
                 id="pageSize"
+                v-model="pageSize"
+                @change="getJobPostings()"
                 class="text-sm dark:text-gray-300 text-gray-700 dark:bg-gray-800 px-3 py-1 outline-none focus:border-indigo-600 rounded-md border dark:border-gray-700 border-gray-300"
               >
-                <option value="10">10</option>
-                <option value="20">20</option>
-                <option value="30">30</option>
+                <option :value="10">10</option>
+                <option :value="20">20</option>
+                <option :value="30">30</option>
               </select>
               <span class="ml-2 dark:text-gray-400 text-gray-600"> kayıt göster</span>
             </div>
@@ -300,7 +316,10 @@ const handlePreview = (id: string) => {
                         />
                       </svg>
                     </button>
-                    <button class="cursor-pointer pr-1" @click.stop="handleDelete(jobPosting.id)">
+                    <button
+                      class="cursor-pointer pr-1"
+                      @click.stop="handleDelete(jobPosting.id, jobPosting.type)"
+                    >
                       <svg
                         class="size-5 group"
                         viewBox="0 0 24 24"
@@ -389,24 +408,29 @@ const handlePreview = (id: string) => {
               </div>
               <div class="flex">
                 <button
-                  class="border rounded-md p-2 text-sm dark:border-gray-700 border-gray-200 dark:text-gray-300 cursor-pointer"
+                  class="border rounded-md p-2 text-sm dark:border-gray-700 border-gray-200 dark:text-gray-300 cursor-pointer select-none"
+                  @click.stop="changePage(page - 1)"
                 >
                   Önceki
                 </button>
                 <div class="mx-3">
                   <button
-                    class="rounded-md p-2 text-sm dark:text-blue-500 bg-blue-600/10 cursor-pointer mx-1 w-8 hover:bg-blue-600/10 dark:hover:text-blue-500 hover:text-blue-700"
+                    v-for="pageNumber in visiblePages"
+                    :key="pageNumber.label"
+                    class="rounded-md p-2 text-sm cursor-pointer mx-1 w-8 select-none"
+                    @click.stop="() => pageNumber.type === 'page' && changePage(pageNumber.page)"
+                    :class="
+                      pageNumber.label == page
+                        ? 'text-blue-700 dark:text-blue-500 hover:bg-blue-600/10 dark:hover:text-blue-500 hover:text-blue-700 bg-blue-600/10'
+                        : 'text-gray-800 dark:text-gray-300 hover:bg-blue-600/10 dark:hover:text-blue-500 hover:text-blue-700'
+                    "
                   >
-                    1
-                  </button>
-                  <button
-                    class="rounded-md p-2 text-sm dark:text-gray-300 cursor-pointer mx-1 w-8 hover:bg-blue-600/10 dark:hover:text-blue-500 hover:text-blue-700"
-                  >
-                    2
+                    {{ pageNumber.label }}
                   </button>
                 </div>
                 <button
-                  class="border rounded-md p-2 text-sm dark:border-gray-700 border-gray-200 dark:text-gray-300 cursor-pointer"
+                  class="border rounded-md p-2 text-sm dark:border-gray-700 border-gray-200 dark:text-gray-300 cursor-pointer select-none"
+                  @click.stop="changePage(page + 1)"
                 >
                   Sonraki
                 </button>

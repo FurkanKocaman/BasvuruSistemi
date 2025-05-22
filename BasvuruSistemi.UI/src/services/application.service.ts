@@ -27,7 +27,6 @@ class ApplicationService {
       const res = await api.get(
         `${import.meta.env.VITE_API_URL}/api/applications/detail/${applicationId}`
       );
-      console.log(res);
       return res.data;
     } catch (err) {
       console.error(err);

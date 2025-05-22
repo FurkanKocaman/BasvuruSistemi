@@ -1,21 +1,17 @@
 <script setup lang="ts">
-import { onMounted, PropType, ref, Ref } from "vue";
+import { onMounted, ref, Ref } from "vue";
 import { Unit } from "../models/unit-node.model";
 import { UnitCreateModel } from "../models/unit-create.model";
 import unitService from "../services/unit.service";
 
 const emit = defineEmits(["onClose", "addUnit", "updateUnit"]);
 
-const props = defineProps({
-  parentUnit: {
-    type: Object as PropType<Unit | undefined>,
-    required: true,
-  },
-  unit: {
-    type: Object as PropType<Unit | undefined>,
-    required: true,
-  },
-});
+const errorMessages = ref<string[]>([]);
+
+const props = defineProps<{
+  parentUnit: Unit | undefined;
+  unit: Unit | undefined;
+}>();
 
 onMounted(() => {
   if (props.unit) {
@@ -32,11 +28,25 @@ const request: Ref<UnitCreateModel> = ref({
 });
 
 const createUnit = async () => {
-  if (props.parentUnit) request.value.parentId = props.parentUnit.id;
-  const res = await unitService.createUnit(request.value);
-  if (res) {
-    emit("addUnit");
-    closeModal();
+  if (props.parentUnit && props.parentUnit.id.trim() != "") {
+    request.value.parentId = props.parentUnit.id;
+  } else {
+    request.value.parentId = undefined;
+  }
+  if (request.value.name.trim() !== "") {
+    const res = await unitService.createUnit(request.value);
+    if (res) {
+      emit("addUnit");
+      closeModal();
+    }
+  } else {
+    addError("Ad kısmı boş olamaz");
+  }
+};
+
+const addError = (error: string) => {
+  if (!errorMessages.value.includes(error)) {
+    errorMessages.value.push(error);
   }
 };
 const updateUnit = async () => {
@@ -67,6 +77,14 @@ function closeModal() {
     class="fixed top-0 z-[99] flex justify-center items-center w-full h-full bg-gray-500/60 dark:bg-neutral-900/80 backdrop-blur-md"
   >
     <div class="rounded-md bg-gray-50 dark:bg-gray-900 min-w-[40rem] px-5 py-8">
+      <div class="flex flex-col justify-center w-full mb-3">
+        <span
+          v-for="error in errorMessages"
+          :key="error"
+          class="text-center border rounded-md border-red-600 text-red-600 py-1"
+          >{{ error }}</span
+        >
+      </div>
       <span class="text-xl dark:text-gray-100 font-semibold">{{
         props.unit ? "Birim Güncelle" : "Birim Oluştur"
       }}</span>
@@ -86,6 +104,7 @@ function closeModal() {
               placeholder="Birim1"
               class="w-full border outline-none rounded-md py-1.5 px-2 dark:border-gray-700 dark:bg-gray-900/50 text-sm text-gray-800 dark:text-gray-200 border-gray-200 dark:focus:border-indigo-600 focus:border-indigo-600"
               readonly
+              required
             />
           </div>
           <div class="flex flex-col mb-3">

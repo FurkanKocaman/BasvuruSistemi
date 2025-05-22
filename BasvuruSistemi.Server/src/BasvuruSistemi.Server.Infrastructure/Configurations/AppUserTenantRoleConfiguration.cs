@@ -9,7 +9,7 @@ internal sealed class AppUserTenantRoleConfiguration : IEntityTypeConfiguration<
     {
         builder
             .HasOne(p => p.User)
-            .WithMany()
+            .WithMany(p => p.Roles)
             .HasForeignKey(p => p.UserId)
             .OnDelete(DeleteBehavior.NoAction);
 

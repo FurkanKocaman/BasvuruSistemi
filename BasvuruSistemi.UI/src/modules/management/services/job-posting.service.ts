@@ -10,12 +10,15 @@ import { PostingGroupSummaryGetModel } from "../models/posting-group-summaries.m
 
 class JobPostingService {
   toastSore = useToastStore();
-  async getJobPostings(): Promise<
-    PaginatedResponse<JobPostingSummariesByTenantResponse> | undefined
-  > {
+  async getJobPostings(
+    page: number,
+    pageSize: number
+  ): Promise<PaginatedResponse<JobPostingSummariesByTenantResponse> | undefined> {
     try {
       const res = await api.get(
-        `${import.meta.env.VITE_API_URL}/api/job-postings?page=1&pageSize=20&view=summaries`
+        `${
+          import.meta.env.VITE_API_URL
+        }/api/job-postings?page=${page}&pageSize=${pageSize}&view=summaries`
       );
       return res.data;
     } catch (err) {

@@ -21,7 +21,6 @@ onMounted(() => {
 
 const setTheme = (theme: Theme) => {
   themeStore.setTheme(theme);
-  console.log(themeStore.currentTheme);
 };
 
 function togglePostingMenu() {
@@ -169,6 +168,11 @@ function togglePostingMenu() {
           to="/management/units"
           class="text-sm/6 font-semibold text-gray-700 dark:text-gray-50"
           >Birimler</router-link
+        >
+        <router-link
+          to="/management/users"
+          class="text-sm/6 font-semibold text-gray-700 dark:text-gray-50"
+          >Kullanıcılar</router-link
         >
       </div>
       <div class="hidden lg:flex lg:flex-1 lg:justify-end">

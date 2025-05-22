@@ -109,6 +109,11 @@ const handleSubmit = async () => {
 };
 
 const editJobPosting = (id: string) => {
+  router.push({
+    name: "job-posting-update",
+    params: { id },
+    query: { postingGroupId: request.id },
+  });
   console.error("navigate to job posting edit", id);
 };
 
@@ -385,7 +390,7 @@ const selectUnit = (unit: Unit) => {
                       <button
                         class="cursor-pointer mx-1 group"
                         title="İlanı düzenle"
-                        @click.stop="editJobPosting('61')"
+                        @click.stop="editJobPosting(jobPosting.id)"
                       >
                         <svg
                           class="size-5 dark:fill-gray-400 fill-gray-600 group-hover:fill-blue-600 dark:group-hover:fill-blue-600"

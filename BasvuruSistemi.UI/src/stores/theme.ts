@@ -23,7 +23,6 @@ export const useThemeStore = defineStore("theme", () => {
   }
 
   function setTheme(theme: Theme) {
-    console.log(currentTheme.value);
     currentTheme.value = theme;
     localStorage.setItem("theme", theme);
     applyTheme();
@@ -31,9 +30,7 @@ export const useThemeStore = defineStore("theme", () => {
 
   function initTheme() {
     const saved = localStorage.getItem("theme") as Theme | null;
-    console.log("Theme initing", saved);
     currentTheme.value = saved ?? "system";
-
     applyTheme();
   }
 
