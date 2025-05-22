@@ -2,11 +2,11 @@
 using BasvuruSistemi.Server.Domain.Addresses;
 using BasvuruSistemi.Server.Domain.ApplicationFieldValues;
 using BasvuruSistemi.Server.Domain.ApplicationFormTemplates;
-
 using BasvuruSistemi.Server.Domain.Entities;
 using BasvuruSistemi.Server.Domain.FormFieldDefinitions;
 using BasvuruSistemi.Server.Domain.JobPostings;
 using BasvuruSistemi.Server.Domain.PostingGroups;
+using BasvuruSistemi.Server.Domain.RoleClaims;
 using BasvuruSistemi.Server.Domain.Roles;
 using BasvuruSistemi.Server.Domain.Tokens;
 using BasvuruSistemi.Server.Domain.Units;
@@ -46,16 +46,15 @@ internal sealed class ApplicationDbContext: IdentityDbContext<AppUser, AppRole,G
     public DbSet<FormFieldDefinition> FormFieldDefinitions { get; set; }
 
     public DbSet<AppUserTenantRole> AppUserTenantRoles { get; set; }
-
     public DbSet<Address> Addresses { get; set; }
-
     public DbSet<InvitationToken> InvitationTokens { get; set; }
 
+    public DbSet<AppRoleClaim> AppRoleClaims { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
-        modelBuilder.Ignore<IdentityRoleClaim<Guid>>();
+        //modelBuilder.Ignore<IdentityRoleClaim<Guid>>();
         modelBuilder.Ignore<IdentityUserClaim<Guid>>();
         modelBuilder.Ignore<IdentityUserLogin<Guid>>();
         modelBuilder.Ignore<IdentityUserToken<Guid>>();

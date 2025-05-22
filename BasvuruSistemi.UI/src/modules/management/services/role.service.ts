@@ -4,6 +4,8 @@ import { RoleAssignmentCreateModel } from "@/modules/management/models/role-assi
 import { Result } from "@/models/entities/result.model";
 import { useToastStore } from "@/modules/toast/store/toast.store";
 import { TokenInformation } from "../models/token-information.model";
+import { RoleDetailsModel } from "../models/role-detail.model";
+import { PaginatedResponse } from "@/models/response/paginated-response.model";
 
 class RoleService {
   toastStore = useToastStore();
@@ -17,6 +19,22 @@ class RoleService {
       throw err;
     }
   }
+  async getAllRolesDetails(
+    page: number,
+    pageSize: number
+  ): Promise<PaginatedResponse<RoleDetailsModel>> {
+    try {
+      const res = await api.get<PaginatedResponse<RoleDetailsModel>>(
+        `${import.meta.env.VITE_API_URL}/api/roles?view=details&page=${page}&pageSize=${pageSize}`
+      );
+
+      return res.data;
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  }
+
   async getTokenInformation(token: string): Promise<Result<TokenInformation>> {
     const res = await api.get<Result<TokenInformation>>(
       `${import.meta.env.VITE_API_URL}/api/token/${token}`

@@ -2,6 +2,8 @@
 using BasvuruSistemi.Server.Domain.Addresses;
 using BasvuruSistemi.Server.Domain.DTOs;
 using BasvuruSistemi.Server.Domain.Enums;
+using BasvuruSistemi.Server.Domain.Roles;
+using BasvuruSistemi.Server.Domain.UserRoles;
 using BasvuruSistemi.Server.Domain.Users;
 using BasvuruSistemi.Server.Domain.ValueObjects;
 using MediatR;
@@ -27,13 +29,17 @@ public sealed class GetCurrentUserQueryResponse
 
     //public AddressDto Address { get; set; } = default!;
     public Contact Contact { get; set; } = default!;
+
+    public List<string> Claims { get; set; } = new();
 }
 
 internal sealed class GetCurrentUserQueryHandler(
     ICurrentUserService currentUserService,
     IAddressRepository addressRepository,
     UserManager<AppUser> userManager,
-    IHttpContextAccessor httpContextAccessor
+    IHttpContextAccessor httpContextAccessor,
+    IUserTenantRoleRepository userTenantRoleRepository,
+    RoleManager<AppRole> roleManager
     ) : IRequestHandler<GetCurrentUserQuery, GetCurrentUserQueryResponse?>
 {
     public async Task<GetCurrentUserQueryResponse?> Handle(GetCurrentUserQuery request, CancellationToken cancellationToken)
@@ -42,6 +48,22 @@ internal sealed class GetCurrentUserQueryHandler(
 
         if (userId is null)
             return null;
+
+        Guid? tenantId = currentUserService.TenantId;
+
+        var roles = await userTenantRoleRepository
+            .Where(p => p.UserId == userId && tenantId != null ? p.TenantId == tenantId.Value : false)
+            .Include(p => p.Role)
+            .Select(p => p.Role)
+            .ToListAsync(cancellationToken);
+
+        var claims = new List<string>();
+
+        foreach(var role in roles)
+        {
+            var roleClaims = await roleManager.GetClaimsAsync(role);
+            claims.AddRange(roleClaims.Select(p => p.Value));
+        }
 
         var user = await userManager.FindByIdAsync(userId!.Value.ToString());
 
@@ -66,6 +88,8 @@ internal sealed class GetCurrentUserQueryHandler(
 
             //Address = new(address?.Id, address?.Country,address?.City,address?.District,address?.Street,address?.FullAddress,address?.PostalCode),
             Contact = user.Contact,
+
+            Claims = claims,
         };
 
     }

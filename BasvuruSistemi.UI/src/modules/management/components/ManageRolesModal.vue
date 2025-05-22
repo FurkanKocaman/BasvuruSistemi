@@ -152,6 +152,7 @@ async function assignRole() {
   request.value.roleId = selectedRole.value.id;
   await roleService.createRoleAssignment(request.value);
   selectedRole.value = undefined;
+  close();
 }
 
 async function removeRole(roleId: string) {

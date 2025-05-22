@@ -7,6 +7,7 @@ using Scalar.AspNetCore;
 using System.Threading.RateLimiting;
 using BasvuruSistemi.Server.WebAPI.Controllers.v1;
 using BasvuruSistemi.Server.WebAPI.Modules;
+using Microsoft.AspNetCore.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,6 +42,8 @@ x.AddFixedWindowLimiter("fixed",cfg =>
 }));
 
 builder.Services.AddExceptionHandler<ExceptionHandler>().AddProblemDetails();
+
+builder.Services.AddTransient<IClaimsTransformation, CustomClaimsTransformation>();
 
 var app = builder.Build();
 

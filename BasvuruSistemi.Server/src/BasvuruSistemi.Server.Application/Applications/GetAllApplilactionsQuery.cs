@@ -1,15 +1,17 @@
-﻿using BasvuruSistemi.Server.Domain.Applications;
+﻿using BasvuruSistemi.Server.Application.Services;
+using BasvuruSistemi.Server.Domain.Applications;
 using BasvuruSistemi.Server.Domain.DTOs;
 using BasvuruSistemi.Server.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using TS.Result;
 
 namespace BasvuruSistemi.Server.Application.Applications;
 public sealed record GetAllApplilactionsQuery(
     Guid? jobPostingId,
     int page,
     int pageSize
-    ) : IRequest<PagedResult<GetAllApplilactionsQueryResponse>>;
+    ) : IRequest<Result<PagedResult<GetAllApplilactionsQueryResponse>>>;
 
 public sealed class GetAllApplilactionsQueryResponse
 {
@@ -26,28 +28,43 @@ public sealed class GetAllApplilactionsQueryResponse
     public string? ReviewDescription { get; set; }
 
 }
-
 internal sealed class GetAllApplilactionsQueryHandler(
-    IApplicationRepository applicationRepository
-    ) : IRequestHandler<GetAllApplilactionsQuery, PagedResult<GetAllApplilactionsQueryResponse>>
+    IApplicationRepository applicationRepository,
+    ICurrentUserService currentUserService
+) : IRequestHandler<GetAllApplilactionsQuery, Result<PagedResult<GetAllApplilactionsQueryResponse>>>
 {
-    public Task<PagedResult<GetAllApplilactionsQueryResponse>> Handle(GetAllApplilactionsQuery request, CancellationToken cancellationToken)
+    public async Task<Result<PagedResult<GetAllApplilactionsQueryResponse>>> Handle(
+        GetAllApplilactionsQuery request,
+        CancellationToken cancellationToken)
     {
-        var applications = applicationRepository.Where(p => !string.IsNullOrWhiteSpace(request.jobPostingId.ToString()) ? p.JobPostingId == request.jobPostingId : true && !p.IsDeleted).Include(p => p.User);
+        Guid? tenantId = currentUserService.TenantId;
+         if(!tenantId.HasValue)
+            return new Result<PagedResult<GetAllApplilactionsQueryResponse>>(404, "Tenant not found");
 
-        var totalCount = applications.Count();
 
-        var pagedApplications = applications
+        var query = applicationRepository
+            .Where(p =>
+                !p.IsDeleted &&
+                p.JobPosting.TenantId == tenantId &&
+                (!request.jobPostingId.HasValue || p.JobPostingId == request.jobPostingId.Value))
+            .Include(p => p.JobPosting)
+            .Include(p => p.User);
+
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+
+        var applications = await query
             .Skip((request.page - 1) * request.pageSize)
-            .Take(request.pageSize);
+            .Take(request.pageSize)
+            .ToListAsync(cancellationToken);
 
-        var response = pagedApplications.Select(application => new GetAllApplilactionsQueryResponse
+        var response = applications.Select(application => new GetAllApplilactionsQueryResponse
         {
             Id = application.Id,
             UserId = application.UserId,
             UserFullName = application.User.FullName,
             TCKN = application.User.TCKN,
-
             JobPosting = application.JobPosting.Title,
             AppliedDate = application.AppliedDate,
             Status = application.Status,
@@ -55,7 +72,12 @@ internal sealed class GetAllApplilactionsQueryHandler(
             ReviewDescription = application.ReviewDescription,
         }).ToList();
 
-        return Task.FromResult(new PagedResult<GetAllApplilactionsQueryResponse>(response, request.page, request.pageSize, totalCount));
-
+        return new PagedResult<GetAllApplilactionsQueryResponse>(
+            response,
+            request.page,
+            request.pageSize,
+            totalCount
+        );
     }
 }
+

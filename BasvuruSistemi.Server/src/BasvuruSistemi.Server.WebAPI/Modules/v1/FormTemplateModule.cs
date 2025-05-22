@@ -1,4 +1,5 @@
 ﻿using BasvuruSistemi.Server.Application.FormTemplates;
+using BasvuruSistemi.Server.Domain.Constants;
 using MediatR;
 using TS.Result;
 
@@ -16,7 +17,7 @@ public static class FormTemplateModule
                 var response = await sender.Send(request, cancellationToken);
                 return response.IsSuccessful ? Results.Ok(response) : Results.InternalServerError(response);
             })
-            .RequireAuthorization().Produces<Result<string>>().WithName("FormTemplateCreate");
+            .RequireAuthorization(CustomClaimTypes.ManageTemplates).Produces<Result<string>>().WithName("FormTemplateCreate");
 
 
         group.MapPost("temp",
@@ -25,7 +26,7 @@ public static class FormTemplateModule
                 var response = await sender.Send(request, cancellationToken);
                 return response.IsSuccessful ? Results.Ok(response) : Results.InternalServerError(response);
             })
-            .RequireAuthorization().Produces<Result<string>>().WithName("FormTemplateCreateTemp");
+            .RequireAuthorization(CustomClaimTypes.ManageTemplates).Produces<Result<string>>().WithName("FormTemplateCreateTemp");
 
 
         group.MapPut("update/{id}",
@@ -36,6 +37,6 @@ public static class FormTemplateModule
                var response = await sender.Send(request, cancellationToken);
                return response.IsSuccessful ? Results.Ok(response) : Results.InternalServerError(response);
            })
-           .RequireAuthorization().Produces<Result<string>>().WithName("FormTemplateUpdate");
+           .RequireAuthorization(CustomClaimTypes.ManageTemplates).Produces<Result<string>>().WithName("FormTemplateUpdate");
     }
 }

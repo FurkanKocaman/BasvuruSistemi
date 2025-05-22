@@ -85,7 +85,9 @@ const notifications = ref([
           class="text-sm/6 font-semibold text-gray-700 dark:text-gray-50"
           >Başvurularım</router-link
         >
-        <router-link to="/tenants" class="text-sm/6 font-semibold text-gray-700 dark:text-gray-50"
+        <router-link
+          to="/management"
+          class="text-sm/6 font-semibold text-gray-700 dark:text-gray-50"
           >Yönetim</router-link
         >
 

@@ -1,4 +1,5 @@
-﻿using BasvuruSistemi.Server.Application.Tenants;
+﻿using BasvuruSistemi.Server.Application.Auth;
+using BasvuruSistemi.Server.Application.Tenants;
 using MediatR;
 using TS.Result;
 
@@ -17,5 +18,13 @@ public static class TenantModule
                 return response.IsSuccessful ? Results.Ok(response) : Results.InternalServerError(response);
             })
             .RequireAuthorization().Produces<Result<string>>();
+
+        group.MapGet("refresh",
+            async (ISender sender, CancellationToken cancellationToken) =>
+            {
+                var response = await sender.Send(new RefreshJwtByTenantCommand(), cancellationToken);
+                return response.IsSuccessful ? Results.Ok(response) : Results.InternalServerError(response);
+            })
+            .RequireAuthorization().Produces<Result<LoginCommandResponse>>();
     }
 }

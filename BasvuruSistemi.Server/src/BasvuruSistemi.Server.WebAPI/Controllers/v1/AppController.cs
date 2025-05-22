@@ -45,9 +45,13 @@ public class AppController(ISender sender) : ControllerBase
 
     [HttpGet("roles")]
     [Authorize]
-    public async Task<ActionResult<List<GetAllRolesByTenantQueryResponse>>> GetRoles(CancellationToken cancellationToken)
+    public async Task<ActionResult> GetRoles(
+        [FromQuery] string view = "summaries",
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken cancellationToken = default)
     {
-        var response = await sender.Send(new GetAllRolesByTenantQuery(), cancellationToken);
+        var response = await sender.Send(view == "summaries" ? new GetAllRolesSummariesByTenantQuery() : new GetAllRolesDetailsByTenantQuery(page,pageSize), cancellationToken);
         return Ok(response);
     }
 
@@ -168,7 +172,7 @@ public class AppController(ISender sender) : ControllerBase
     public async Task<ActionResult<GetFormTemplateQueryResponse>> GetFormTemplate(Guid id, CancellationToken cancellationToken = default)
     {
         var response = await sender.Send(new GetFormTemplateQuery(id), cancellationToken);
-        return Ok(response);
+        return StatusCode(response.StatusCode, response.Data);
     }
 
     [HttpGet("form-templates")]
@@ -182,12 +186,12 @@ public class AppController(ISender sender) : ControllerBase
         if(view == "summaries")
         {
             var response = await sender.Send(new GetFormTemplateSummariesQuery(), cancellationToken);
-            return Ok(response);
+            return StatusCode(response.StatusCode, response.Data);
         }
         else if(view == "details")
         {
             var response = await sender.Send(new GetAllFormTemplatesQuery(page, pageSize), cancellationToken);
-            return Ok(response);
+            return StatusCode(response.StatusCode,response.Data);
         }
         return BadRequest();
             
@@ -203,8 +207,10 @@ public class AppController(ISender sender) : ControllerBase
         CancellationToken cancellationToken = default)
     {
         var response = await sender.Send(new GetAllApplilactionsQuery(jobPostingId, page, pageSize), cancellationToken);
-        return Ok(response);
+        return StatusCode(response.StatusCode, response.Data);
     }
+
+
     [HttpGet("applications/detail/{applicationId}")]
     [Authorize()]
     public async Task<ActionResult<GetAllApplilactionsQueryResponse>> GetApplication(
@@ -212,8 +218,9 @@ public class AppController(ISender sender) : ControllerBase
     CancellationToken cancellationToken = default)
     {
         var response = await sender.Send(new GetApplicationQuery(applicationId), cancellationToken);
-        return Ok(response);
+        return StatusCode(response.StatusCode,response);
     }
+
 
     [HttpGet("applications/check-existing/{jobPostingId}")]
     [Authorize()]
@@ -233,6 +240,6 @@ public class AppController(ISender sender) : ControllerBase
     CancellationToken cancellationToken = default)
     {
         var response = await sender.Send(new GetApplicationsByUserQuery(page,pageSize), cancellationToken);
-        return Ok(response);
+        return StatusCode(response.StatusCode, response.Data);
     }
 }

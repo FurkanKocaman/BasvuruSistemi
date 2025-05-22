@@ -1,3 +1,4 @@
+import Cookies from "js-cookie";
 import { createRouter, createWebHistory } from "vue-router";
 
 const router = createRouter({
@@ -60,23 +61,26 @@ const router = createRouter({
       path: "/tenants",
       name: "tenants",
       component: () => import("@/modules/management/pages/TenantPage.vue"),
+      meta: { title: "Kurumlar", requiresAuth: true },
     },
     {
       path: "/profile",
       name: "profile",
       component: () => import("@/modules/profile/pages/ProfilePage.vue"),
-      meta: { title: "Profil Bilgilerim" },
+      meta: { title: "Profil", requiresAuth: true },
     },
     {
       path: "/management",
       name: "management",
       component: () => import("@/modules/management/layouts/ManagementLayout.vue"),
       redirect: "/management/job-postings",
+      meta: { title: "Yönetim", requiresAuth: true, requireTenant: true },
       children: [
         {
           path: "job-postings",
           name: "job-posting",
           redirect: "",
+          meta: { title: "İlanlar", requiresAuth: true, requireTenant: true },
           children: [
             {
               path: "",
@@ -87,11 +91,13 @@ const router = createRouter({
               path: "create",
               name: "job-posting-create",
               component: () => import("@/modules/management/pages/JobpostingCreatePage.vue"),
+              meta: { title: "İlan Oluştur", requiresAuth: true, requireTenant: true },
             },
             {
               path: "update/:id",
               name: "job-posting-update",
               component: () => import("@/modules/management/pages/JobpostingCreatePage.vue"),
+              meta: { title: "İlan Güncelle", requiresAuth: true, requireTenant: true },
             },
           ],
         },
@@ -99,16 +105,19 @@ const router = createRouter({
           path: "job-postings-group",
           name: "job-posting-group",
           redirect: "create",
+          meta: { title: "İlan Grubu", requiresAuth: true, requireTenant: true },
           children: [
             {
               path: "create",
               name: "job-posting-group-create",
               component: () => import("@/modules/management/pages/JobpostingGroupCreatePage.vue"),
+              meta: { title: "İlan Grubu Oluştur", requiresAuth: true, requireTenant: true },
             },
             {
               path: "update/:id",
               name: "job-posting-group-update",
               component: () => import("@/modules/management/pages/JobpostingGroupCreatePage.vue"),
+              meta: { title: "ilan Grubu Güncelle", requiresAuth: true, requireTenant: true },
             },
           ],
         },
@@ -116,6 +125,7 @@ const router = createRouter({
           path: "form-templates",
           name: "form-templates",
           redirect: "",
+          meta: { title: "Şablonlar", requiresAuth: true, requireTenant: true },
           children: [
             {
               path: "",
@@ -126,11 +136,13 @@ const router = createRouter({
               path: "create",
               name: "form-templates-create",
               component: () => import("@/modules/management/pages/FormTemplateCreatePage.vue"),
+              meta: { title: "Şablon Oluştur", requiresAuth: true, requireTenant: true },
             },
             {
               path: "update/:id",
               name: "form-templates-update",
               component: () => import("@/modules/management/pages/FormTemplateCreatePage.vue"),
+              meta: { title: "Şablon Güncelle", requiresAuth: true, requireTenant: true },
             },
           ],
         },
@@ -139,6 +151,7 @@ const router = createRouter({
           path: "applications",
           name: "applications",
           redirect: { name: "applications-list" },
+          meta: { title: "Başvurular", requiresAuth: true, requireTenant: true },
           children: [
             {
               path: "",
@@ -149,6 +162,7 @@ const router = createRouter({
               path: "detail/:id",
               name: "application-detail",
               component: () => import("@/modules/management/pages/ApplicationDetailPage.vue"),
+              meta: { title: "Başvuru Detayı", requiresAuth: true, requireTenant: true },
             },
           ],
         },
@@ -156,6 +170,7 @@ const router = createRouter({
           path: "units",
           name: "units",
           redirect: { name: "units-tree-list" },
+          meta: { title: "Birimler", requiresAuth: true, requireTenant: true },
           children: [
             {
               path: "",
@@ -168,11 +183,25 @@ const router = createRouter({
           path: "users",
           name: "users",
           redirect: { name: "users-list" },
+          meta: { title: "Kullanıcılar", requiresAuth: true, requireTenant: true },
           children: [
             {
               path: "",
               name: "users-list",
               component: () => import("@/modules/management/pages/UsersPage.vue"),
+            },
+          ],
+        },
+        {
+          path: "roles",
+          name: "roles",
+          redirect: { name: "roles-list" },
+          meta: { title: "Roller", requiresAuth: true, requireTenant: true },
+          children: [
+            {
+              path: "",
+              name: "roles-list",
+              component: () => import("@/modules/management/pages/RolesPage.vue"),
             },
           ],
         },
@@ -186,11 +215,18 @@ const router = createRouter({
   ],
 });
 
-// Sayfa başlıklarını ayarlama
 router.beforeEach((to, from, next) => {
-  // Sayfa başlığını meta bilgisinden alıp ayarlama
+  const accessToken = localStorage.getItem("accessToken");
+
   document.title = to.meta.title ? `${to.meta.title} | Başvuru Sistemi` : "Başvuru Sistemi";
-  next();
+
+  if (to.matched.some((record) => record.meta.requiresAuth) && !accessToken) {
+    next({ name: "login", query: { returnUrl: to.fullPath } });
+  } else if (to.matched.some((record) => record.meta.requireTenant) && !Cookies.get("tenantId")) {
+    next({ name: "tenants", query: { returnUrl: to.fullPath } });
+  } else {
+    next();
+  }
 });
 
 export default router;

@@ -16,23 +16,6 @@ const isModalOpen = ref(false);
 const tenants: Ref<Tenant[] | undefined> = ref(undefined);
 
 onMounted(async () => {
-  const storedTenantId = tenantStore.tenantId;
-
-  if (tenantStore.tenant) {
-    router.push("/management");
-  } else if (storedTenantId) {
-    tenants.value = await fetchTenants();
-    if (tenants.value) {
-      const tenant = tenants.value.find((t) => t.id.toString() === storedTenantId);
-      if (tenant) {
-        tenantStore.setTenant(tenant);
-        router.push("/management");
-        return;
-      }
-    }
-  }
-
-  // Tenant set edilmemişse liste göster
   tenants.value = await fetchTenants();
 });
 function setTenant(tenant: Tenant) {
