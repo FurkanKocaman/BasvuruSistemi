@@ -1,7 +1,7 @@
 ﻿using BasvuruSistemi.Server.Application.Services;
 using BasvuruSistemi.Server.Domain.Units;
 using MediatR;
-using TS.Result;
+using Microsoft.EntityFrameworkCore;
 
 namespace BasvuruSistemi.Server.Application.Units;
 public sealed record GetUnitQuery(
@@ -36,7 +36,7 @@ internal sealed class GetUnitQueryHandler(
         if (!isAuthorized)
             return null;
 
-        var allUnits = unitRepository.Where(p => !p.IsDeleted && p.TenantId == tenantId.Value).ToList();
+        var allUnits = await unitRepository.Where(p => !p.IsDeleted && p.TenantId == tenantId.Value).ToListAsync(cancellationToken);
 
         var rootUnit = allUnits.FirstOrDefault(p => p.Id == request.unitId);
         if (rootUnit is null)

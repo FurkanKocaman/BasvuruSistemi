@@ -115,12 +115,12 @@
 
 <script setup lang="ts">
 import { ref, defineExpose, watch } from "vue";
-import { RoleDto, UserSummariesModel } from "../models/user-summaries.model";
+import { RoleDto, UserSummariesModel } from "../../models/user-summaries.model";
 import roleService from "@/modules/management/services/role.service";
 import { Info } from "lucide-vue-next";
-import unitService from "../services/unit.service";
-import { Unit } from "../models/unit-node.model";
-import { RoleAssignmentCreateModel } from "../models/role-assignment-create.model";
+import { Unit } from "../../models/unit-node.model";
+import { RoleAssignmentCreateModel } from "../../models/role-assignment-create.model";
+import unitService from "../../services/unit.service";
 
 const user = ref<UserSummariesModel>({
   id: "",
@@ -152,6 +152,7 @@ async function assignRole() {
   request.value.roleId = selectedRole.value.id;
   await roleService.createRoleAssignment(request.value);
   selectedRole.value = undefined;
+  close();
 }
 
 async function removeRole(roleId: string) {

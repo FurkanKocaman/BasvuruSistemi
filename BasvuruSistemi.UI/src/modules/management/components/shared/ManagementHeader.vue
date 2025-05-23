@@ -1,8 +1,11 @@
 <script setup lang="ts">
+import { ClaimTypes } from "@/models/constants/claim-type";
 import { useThemeStore } from "@/stores/theme";
 import { useUserStore } from "@/stores/user";
-
+import { useClaimChecker } from "@/utilities/useClaimChecker";
 import { computed, onMounted, ref } from "vue";
+
+const { hasClaim } = useClaimChecker();
 
 const themeStore = useThemeStore();
 const userStore = useUserStore();
@@ -98,7 +101,7 @@ function togglePostingMenu() {
             v-if="isPostingMenuOpen"
             class="absolute top-full -left-8 z-10 mt-3 w-screen max-w-md overflow-hidden rounded-xl bg-white dark:bg-gray-800 shadow-lg ring-1 ring-gray-900/5 border dark:border-gray-700 border-gray-200"
           >
-            <div class="px-2 py-2">
+            <div class="px-2 py-2" v-if="hasClaim(ClaimTypes.ViewJobPosting)">
               <div
                 class="group relative flex items-center gap-x-6 rounded-lg p-2 text-sm/6 hover:bg-gray-100 dark:hover:bg-gray-700/20"
               >
@@ -115,7 +118,7 @@ function togglePostingMenu() {
                 </div>
               </div>
             </div>
-            <div class="px-2 py-2">
+            <div class="px-2 py-2" v-if="hasClaim(ClaimTypes.CreateJobPosting)">
               <div
                 class="group relative flex items-center gap-x-6 rounded-lg p-2 text-sm/6 hover:bg-gray-100 dark:hover:bg-gray-700/20"
               >
@@ -132,7 +135,7 @@ function togglePostingMenu() {
                 </div>
               </div>
             </div>
-            <div class="px-2 py-2">
+            <div class="px-2 py-2" v-if="hasClaim(ClaimTypes.CreateJobPosting)">
               <div
                 class="group relative flex items-center gap-x-6 rounded-lg p-2 text-sm/6 hover:bg-gray-100 dark:hover:bg-gray-700/20"
               >
@@ -155,24 +158,37 @@ function togglePostingMenu() {
         </div>
 
         <router-link
+          v-if="hasClaim(ClaimTypes.ManageTemplates)"
           to="/management/form-templates"
           class="text-sm/6 font-semibold text-gray-700 dark:text-gray-50"
           >Form Şablonları</router-link
         >
         <router-link
+          v-if="hasClaim(ClaimTypes.ViewApplications)"
           to="/management/applications"
           class="text-sm/6 font-semibold text-gray-700 dark:text-gray-50"
           >Başvurular</router-link
         >
         <router-link
+          v-if="hasClaim(ClaimTypes.ManageUnits)"
           to="/management/units"
           class="text-sm/6 font-semibold text-gray-700 dark:text-gray-50"
           >Birimler</router-link
         >
         <router-link
+          v-if="hasClaim(ClaimTypes.ManageUsers)"
           to="/management/users"
           class="text-sm/6 font-semibold text-gray-700 dark:text-gray-50"
           >Kullanıcılar</router-link
+        >
+        <router-link
+          v-if="hasClaim(ClaimTypes.ManageRoles)"
+          to="/management/roles"
+          class="text-sm/6 font-semibold text-gray-700 dark:text-gray-50"
+          >Roller</router-link
+        >
+        <router-link to="/tenants" class="text-sm/6 font-semibold text-gray-700 dark:text-gray-50"
+          >Kurumlar</router-link
         >
       </div>
       <div class="hidden lg:flex lg:flex-1 lg:justify-end">

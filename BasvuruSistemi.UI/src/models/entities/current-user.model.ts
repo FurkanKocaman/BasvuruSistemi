@@ -15,4 +15,6 @@ export interface CurrentUserModel {
 
   address: Address;
   contact: Contact;
+
+  claims: string[];
 }

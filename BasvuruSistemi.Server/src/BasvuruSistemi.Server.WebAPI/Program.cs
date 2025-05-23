@@ -7,6 +7,7 @@ using Scalar.AspNetCore;
 using System.Threading.RateLimiting;
 using BasvuruSistemi.Server.WebAPI.Controllers.v1;
 using BasvuruSistemi.Server.WebAPI.Modules;
+using Microsoft.AspNetCore.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,6 +43,8 @@ x.AddFixedWindowLimiter("fixed",cfg =>
 
 builder.Services.AddExceptionHandler<ExceptionHandler>().AddProblemDetails();
 
+builder.Services.AddTransient<IClaimsTransformation, CustomClaimsTransformation>();
+
 var app = builder.Build();
 
 app.MapOpenApi();
@@ -60,7 +63,14 @@ app.UseAuthorization();
 
 app.UseResponseCompression();
 
-app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = ctx =>
+    {
+        // 365 gün
+        ctx.Context.Response.Headers["Cache-Control"] = "public,max-age=31536000,immutable";
+    }
+});
 
 app.UseExceptionHandler();
 

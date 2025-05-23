@@ -1,20 +1,18 @@
 ﻿using BasvuruSistemi.Server.Application.Services;
 using BasvuruSistemi.Server.Domain.Addresses;
 using BasvuruSistemi.Server.Domain.DTOs;
-using BasvuruSistemi.Server.Domain.Entities;
 using BasvuruSistemi.Server.Domain.Enums;
 using BasvuruSistemi.Server.Domain.Users;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration.UserSecrets;
 using TS.Result;
 
 namespace BasvuruSistemi.Server.Application.Users;
 public sealed record GetUserProfileQuery(
     Guid? userId
-    ) : IRequest<GetUserProfileQueryResponse>;
+    ) : IRequest<Result<GetUserProfileQueryResponse>>;
 
 public sealed class GetUserProfileQueryResponse
 {
@@ -36,32 +34,38 @@ public sealed class GetUserProfileQueryResponse
     public List<EducationDto> Educations { get; set; } = new List<EducationDto>();
     public List<ExperienceDto> Experiences { get; set; } = new List<ExperienceDto>();
 }
-
 internal sealed class GetUserProfileQueryHandler(
     ICurrentUserService currentUserService,
     UserManager<AppUser> userManager,
     IAddressRepository addressRepository,
     IHttpContextAccessor httpContextAccessor
-    ) : IRequestHandler<GetUserProfileQuery, GetUserProfileQueryResponse>
+) : IRequestHandler<GetUserProfileQuery, Result<GetUserProfileQueryResponse>>
 {
-    public Task<GetUserProfileQueryResponse> Handle(GetUserProfileQuery request, CancellationToken cancellationToken)
+    public async Task<Result<GetUserProfileQueryResponse>> Handle(GetUserProfileQuery request, CancellationToken cancellationToken)
     {
-        Guid? userId = currentUserService.UserId;
-        if(!userId.HasValue)
-            return Task.FromResult(new GetUserProfileQueryResponse());
+        Guid? currentUserId = currentUserService.UserId;
+        if (!currentUserId.HasValue)
+            return Result<GetUserProfileQueryResponse>.Failure(401,"Unauthorized");
 
-        var user = userManager.Users.Where(p => request.userId != null ? p.Id == request.userId : p.Id == userId.Value)
+        var queryUserId = request.userId ?? currentUserId.Value;
+
+        var user = await userManager.Users
+            .Where(p => p.Id == queryUserId)
             .Include(p => p.Certifications)
             .Include(p => p.SkillSet)
             .Include(p => p.EducationHistory)
             .Include(p => p.WorkExperience)
-            .FirstOrDefault();
-        if (user is null)
-            return Task.FromResult(new GetUserProfileQueryResponse());
+            .FirstOrDefaultAsync(cancellationToken);
 
-        var addresses = addressRepository.Where(p => p.UserId == user.Id && !p.IsDeleted).ToList();
+        if (user is null)
+            return Result<GetUserProfileQueryResponse>.Failure(404,"User not found");
+
+        var addresses = await addressRepository
+            .Where(p => p.UserId == user.Id && !p.IsDeleted)
+            .ToListAsync(cancellationToken);
 
         var context = httpContextAccessor.HttpContext?.Request;
+        var avatarUrl = user.AvatarUrl != null ? $"{context?.Scheme}://{context?.Host}/{user.AvatarUrl}" : null;
 
         var response = new GetUserProfileQueryResponse
         {
@@ -72,16 +76,27 @@ internal sealed class GetUserProfileQueryHandler(
             Nationality = user.Nationality,
             TCKN = user.TCKN,
             ProfileStatus = user.ProfileStatus,
-            AvatarUrl = user.AvatarUrl != null ? $"{context?.Scheme}://{context?.Host}/{user.AvatarUrl}" : null,
+            AvatarUrl = avatarUrl,
             Email = user.Email,
-            Phone = user.Contact.Phone,
-            Addresses = addresses.Select(address => new AddressDto(address.Id, address.Name, address.Country, address.City, address.District, address.Street, address.FullAddress, address.PostalCode)).ToList(),
-            Certificates = user.Certifications.Select(certification => new CertificationDto(certification.Id, certification.Title, certification.Issuer, certification.DateReceived, certification.ExpiryDate)).ToList(),
-            Skills = user.SkillSet.Select(skill => new SkillDto(skill.Id, skill.Name, skill.Description, skill.Level)).ToList(),
-            Educations = user.EducationHistory.Select(education => new EducationDto(education.Id, education.Institution, education.Department, education.Degree, education.Description, education.StartDate, education.GraduationDate, education.GPA)).ToList(),
-            Experiences = user.WorkExperience.Select(experience => new ExperienceDto(experience.Id, experience.CompanyName, experience.Position, experience.Location, experience.StartDate, experience.EndDate, experience.Description)).ToList()
+            Phone = user.Contact?.Phone,
+            Addresses = addresses.Select(a =>
+                new AddressDto(a.Id, a.Name, a.Country, a.City, a.District, a.Street, a.FullAddress, a.PostalCode)
+            ).ToList(),
+            Certificates = user.Certifications.Select(c =>
+                new CertificationDto(c.Id, c.Title, c.Issuer, c.DateReceived, c.ExpiryDate)
+            ).ToList(),
+            Skills = user.SkillSet.Select(s =>
+                new SkillDto(s.Id, s.Name, s.Description, s.Level)
+            ).ToList(),
+            Educations = user.EducationHistory.Select(e =>
+                new EducationDto(e.Id, e.Institution, e.Department, e.Degree, e.Description, e.StartDate, e.GraduationDate, e.GPA)
+            ).ToList(),
+            Experiences = user.WorkExperience.Select(e =>
+                new ExperienceDto(e.Id, e.CompanyName, e.Position, e.Location, e.StartDate, e.EndDate, e.Description)
+            ).ToList()
         };
 
-        return Task.FromResult(response);
+        return Result<GetUserProfileQueryResponse>.Succeed(response);
     }
 }
+

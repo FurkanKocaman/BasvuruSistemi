@@ -2,7 +2,6 @@
 using BasvuruSistemi.Server.Domain.Addresses;
 using BasvuruSistemi.Server.Domain.ApplicationFieldValues;
 using BasvuruSistemi.Server.Domain.ApplicationFormTemplates;
-
 using BasvuruSistemi.Server.Domain.Entities;
 using BasvuruSistemi.Server.Domain.FormFieldDefinitions;
 using BasvuruSistemi.Server.Domain.JobPostings;
@@ -46,16 +45,13 @@ internal sealed class ApplicationDbContext: IdentityDbContext<AppUser, AppRole,G
     public DbSet<FormFieldDefinition> FormFieldDefinitions { get; set; }
 
     public DbSet<AppUserTenantRole> AppUserTenantRoles { get; set; }
-
     public DbSet<Address> Addresses { get; set; }
-
     public DbSet<InvitationToken> InvitationTokens { get; set; }
-
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
-        modelBuilder.Ignore<IdentityRoleClaim<Guid>>();
+        //modelBuilder.Ignore<IdentityRoleClaim<Guid>>();
         modelBuilder.Ignore<IdentityUserClaim<Guid>>();
         modelBuilder.Ignore<IdentityUserLogin<Guid>>();
         modelBuilder.Ignore<IdentityUserToken<Guid>>();

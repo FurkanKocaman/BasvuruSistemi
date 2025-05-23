@@ -35,7 +35,7 @@ public sealed class GetApplicationQueryResponse
     public DateTimeOffset? ReviewDate { get; set; }
     public string? ReviewDescription { get; set; }
 
-    //FieldValues
+
     public List<FieldValueResponseDto> FieldValues { get; set; } = new List<FieldValueResponseDto>();
 }
 
@@ -44,32 +44,37 @@ internal sealed class GetApplicationQueryHandler(
     IHttpContextAccessor httpContextAccessor
     ) : IRequestHandler<GetApplicationQuery, Result<GetApplicationQueryResponse>>
 {
-    public Task<Result<GetApplicationQueryResponse>> Handle(GetApplicationQuery request, CancellationToken cancellationToken)
+    public async Task<Result<GetApplicationQueryResponse>> Handle(
+        GetApplicationQuery request,
+        CancellationToken cancellationToken)
     {
-        var application = applicationRepository.Where(p => p.Id == request.applicationId)
+        var application = await applicationRepository
+            .Where(p => p.Id == request.applicationId)
             .Include(p => p.User)
-            .ThenInclude(p => p.Addresses)
+                .ThenInclude(u => u.Addresses)
             .Include(p => p.FieldValues)
-            .ThenInclude(p => p.FieldDefinition)
+                .ThenInclude(fv => fv.FieldDefinition)
             .Include(p => p.JobPosting)
-                .ThenInclude(p => p.Tenant)
+                .ThenInclude(jp => jp.Tenant)
             .Include(p => p.JobPosting)
-                .ThenInclude(p => p.Unit)
-            .Include(p => p.JobPosting)
-                .ThenInclude(p => p.Tenant)
-                .FirstOrDefault();
+                .ThenInclude(jp => jp.Unit)
+            .FirstOrDefaultAsync(cancellationToken);
 
         if (application is null)
-            return Task.FromResult(Result<GetApplicationQueryResponse>.Failure("Application not found."));
+            return Result<GetApplicationQueryResponse>.Failure("Application not found.");
 
-        var totalApplicationCount = applicationRepository.Where(p => p.JobPostingId == application.JobPostingId && !p.IsDeleted).Count();
+        var totalApplicationCount = await applicationRepository
+            .Where(p => p.JobPostingId == application.JobPostingId && !p.IsDeleted)
+            .CountAsync(cancellationToken);
 
         var context = httpContextAccessor.HttpContext?.Request;
+        string baseUrl = context is null
+            ? string.Empty
+            : $"{context.Scheme}://{context.Host}";
 
         var response = new GetApplicationQueryResponse
         {
             Id = application.Id,
-
             UserId = application.UserId,
             FirstName = application.User.FirstName,
             LastName = application.User.LastName,
@@ -77,34 +82,45 @@ internal sealed class GetApplicationQueryHandler(
             Phone = application.User.Contact.Phone,
             TCKN = application.User.TCKN,
 
-            //Country = application.User.Address?.Country,
-            //City = application.User.Address?.City,
-            //District = application.User.Address?.District,
-            //Street = application.User.Address?.Street,
-            //FullAddress = application.User.Address?.FullAddress,
-            //PostalCode = application.User.Address?.PostalCode,
-
             JobPostingId = application.JobPostingId,
             JobPostingTitle = application.JobPosting.Title,
             JobPostingCreateDate = application.JobPosting.CreatedAt,
             JobPostingVacancyCount = application.JobPosting.VacancyCount,
             TotalApplicationCount = totalApplicationCount,
-            Unit = application.JobPosting.Unit != null ? application.JobPosting.Unit.Name : application.JobPosting.Tenant.Name ,
+            Unit = application.JobPosting.Unit != null
+                ? application.JobPosting.Unit.Name
+                : application.JobPosting.Tenant.Name,
 
             AppliedDate = application.AppliedDate,
             Status = application.Status,
             ReviewDate = application.ReviewDate,
             ReviewDescription = application.ReviewDescription,
 
-            FieldValues = application.FieldValues.OrderBy(p => p.FieldDefinition.Order).Select(p => new FieldValueResponseDto(
-                p.FieldDefinitionId,
-                p.FieldDefinition.Label,
-                p.FieldDefinition.Type,
-                (p.FieldDefinition.Type == FieldTypeEnum.File || p.FieldDefinition.Type == FieldTypeEnum.Image || p.FieldDefinition.Type == FieldTypeEnum.EDevletVerifiedFile || p.FieldDefinition.Type == FieldTypeEnum.YoksisAlesDocument) ? $"{context?.Scheme}://{context?.Host}{p.Value}" : p.Value
-            )).ToList(),
+            FieldValues = application.FieldValues
+                .OrderBy(fv => fv.FieldDefinition.Order)
+                .Select(fv =>
+                {
+                    var value = fv.Value;
+
+                    if (fv.FieldDefinition.Type is
+                        FieldTypeEnum.File or
+                        FieldTypeEnum.Image or
+                        FieldTypeEnum.EDevletVerifiedFile or
+                        FieldTypeEnum.YoksisAlesDocument)
+                    {
+                        value = $"{baseUrl}{fv.Value}";
+                    }
+                    return new FieldValueResponseDto(
+                        fv.FieldDefinitionId,
+                        fv.FieldDefinition.Label,
+                        fv.FieldDefinition.Type,
+                        value
+                    );
+                })
+                .ToList()
         };
 
-        return Task.FromResult(Result<GetApplicationQueryResponse>.Succeed(response));
-
+        return Result<GetApplicationQueryResponse>.Succeed(response);
     }
 }
+

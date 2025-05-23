@@ -56,12 +56,12 @@ internal sealed class GetJobPostingsQueryHandler(
     IJobPostingRepository jobPostingRepository
     ) : IRequestHandler<GetJobPostingsQuery, Result<GetJobPostingsQueryResponse>>
 {
-    public Task<Result<GetJobPostingsQueryResponse>> Handle(GetJobPostingsQuery request, CancellationToken cancellationToken)
+    public async Task<Result<GetJobPostingsQueryResponse>> Handle(GetJobPostingsQuery request, CancellationToken cancellationToken)
     {
-        var jobPosting = jobPostingRepository.Where(p => p.Id == request.id).Include(p => p.Tenant).Include(p => p.Unit).FirstOrDefault();
+        var jobPosting = await jobPostingRepository.Where(p => p.Id == request.id).Include(p => p.Tenant).Include(p => p.Unit).FirstOrDefaultAsync(cancellationToken);
 
         if (jobPosting is null)
-            return Task.FromResult(Result<GetJobPostingsQueryResponse>.Failure("Job posting not found"));
+            return Result<GetJobPostingsQueryResponse>.Failure("Job posting not found");
 
         var response = new GetJobPostingsQueryResponse()
         {
@@ -105,6 +105,6 @@ internal sealed class GetJobPostingsQueryHandler(
             Unit = jobPosting.Unit != null ? jobPosting.Unit.Name : null,
         };
 
-        return Task.FromResult(Result<GetJobPostingsQueryResponse>.Succeed(response));
+        return Result<GetJobPostingsQueryResponse>.Succeed(response);
     }
 }

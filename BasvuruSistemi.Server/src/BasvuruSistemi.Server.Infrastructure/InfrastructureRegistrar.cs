@@ -1,6 +1,8 @@
 ﻿using BasvuruSistemi.Server.Application.Services;
+using BasvuruSistemi.Server.Domain.Constants;
 using BasvuruSistemi.Server.Domain.Roles;
 using BasvuruSistemi.Server.Domain.Users;
+using BasvuruSistemi.Server.Infrastructure.Configurations;
 using BasvuruSistemi.Server.Infrastructure.Context;
 using BasvuruSistemi.Server.Infrastructure.Options;
 using BasvuruSistemi.Server.Infrastructure.Services;
@@ -30,6 +32,8 @@ public static class InfrastructureRegistrar
 
         services.AddScoped<ICurrentUserService, CurrentUserService>();
 
+        services.AddScoped<IRoleValidator<AppRole>, AppRoleValidator>();
+
         services
             .AddIdentity<AppUser, AppRole>(opt =>
             {
@@ -53,7 +57,28 @@ public static class InfrastructureRegistrar
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
             options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
         }).AddJwtBearer();
-        services.AddAuthorization();
+
+        services.AddAuthorization(options =>
+        {
+            foreach (var permission in typeof(CustomClaimTypes).GetFields().Select(f => f.GetValue(null)?.ToString()))
+            {
+                if (permission is not null)
+                {
+                    options.AddPolicy(permission, policy =>
+                        policy.RequireClaim("permission", permission));
+                }
+            }
+
+          //  var allClaims = Roles.All
+          //.SelectMany(r => r.AllowedClaims)
+          //.Distinct();
+
+          //  foreach (var claimValue in allClaims)
+          //  {
+          //      options.AddPolicy(claimValue, policy =>
+          //          policy.RequireClaim("permission", claimValue));
+          //  }
+        });
 
         services.Scan(opt => opt
         .FromAssemblies(typeof(InfrastructureRegistrar).Assembly)

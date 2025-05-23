@@ -4,10 +4,10 @@ using Microsoft.AspNetCore.Identity;
 namespace BasvuruSistemi.Server.Domain.Roles;
 public sealed class AppRole : IdentityRole<Guid>
 {
-    public Guid TenantId { get; set; }
-    public Tenant Tenant { get; set; } = default!;
+    public Guid TenantId { get; private set; }
+    public Tenant Tenant { get; private set; } = default!;
 
-    public string? Description { get; set; }
+    public string? Description { get; private set; }
 
     #region Audit Log
     public DateTimeOffset CreatedAt { get; set; }
@@ -17,5 +17,15 @@ public sealed class AppRole : IdentityRole<Guid>
     public AppRole(string name, Guid tenantId, string? description) : base(name)
     {
         Id = Guid.CreateVersion7();
+        Name = name;
+        TenantId = tenantId;
+        Description = description;
+        CreatedAt = DateTimeOffset.Now;
+    }
+
+    public void Update(string name, string? description)
+    {
+        Name = name;
+        Description = description;
     }
 }

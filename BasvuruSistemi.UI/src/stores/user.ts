@@ -7,6 +7,7 @@ export const useUserStore = defineStore("user", () => {
   const user = ref<CurrentUserModel | null>(null);
 
   function setUser(payload: CurrentUserModel) {
+    console.log(payload);
     user.value = payload;
   }
 

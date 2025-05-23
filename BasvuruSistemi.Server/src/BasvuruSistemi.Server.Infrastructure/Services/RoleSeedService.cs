@@ -17,14 +17,15 @@ internal sealed class RoleSeedService(RoleManager<AppRole> roleManager) : IRoleS
 
             if (!exists)
             {
-                var role = new AppRole(roleDef.Name, tenantId, roleDef.Description)
-                {
-                    TenantId = tenantId,
-                    Description = roleDef.Description,
-                    CreatedAt = DateTimeOffset.Now,
-                };
+                var role = new AppRole(roleDef.Name, tenantId, roleDef.Description);
 
                 var result = await roleManager.CreateAsync(role);
+
+                foreach(var claim in roleDef.AllowedClaims)
+                {
+                    result = await roleManager.AddClaimAsync(role, new System.Security.Claims.Claim("permission", claim));
+                }
+
                 if (!result.Succeeded)
                 {
                     var errors = string.Join(", ", result.Errors.Select(e => e.Description));

@@ -1,15 +1,16 @@
-﻿using BasvuruSistemi.Server.Application.FormTemplates;
-using BasvuruSistemi.Server.Application.Services;
+﻿using BasvuruSistemi.Server.Application.Services;
 using BasvuruSistemi.Server.Domain.DTOs;
 using BasvuruSistemi.Server.Domain.JobPostings;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using TS.Result;
 
 namespace BasvuruSistemi.Server.Application.JobPostings;
+
 public sealed record GetJobPostingsByTenantQuery(
     int page,
     int pageSize
-    ) : IRequest<PagedResult<GetJobPostingsByTenantQueryResponse>>;
+) : IRequest<Result<PagedResult<GetJobPostingsByTenantQueryResponse>>>;
 
 public sealed class GetJobPostingsByTenantQueryResponse
 {
@@ -45,59 +46,60 @@ public sealed class GetJobPostingsByTenantQueryResponse
 internal sealed class GetJobPostingsByTenantQueryHandler(
     ICurrentUserService currentUserService,
     IJobPostingRepository jobPostingRepository
-    ) : IRequestHandler<GetJobPostingsByTenantQuery, PagedResult<GetJobPostingsByTenantQueryResponse>>
+) : IRequestHandler<GetJobPostingsByTenantQuery, Result<PagedResult<GetJobPostingsByTenantQueryResponse>>>
 {
-    public Task<PagedResult<GetJobPostingsByTenantQueryResponse>> Handle(GetJobPostingsByTenantQuery request, CancellationToken cancellationToken)
+    public async Task<Result<PagedResult<GetJobPostingsByTenantQueryResponse>>> Handle(GetJobPostingsByTenantQuery request, CancellationToken cancellationToken)
     {
         Guid? tenantId = currentUserService.TenantId;
 
-        if(!tenantId.HasValue)
-            return Task.FromResult(new PagedResult<GetJobPostingsByTenantQueryResponse>(new List<GetJobPostingsByTenantQueryResponse>(), 0, 0, 0));
+        if (!tenantId.HasValue)
+        {
+            return Result<PagedResult<GetJobPostingsByTenantQueryResponse>>.Failure(401, "Unauthorized");
+        }
 
-        var jobPostings = jobPostingRepository.Where(p => !p.IsDeleted).Include(p => p.Unit).Include(p => p.Applications);
+        var query = jobPostingRepository
+            .Where(p => !p.IsDeleted && p.TenantId == tenantId)
+            .Include(p => p.Unit)
+            .Include(p => p.Applications);
 
-        var totalCount = jobPostings.Count();
+        var totalCount = await query.CountAsync(cancellationToken);
 
-        var pagedJobPostings = jobPostings
+        var pagedJobPostings = await query
             .Skip((request.page - 1) * request.pageSize)
             .Take(request.pageSize)
-            .ToList();
+            .ToListAsync(cancellationToken);
 
         var response = pagedJobPostings.Select(jobPosting => new GetJobPostingsByTenantQueryResponse
         {
             Id = jobPosting.Id,
-
             Title = jobPosting.Title,
             Description = jobPosting.Description,
             Responsibilities = jobPosting.Responsibilities,
             Qualifications = jobPosting.Qualifications,
             Benefits = jobPosting.Benefits,
-
             ValidFrom = jobPosting.ValidFrom,
             ValidTo = jobPosting.ValidTo,
-
             IsRemote = jobPosting.IsRemote,
             LocationText = jobPosting.LocationText,
-
             VacancyCount = jobPosting.VacancyCount,
-            EmploymentType = jobPosting.EmploymentType.ToString(),
-            ExperienceLevelRequired = jobPosting.ExperienceLevelRequired.ToString(),
-            SalaryRange = jobPosting.MinSalary.ToString() + jobPosting.Currency + jobPosting.MaxSalary.ToString() + jobPosting.Currency,
+            EmploymentType = jobPosting.EmploymentType?.ToString(),
+            ExperienceLevelRequired = jobPosting.ExperienceLevelRequired?.ToString(),
+            SalaryRange = $"{jobPosting.MinSalary}{jobPosting.Currency} - {jobPosting.MaxSalary}{jobPosting.Currency}",
             SkillsRequired = jobPosting.SkillsRequired,
-
             ContactInfo = jobPosting.ContactInfo,
             IsPublic = jobPosting.IsPublic,
-
             UnitId = jobPosting.UnitId,
             Unit = jobPosting.Unit?.Name,
-
-            TotalApplicationsCount = jobPosting.Applications.Count(),
-
+            TotalApplicationsCount = jobPosting.Applications.Count
         }).ToList();
 
+        var result = new PagedResult<GetJobPostingsByTenantQueryResponse>(
+            response,
+            request.page,
+            request.pageSize,
+            totalCount
+        );
 
-
-
-        return Task.FromResult(new PagedResult<GetJobPostingsByTenantQueryResponse>(response, request.page, request.pageSize, totalCount));
+        return Result<PagedResult<GetJobPostingsByTenantQueryResponse>>.Succeed(result);
     }
 }
