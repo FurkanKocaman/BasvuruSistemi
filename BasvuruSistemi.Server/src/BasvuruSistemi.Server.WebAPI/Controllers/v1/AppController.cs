@@ -22,7 +22,7 @@ public class AppController(ISender sender) : ControllerBase
     public async Task<ActionResult<GetCurrentUserQueryResponse>> GetCurrentUser(CancellationToken cancellationToken = default)
     {
         var response = await sender.Send(new GetCurrentUserQuery(), cancellationToken);
-        return Ok(response);
+        return StatusCode(response.StatusCode,response.StatusCode == 200 ? response.Data : response.ErrorMessages);
     }
     [HttpGet("users")]
     [Authorize()]
@@ -32,7 +32,7 @@ public class AppController(ISender sender) : ControllerBase
         CancellationToken cancellationToken = default)
     {
         var response = await sender.Send(new GetAllUsersQuery(page,pageSize), cancellationToken);
-        return Ok(response);
+        return StatusCode(response.StatusCode, response.StatusCode == 200 ? response.Data : response.ErrorMessages);
     }
 
     [HttpGet("users/profile")]
@@ -40,7 +40,7 @@ public class AppController(ISender sender) : ControllerBase
     public async Task<ActionResult<GetUserProfileQueryResponse>> GetUserProfile([FromQuery]Guid? id, CancellationToken cancellationToken = default)
     {
         var response = await sender.Send(new GetUserProfileQuery(id), cancellationToken);
-        return Ok(response);
+        return StatusCode(response.StatusCode, response.StatusCode == 200 ? response.Data : response.ErrorMessages);
     }
 
     [HttpGet("roles")]
@@ -51,17 +51,24 @@ public class AppController(ISender sender) : ControllerBase
         [FromQuery] int pageSize = 20,
         CancellationToken cancellationToken = default)
     {
-        var response = await sender.Send(view == "summaries" ? new GetAllRolesSummariesByTenantQuery() : new GetAllRolesDetailsByTenantQuery(page,pageSize), cancellationToken);
-        return Ok(response);
+        if(view == "summaries")
+        {
+            var response = await sender.Send(new GetAllRolesSummariesByTenantQuery(), cancellationToken);
+            return StatusCode(response.StatusCode, response.StatusCode == 200 ? response.Data : response.ErrorMessages);
+        }
+        else
+        {
+            var response = await sender.Send(new GetAllRolesDetailsByTenantQuery(page, pageSize), cancellationToken);
+            return StatusCode(response.StatusCode, response.StatusCode == 200 ? response.Data : response.ErrorMessages);
+        }
     }
-
 
     [HttpGet("token/{token}")]
     [Authorize]
     public async Task<ActionResult<Result<GetInformationByTokenQueryResponse>>> GetTokenInformation(string token, CancellationToken cancellationToken)
     {
         var response = await sender.Send(new GetInformationByTokenQuery(token), cancellationToken);
-        return StatusCode(response.StatusCode,response);
+        return StatusCode(response.StatusCode, response.StatusCode == 200 ? response.Data : response.ErrorMessages);
     }
 
     [HttpGet("units")]
@@ -69,7 +76,7 @@ public class AppController(ISender sender) : ControllerBase
     public async Task<ActionResult<GetAllUnitsByTenantQueryResponse>> GetAllUnitsByTenant(CancellationToken cancellationToken = default)
     {
         var response = await sender.Send(new GetAllUnitsByTenantQuery(), cancellationToken);
-        return Ok(response);
+        return StatusCode(response.StatusCode, response.StatusCode == 200 ? response.Data : response.ErrorMessages);
     }
     [HttpGet("units/{id}")]
     [Authorize()]
@@ -85,7 +92,7 @@ public class AppController(ISender sender) : ControllerBase
     public async Task<ActionResult<GetAuthorizedUnitsQueryResponse>> GetAuthorizedOrganizations (CancellationToken cancellationToken = default)
     {
         var response = await sender.Send(new GetAuthorizedUnitsQuery(), cancellationToken);
-        return Ok(response);
+        return StatusCode(response.StatusCode, response.StatusCode == 200 ? response.Data : response.ErrorMessages);
     }
 
     [AllowAnonymous]
@@ -96,8 +103,9 @@ public class AppController(ISender sender) : ControllerBase
     CancellationToken cancellationToken = default)
     {
         var response = await sender.Send(new GetActiveJobPostingsSummariesQuery(page,pageSize), cancellationToken);
-        return Ok(response);
+        return StatusCode(response.StatusCode, response.StatusCode == 200 ? response.Data : response.ErrorMessages);
     }
+
     [AllowAnonymous]
     [HttpGet("job-postings/active/{id:guid}")]
     public async Task<ActionResult<GetActiveJobPostingQueryResponse>> GetActiveJobPostings(
@@ -105,7 +113,7 @@ public class AppController(ISender sender) : ControllerBase
     CancellationToken cancellationToken = default)
     {
         var response = await sender.Send(new GetActiveJobPostingQuery(id), cancellationToken);
-        return Ok(response);
+        return StatusCode(response.StatusCode, response.StatusCode == 200 ? response.Data : response.ErrorMessages);
     }
 
     [HttpGet("job-postings")]
@@ -119,16 +127,14 @@ public class AppController(ISender sender) : ControllerBase
         if(view == "summaries")
         {
             var response = await sender.Send(new GetJobPostingsSummariesByTenantQuery(page, pageSize), cancellationToken);
-            return Ok(response);
+            return StatusCode(response.StatusCode, response.StatusCode == 200 ? response.Data : response.ErrorMessages);
         }
         else
         {
             var response = await sender.Send(new GetJobPostingsByTenantQuery(page, pageSize), cancellationToken);
-            return Ok(response);
+            return StatusCode(response.StatusCode, response.StatusCode == 200 ? response.Data : response.ErrorMessages);
         }
-           
     }
-
 
     [HttpGet("job-postings/{id:guid}")]
     [Authorize()]
@@ -137,7 +143,7 @@ public class AppController(ISender sender) : ControllerBase
     CancellationToken cancellationToken = default)
     {
         var response = await sender.Send(new GetJobPostingsQuery(id), cancellationToken);
-        return response.IsSuccessful ? Ok(response) : BadRequest(response);
+        return StatusCode(response.StatusCode, response.StatusCode == 200 ? response.Data : response.ErrorMessages);
     }
 
     [AllowAnonymous]
@@ -147,7 +153,7 @@ public class AppController(ISender sender) : ControllerBase
     CancellationToken cancellationToken = default)
     {
         var response = await sender.Send(new PostingGroupGetQuery(id), cancellationToken);
-        return Ok(response);
+        return StatusCode(response.StatusCode, response.StatusCode == 200 ? response.Data : response.ErrorMessages);
     }
 
     [HttpGet("posting-groups")]
@@ -156,7 +162,7 @@ public class AppController(ISender sender) : ControllerBase
     CancellationToken cancellationToken = default)
     {
         var response = await sender.Send(new GetAllPostingGroupSummariesByTenantQuery(), cancellationToken);
-        return Ok(response);
+        return StatusCode(response.StatusCode, response.StatusCode == 200 ? response.Data : response.ErrorMessages);
     }
 
     [HttpGet("tenants")]
@@ -164,7 +170,7 @@ public class AppController(ISender sender) : ControllerBase
     public async Task<ActionResult<List<GetUserAuthorizedTenantsQueryResponse>>> GetUserAuthorizedTenants(CancellationToken cancellationToken = default)
     {
         var response = await sender.Send(new GetUserAuthorizedTenantsQuery(), cancellationToken);
-        return Ok(response);
+        return StatusCode(response.StatusCode, response.StatusCode == 200 ? response.Data : response.ErrorMessages);
     }
 
     [HttpGet("form-templates/{id}")]
@@ -172,7 +178,7 @@ public class AppController(ISender sender) : ControllerBase
     public async Task<ActionResult<GetFormTemplateQueryResponse>> GetFormTemplate(Guid id, CancellationToken cancellationToken = default)
     {
         var response = await sender.Send(new GetFormTemplateQuery(id), cancellationToken);
-        return StatusCode(response.StatusCode, response.Data);
+        return StatusCode(response.StatusCode, response.StatusCode == 200 ? response.Data : response.ErrorMessages);
     }
 
     [HttpGet("form-templates")]
@@ -186,12 +192,12 @@ public class AppController(ISender sender) : ControllerBase
         if(view == "summaries")
         {
             var response = await sender.Send(new GetFormTemplateSummariesQuery(), cancellationToken);
-            return StatusCode(response.StatusCode, response.Data);
+            return StatusCode(response.StatusCode, response.StatusCode == 200 ? response.Data : response.ErrorMessages);
         }
         else if(view == "details")
         {
             var response = await sender.Send(new GetAllFormTemplatesQuery(page, pageSize), cancellationToken);
-            return StatusCode(response.StatusCode,response.Data);
+            return StatusCode(response.StatusCode, response.StatusCode == 200 ? response.Data : response.ErrorMessages);
         }
         return BadRequest();
             
@@ -207,7 +213,7 @@ public class AppController(ISender sender) : ControllerBase
         CancellationToken cancellationToken = default)
     {
         var response = await sender.Send(new GetAllApplilactionsQuery(jobPostingId, page, pageSize), cancellationToken);
-        return StatusCode(response.StatusCode, response.Data);
+        return StatusCode(response.StatusCode, response.StatusCode == 200 ? response.Data : response.ErrorMessages);
     }
 
 
@@ -218,7 +224,7 @@ public class AppController(ISender sender) : ControllerBase
     CancellationToken cancellationToken = default)
     {
         var response = await sender.Send(new GetApplicationQuery(applicationId), cancellationToken);
-        return StatusCode(response.StatusCode,response);
+        return StatusCode(response.StatusCode, response.StatusCode == 200 ? response.Data : response.ErrorMessages);
     }
 
 
@@ -240,6 +246,6 @@ public class AppController(ISender sender) : ControllerBase
     CancellationToken cancellationToken = default)
     {
         var response = await sender.Send(new GetApplicationsByUserQuery(page,pageSize), cancellationToken);
-        return StatusCode(response.StatusCode, response.Data);
+        return StatusCode(response.StatusCode, response.StatusCode == 200 ? response.Data : response.ErrorMessages);
     }
 }

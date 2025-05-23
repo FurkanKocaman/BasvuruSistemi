@@ -2,10 +2,12 @@
 using BasvuruSistemi.Server.Domain.Tenants;
 using BasvuruSistemi.Server.Domain.Units;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
+using TS.Result;
 
 namespace BasvuruSistemi.Server.Application.Units;
-public sealed record GetAllUnitsByTenantQuery(
-    ) : IRequest<List<GetAllUnitsByTenantQueryResponse>>;
+
+public sealed record GetAllUnitsByTenantQuery() : IRequest<Result<List<GetAllUnitsByTenantQueryResponse>>>;
 
 public sealed class GetAllUnitsByTenantQueryResponse
 {
@@ -19,29 +21,33 @@ internal sealed class GetAllUnitsByTenantQueryHandler(
     ICurrentUserService currentUserService,
     ITenantRepository tenantRepository,
     IUnitRepository unitRepository
-    ) : IRequestHandler<GetAllUnitsByTenantQuery, List<GetAllUnitsByTenantQueryResponse>>
+) : IRequestHandler<GetAllUnitsByTenantQuery, Result<List<GetAllUnitsByTenantQueryResponse>>>
 {
-    public Task<List<GetAllUnitsByTenantQueryResponse>> Handle(GetAllUnitsByTenantQuery request, CancellationToken cancellationToken)
+    public async Task<Result<List<GetAllUnitsByTenantQueryResponse>>> Handle(GetAllUnitsByTenantQuery request, CancellationToken cancellationToken)
     {
         Guid? tenantId = currentUserService.TenantId;
         if (!tenantId.HasValue)
-            return Task.FromResult(new List<GetAllUnitsByTenantQueryResponse>());
+            return Result<List<GetAllUnitsByTenantQueryResponse>>.Failure(401,"Unauthorized");
 
-        var tenant = tenantRepository.FirstOrDefault(p => p.Id == tenantId.Value);
+        var tenant = await tenantRepository.FirstOrDefaultAsync(p => p.Id == tenantId.Value, cancellationToken);
         if (tenant is null)
-            return Task.FromResult(new List<GetAllUnitsByTenantQueryResponse>());
+            return Result<List<GetAllUnitsByTenantQueryResponse>>.Failure(404, "Tenant not found");
 
-        var units = unitRepository.Where(p => p.TenantId == tenantId.Value && !p.IsDeleted).ToList();
+        var units = await unitRepository
+            .Where(p => p.TenantId == tenantId.Value && !p.IsDeleted)
+            .OrderBy(p => p.Name)
+            .ToListAsync(cancellationToken);
 
-        var response = new List<GetAllUnitsByTenantQueryResponse>();
-
-        response.Add(new GetAllUnitsByTenantQueryResponse
+        var response = new List<GetAllUnitsByTenantQueryResponse>
         {
-            Id = tenant.Id,
-            ParentId = null,
-            Name = tenant.Name,
-            Code = tenant.Code,
-        });
+            new GetAllUnitsByTenantQueryResponse
+            {
+                Id = tenant.Id,
+                ParentId = null,
+                Name = tenant.Name,
+                Code = tenant.Code,
+            }
+        };
 
         response.AddRange(units.Select(unit => new GetAllUnitsByTenantQueryResponse
         {
@@ -49,10 +55,8 @@ internal sealed class GetAllUnitsByTenantQueryHandler(
             Id = unit.Id,
             Name = unit.Name,
             Code = unit.Code,
-        }).OrderBy(p => p.Name).ToList());
+        }));
 
-        
-
-        return Task.FromResult(response);
+        return Result<List<GetAllUnitsByTenantQueryResponse>>.Succeed(response);
     }
 }

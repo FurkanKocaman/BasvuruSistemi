@@ -2,14 +2,17 @@
 using BasvuruSistemi.Server.Domain.Tenants;
 using BasvuruSistemi.Server.Domain.UserRoles;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
+using TS.Result;
 
 namespace BasvuruSistemi.Server.Application.Tenants;
-public sealed record GetUserAuthorizedTenantsQuery(
-    ) : IRequest<List<GetUserAuthorizedTenantsQueryResponse>>;
+
+public sealed record GetUserAuthorizedTenantsQuery()
+    : IRequest<Result<List<GetUserAuthorizedTenantsQueryResponse>>>;
 
 public sealed class GetUserAuthorizedTenantsQueryResponse
 {
-    public Guid Id { get; set; } = default!;
+    public Guid Id { get; set; }
     public string Name { get; set; } = default!;
     public string? Code { get; set; }
 }
@@ -18,19 +21,27 @@ internal sealed class GetUserAuthorizedTenantsQueryHandler(
     ITenantRepository tenantRepository,
     IUserTenantRoleRepository userTenantRoleRepository,
     ICurrentUserService currentUserService
-    ) : IRequestHandler<GetUserAuthorizedTenantsQuery, List<GetUserAuthorizedTenantsQueryResponse>>
+) : IRequestHandler<GetUserAuthorizedTenantsQuery, Result<List<GetUserAuthorizedTenantsQueryResponse>>>
 {
-    public Task<List<GetUserAuthorizedTenantsQueryResponse>> Handle(GetUserAuthorizedTenantsQuery request, CancellationToken cancellationToken)
+    public async Task<Result<List<GetUserAuthorizedTenantsQueryResponse>>> Handle(GetUserAuthorizedTenantsQuery request, CancellationToken cancellationToken)
     {
         Guid? userId = currentUserService.UserId;
         if (!userId.HasValue)
-            return Task.FromResult(new List<GetUserAuthorizedTenantsQueryResponse>());
+            return Result<List<GetUserAuthorizedTenantsQueryResponse>>.Failure("Kullanıcı kimliği alınamadı.");
 
-        var userTenants = userTenantRoleRepository.Where(x => x.UserId == userId.Value)
+        var userTenantIds = await userTenantRoleRepository
+            .Where(x => x.UserId == userId.Value)
             .Select(x => x.TenantId)
-            .ToList();
+            .Distinct()
+            .ToListAsync(cancellationToken);
 
-        var tenants =  tenantRepository.Where(p => userTenants.Contains(p.Id)).ToList();
+        if (!userTenantIds.Any())
+            return Result<List<GetUserAuthorizedTenantsQueryResponse>>.Succeed([]);
+
+        var tenants = await tenantRepository
+            .Where(p => userTenantIds.Contains(p.Id))
+            .ToListAsync(cancellationToken);
+
         var response = tenants.Select(t => new GetUserAuthorizedTenantsQueryResponse
         {
             Id = t.Id,
@@ -38,6 +49,6 @@ internal sealed class GetUserAuthorizedTenantsQueryHandler(
             Code = t.Code
         }).ToList();
 
-        return Task.FromResult(response);
+        return Result<List<GetUserAuthorizedTenantsQueryResponse>>.Succeed(response);
     }
 }

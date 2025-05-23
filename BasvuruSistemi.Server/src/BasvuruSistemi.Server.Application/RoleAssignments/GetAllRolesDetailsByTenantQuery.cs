@@ -5,12 +5,14 @@ using BasvuruSistemi.Server.Domain.UserRoles;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using TS.Result;
 
 namespace BasvuruSistemi.Server.Application.RoleAssignments;
+
 public sealed record GetAllRolesDetailsByTenantQuery(
     int page,
     int pageSize
-    ) : IRequest<PagedResult<GetAllRolesDetailsByTenantQueryResponse>>;
+) : IRequest<Result<PagedResult<GetAllRolesDetailsByTenantQueryResponse>>>;
 
 public sealed class GetAllRolesDetailsByTenantQueryResponse
 {
@@ -26,29 +28,33 @@ internal sealed class GetAllRolesDetailsByTenantQueryHandler(
     ICurrentUserService currentUserService,
     IUserTenantRoleRepository userTenantRoleRepository,
     RoleManager<AppRole> roleManager
-    ) : IRequestHandler<GetAllRolesDetailsByTenantQuery, PagedResult<GetAllRolesDetailsByTenantQueryResponse>>
+) : IRequestHandler<GetAllRolesDetailsByTenantQuery, Result<PagedResult<GetAllRolesDetailsByTenantQueryResponse>>>
 {
-    public async Task<PagedResult<GetAllRolesDetailsByTenantQueryResponse>> Handle(GetAllRolesDetailsByTenantQuery request, CancellationToken cancellationToken)
+    public async Task<Result<PagedResult<GetAllRolesDetailsByTenantQueryResponse>>> Handle(GetAllRolesDetailsByTenantQuery request, CancellationToken cancellationToken)
     {
         Guid? tenantId = currentUserService.TenantId;
+
         if (!tenantId.HasValue)
-            return new PagedResult<GetAllRolesDetailsByTenantQueryResponse>(new List<GetAllRolesDetailsByTenantQueryResponse>(),0,0,0);
+            return Result<PagedResult<GetAllRolesDetailsByTenantQueryResponse>>.Failure("Tenant bilgisi alınamadı.");
 
-        var roles = await roleManager.Roles.Where(p => p.TenantId == tenantId.Value).ToListAsync(cancellationToken);
+        var rolesQuery = roleManager.Roles
+            .Where(p => p.TenantId == tenantId.Value);
 
-        var totalCount = roles.Count;
+        var totalCount = await rolesQuery.CountAsync(cancellationToken);
 
-        roles = roles
+        var roles = await rolesQuery
             .Skip((request.page - 1) * request.pageSize)
             .Take(request.pageSize)
-            .ToList();
+            .ToListAsync(cancellationToken);
 
         var response = new List<GetAllRolesDetailsByTenantQueryResponse>();
 
         foreach (var role in roles)
         {
             var claims = await roleManager.GetClaimsAsync(role);
-            var usersCount = await userTenantRoleRepository.Where(p => p.RoleId == role.Id).CountAsync(cancellationToken);
+            var usersCount = await userTenantRoleRepository
+                .Where(p => p.RoleId == role.Id)
+                .CountAsync(cancellationToken);
 
             response.Add(new GetAllRolesDetailsByTenantQueryResponse
             {
@@ -61,14 +67,16 @@ internal sealed class GetAllRolesDetailsByTenantQueryHandler(
             });
         }
 
-        response.OrderBy(p => p.Claims.Count());
+        // İsteğe bağlı sıralama
+        response = response.OrderByDescending(p => p.CreatedAt).ToList();
 
-        return new PagedResult<GetAllRolesDetailsByTenantQueryResponse>(
+        var pagedResult = new PagedResult<GetAllRolesDetailsByTenantQueryResponse>(
             response,
             request.page,
             request.pageSize,
             totalCount
         );
 
+        return Result<PagedResult<GetAllRolesDetailsByTenantQueryResponse>>.Succeed(pagedResult);
     }
 }

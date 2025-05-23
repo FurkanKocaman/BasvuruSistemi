@@ -22,4 +22,10 @@ public sealed class AppRole : IdentityRole<Guid>
         Description = description;
         CreatedAt = DateTimeOffset.Now;
     }
+
+    public void Update(string name, string? description)
+    {
+        Name = name;
+        Description = description;
+    }
 }

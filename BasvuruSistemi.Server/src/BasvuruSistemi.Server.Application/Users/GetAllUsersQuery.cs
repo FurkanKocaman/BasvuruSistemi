@@ -6,12 +6,13 @@ using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using TS.Result;
 
 namespace BasvuruSistemi.Server.Application.Users;
 public sealed record GetAllUsersQuery(
     int page,
     int pageSize
-    ) : IRequest<PagedResult<GetAllUsersQueryResponse>>;
+    ) : IRequest<Result<PagedResult<GetAllUsersQueryResponse>>>;
 
 public sealed class GetAllUsersQueryResponse
 {
@@ -37,47 +38,62 @@ internal sealed class GetAllUsersQueryHandler(
     IUserTenantRoleRepository userTenantRoleRepository,
     UserManager<AppUser> userManager,
     IHttpContextAccessor httpContextAccessor
-    ) : IRequestHandler<GetAllUsersQuery, PagedResult<GetAllUsersQueryResponse>>
+) : IRequestHandler<GetAllUsersQuery, Result<PagedResult<GetAllUsersQueryResponse>>>
 {
-    public async Task<PagedResult<GetAllUsersQueryResponse>> Handle(GetAllUsersQuery request, CancellationToken cancellationToken)
+    public async Task<Result<PagedResult<GetAllUsersQueryResponse>>> Handle(GetAllUsersQuery request, CancellationToken cancellationToken)
     {
         Guid? userId = currentUserService.UserId;
         if (!userId.HasValue)
-            return new PagedResult<GetAllUsersQueryResponse>(new List<GetAllUsersQueryResponse>(), 0, 0, 0);
+            return Result<PagedResult<GetAllUsersQueryResponse>>.Failure(404, "User not found");
 
-        var canAccess = userTenantRoleRepository.Where(p => p.UserId == userId.Value).Any();
+        bool canAccess = await userTenantRoleRepository
+            .Where(p => p.UserId == userId.Value)
+            .AnyAsync(cancellationToken);
 
         if (!canAccess)
-            return new PagedResult<GetAllUsersQueryResponse>(new List<GetAllUsersQueryResponse>(), 0, 0, 0);
+            return Result<PagedResult<GetAllUsersQueryResponse>>.Failure(403, "You do not have permission to access this resource");
 
-        var users = userManager.Users.Where(p => !p.IsDeleted).Include(p => p.Roles).ThenInclude(p => p.Role);
+        var query = userManager.Users
+            .Where(p => !p.IsDeleted)
+            .Include(p => p.Roles)
+                .ThenInclude(p => p.Role)
+            .AsNoTracking();
 
-        var totalCount = await users.AsNoTracking().CountAsync(cancellationToken);
+        int totalCount = await query.CountAsync(cancellationToken);
 
-        var pagedUsers = await users
+        var pagedUsers = await query
+            .OrderBy(p => p.CreatedAt)
             .Skip((request.page - 1) * request.pageSize)
-        .Take(request.pageSize).ToListAsync(cancellationToken);
+            .Take(request.pageSize)
+            .ToListAsync(cancellationToken);
 
         var context = httpContextAccessor.HttpContext?.Request;
 
-        var response = pagedUsers
-            .Select(user => new GetAllUsersQueryResponse
+        var response = pagedUsers.Select(user => new GetAllUsersQueryResponse
+        {
+            Id = user.Id,
+            AvatarUrl = !string.IsNullOrWhiteSpace(user.AvatarUrl)
+                ? $"{context?.Scheme}://{context?.Host}/{user.AvatarUrl}"
+                : null,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            TCKN = user.TCKN,
+            Email = user.Email,
+            CreatedAt = user.CreatedAt,
+            Roles = user.Roles?.Select(ur => new RoleDto
             {
-                Id = user.Id,
-                AvatarUrl = user.AvatarUrl != null ? $"{context?.Scheme}://{context?.Host}/{user.AvatarUrl}" : null,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                TCKN = user.TCKN,
-                Email = user.Email,
-                CreatedAt = user.CreatedAt,
-                Roles = user.Roles != null ? user.Roles.Select(ur => new RoleDto
-                {
-                    Id = ur.RoleId,
-                    Name = ur.Role.Name,
-                }).ToList() : new List<RoleDto>(),
-            })
-            .ToList();
+                Id = ur.RoleId,
+                Name = ur.Role?.Name
+            }).ToList() ?? new()
+        }).ToList();
 
-        return new PagedResult<GetAllUsersQueryResponse>(response, request.page, request.pageSize, totalCount);
+        return Result<PagedResult<GetAllUsersQueryResponse>>.Succeed(
+            new PagedResult<GetAllUsersQueryResponse>(
+                response,
+                request.page,
+                request.pageSize,
+                totalCount
+            ));
     }
 }
+

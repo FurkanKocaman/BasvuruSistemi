@@ -155,5 +155,23 @@ public static class Roles
             Recruiter,
             Approver,
             Candidate
-        };
+    };
+    public static readonly string[] AllCustomClaimTypes =
+    {
+        CustomClaimTypes.CreateJobPosting,
+        CustomClaimTypes.EditJobPosting,
+        CustomClaimTypes.DeleteJobPosting,
+        CustomClaimTypes.ViewJobPosting,
+        CustomClaimTypes.CreateApplication,
+        CustomClaimTypes.ViewApplications,
+        CustomClaimTypes.ReviewApplications,
+        CustomClaimTypes.ApproveApplications,
+        CustomClaimTypes.ManageUsers,
+        CustomClaimTypes.ManageRoles,
+        CustomClaimTypes.ManageTenants,
+        CustomClaimTypes.ManageUnits,
+        CustomClaimTypes.ManageTemplates,
+        CustomClaimTypes.ManageFormFields,
+        CustomClaimTypes.DownloadDocuments
+    };
 }

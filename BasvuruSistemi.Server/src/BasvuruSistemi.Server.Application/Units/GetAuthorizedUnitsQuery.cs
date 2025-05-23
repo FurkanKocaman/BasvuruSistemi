@@ -5,10 +5,12 @@ using BasvuruSistemi.Server.Domain.Units;
 using BasvuruSistemi.Server.Domain.UserRoles;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using TS.Result;
 
 namespace BasvuruSistemi.Server.Application.Units;
-public sealed record GetAuthorizedUnitsQuery(
-    ) : IRequest<List<GetAuthorizedUnitsQueryResponse>>;
+
+public sealed record GetAuthorizedUnitsQuery()
+    : IRequest<Result<List<GetAuthorizedUnitsQueryResponse>>>;
 
 public sealed class GetAuthorizedUnitsQueryResponse
 {
@@ -23,76 +25,92 @@ internal sealed class GetAuthorizedUnitsQueryhandler(
     IUserTenantRoleRepository userTenantRoleRepository,
     ITenantRepository tenantRepository,
     IUnitRepository unitRepository
-    ) : IRequestHandler<GetAuthorizedUnitsQuery, List<GetAuthorizedUnitsQueryResponse>>
+) : IRequestHandler<GetAuthorizedUnitsQuery, Result<List<GetAuthorizedUnitsQueryResponse>>>
 {
-    public Task<List<GetAuthorizedUnitsQueryResponse>> Handle(GetAuthorizedUnitsQuery request, CancellationToken cancellationToken)
+    public async Task<Result<List<GetAuthorizedUnitsQueryResponse>>> Handle(GetAuthorizedUnitsQuery request, CancellationToken cancellationToken)
     {
-        Guid? userId = currentUserService.UserId;
-        Guid? tenantId = currentUserService.TenantId;
+        var userId = currentUserService.UserId;
+        var tenantId = currentUserService.TenantId;
+
         if (!userId.HasValue || !tenantId.HasValue)
-            return Task.FromResult(new List<GetAuthorizedUnitsQueryResponse>());
+            return Result<List<GetAuthorizedUnitsQueryResponse>>.Failure("Kullanıcı veya tenant bilgisi eksik.");
 
-        var tenant = tenantRepository.FirstOrDefault(p => p.Id == tenantId.Value);
-        if(tenant is null)
-            return Task.FromResult(new List<GetAuthorizedUnitsQueryResponse>());
+        var tenant = await tenantRepository.FirstOrDefaultAsync(p => p.Id == tenantId.Value, cancellationToken);
+        if (tenant is null)
+            return Result<List<GetAuthorizedUnitsQueryResponse>>.Failure("Tenant bulunamadı.");
 
-        var userTenantRoles = userTenantRoleRepository.Where(p => p.TenantId == tenantId).Include(p => p.Unit).Include(p => p.Role).ToList();
+        var userTenantRoles = await userTenantRoleRepository
+            .Where(p => p.TenantId == tenantId)
+            .Include(p => p.Unit)
+            .Include(p => p.Role)
+            .ToListAsync(cancellationToken);
 
-        if (userTenantRoles is null || !userTenantRoles.Any())
-            return Task.FromResult(new List<GetAuthorizedUnitsQueryResponse>());
+        if (!userTenantRoles.Any())
+            return Result<List<GetAuthorizedUnitsQueryResponse>>.Succeed([]);
 
-        var allUnits = unitRepository.Where(p => !p.IsDeleted && p.TenantId == tenantId).Include(p => p.Children);
+        var allUnits = await unitRepository
+            .Where(p => !p.IsDeleted && p.TenantId == tenantId)
+            .Include(p => p.Children)
+            .ToListAsync(cancellationToken);
 
-        List<GetAuthorizedUnitsQueryResponse> response = new List<GetAuthorizedUnitsQueryResponse>();
+        List<GetAuthorizedUnitsQueryResponse> response = [];
 
         if (userTenantRoles.Any(p => p.Role.Name == Roles.Admin.Name || p.Role.Name == Roles.TenantManager.Name))
         {
-
             response.Add(new GetAuthorizedUnitsQueryResponse
             {
                 ParentId = null,
                 Id = tenantId.Value,
                 Name = tenant.Name,
-                Code = tenant.Code,
+                Code = tenant.Code
             });
 
-            response.AddRange(allUnits.Select(c => new GetAuthorizedUnitsQueryResponse
+            response.AddRange(allUnits.Select(unit => new GetAuthorizedUnitsQueryResponse
             {
-                ParentId = c.ParentId,
-                Id = c.Id,
-                Name = c.Name,
-                Code = c.Code,
-            }).ToList());
-
+                ParentId = unit.ParentId,
+                Id = unit.Id,
+                Name = unit.Name,
+                Code = unit.Code
+            }));
         }
         else if (userTenantRoles.Any(p => p.Role.Name == Roles.UnitManager.Name))
         {
-            var units = allUnits.Where(p => userTenantRoles.Any(u => u.UnitId == p.Id && u.Role.Name == Roles.UnitManager.Name)).ToList();
+            var authorizedUnitIds = userTenantRoles
+                .Where(p => p.Role.Name == Roles.UnitManager.Name)
+                .Select(p => p.UnitId)
+                .Distinct()
+                .ToList();
 
-            foreach(var unit in units)
+            var authorizedUnits = allUnits.Where(u => authorizedUnitIds.Contains(u.Id)).ToList();
+
+            foreach (var unit in authorizedUnits)
             {
                 response.Add(new GetAuthorizedUnitsQueryResponse
                 {
                     ParentId = unit.ParentId,
                     Id = unit.Id,
                     Name = unit.Name,
-                    Code = unit.Code,
+                    Code = unit.Code
                 });
-                foreach(var children in unit.Children)
+
+                foreach (var child in unit.Children)
                 {
                     response.Add(new GetAuthorizedUnitsQueryResponse
                     {
-                        ParentId = children.ParentId,
-                        Id = children.Id,
-                        Name = children.Name,
-                        Code = children.Code,
+                        ParentId = child.ParentId,
+                        Id = child.Id,
+                        Name = child.Name,
+                        Code = child.Code
                     });
                 }
             }
         }
 
-        response = response.Distinct().ToList();
+        response = response
+            .GroupBy(r => r.Id)
+            .Select(g => g.First())
+            .ToList();
 
-        return Task.FromResult(response);
+        return Result<List<GetAuthorizedUnitsQueryResponse>>.Succeed(response);
     }
 }

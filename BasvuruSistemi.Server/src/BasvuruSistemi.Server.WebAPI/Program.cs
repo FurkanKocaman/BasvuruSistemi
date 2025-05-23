@@ -63,7 +63,14 @@ app.UseAuthorization();
 
 app.UseResponseCompression();
 
-app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = ctx =>
+    {
+        // 365 gün
+        ctx.Context.Response.Headers["Cache-Control"] = "public,max-age=31536000,immutable";
+    }
+});
 
 app.UseExceptionHandler();
 

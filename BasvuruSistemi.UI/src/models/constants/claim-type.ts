@@ -36,3 +36,25 @@ export const ClaimTypes = {
 
   DownloadDocuments: "document.download",
 } as const;
+
+export const claimOptions = [
+  { value: "jobposting.create", label: "İlan Oluşturma" },
+  { value: "jobposting.edit", label: "İlan Düzenleme" },
+  { value: "jobposting.delete", label: "İlan Silme" },
+  { value: "jobposting.view", label: "İlanları Görüntüleme" },
+
+  { value: "application.create", label: "Başvuru Oluşturma" },
+  { value: "application.view", label: "Başvuruları Görüntüleme" },
+  { value: "application.review", label: "Başvuruları İnceleme" },
+  { value: "application.approve", label: "Başvuruları Onaylama" },
+
+  { value: "user.manage", label: "Kullanıcı Yönetimi" },
+  { value: "role.manage", label: "Rol Yönetimi" },
+  { value: "tenant.manage", label: "Tenant Yönetimi" },
+  { value: "unit.manage", label: "Birim Yönetimi" },
+
+  { value: "template.manage", label: "Şablon Yönetimi" },
+  { value: "formfield.manage", label: "Form Alanı Yönetimi" },
+
+  { value: "document.download", label: "Belge İndirme" },
+];

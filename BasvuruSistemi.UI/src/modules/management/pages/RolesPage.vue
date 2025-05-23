@@ -1,16 +1,15 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
-import { UserSummariesModel } from "../models/user-summaries.model";
-import { FileSearch, KeyRound } from "lucide-vue-next";
-import ManageRolesModal from "../components/ManageRolesModal.vue";
-import userService from "../services/user.service";
+import { KeyRound, RefreshCw, Trash } from "lucide-vue-next";
 import { useVisiblePages } from "@/services/pagination.service";
 import roleService from "../services/role.service";
 import { RoleDetailsModel } from "../models/role-detail.model";
+import RoleCreateModal from "../components/modals/RoleCreateModal.vue";
+import { RoleCreateModel } from "../models/role-create.model";
+import ConfirmModal from "@/components/ConfirmModal.vue";
 
-const rolesModal = ref();
-
-const apiUrl = import.meta.env.VITE_API_PUBLIC_URL;
+const roleCreateModal = ref();
+const confirmModal = ref();
 
 const roles = ref<RoleDetailsModel[]>([]);
 const page = ref(1);
@@ -35,8 +34,38 @@ const getRoles = async () => {
   totalCount.value = res.totalCount;
 };
 
-const manageRoles = async (user: UserSummariesModel) => {
-  rolesModal.value.open(user);
+const createRole = async (role?: RoleCreateModel) => {
+  await roleCreateModal.value.open(role);
+};
+
+const addRole = (role: RoleCreateModel) => {
+  const newRole: RoleDetailsModel = {
+    id: role.id ?? "",
+    name: role.name,
+    description: role.description,
+    claims: role.permissions,
+    usersCount: 0,
+    createdAt: new Date().toString(),
+  };
+  roles.value.push(newRole);
+};
+const updateRole = (role: RoleCreateModel) => {
+  const existingRole = roles.value.find((p) => p.id == role.id);
+  if (existingRole) {
+    existingRole.name = role.name;
+    existingRole.description = role.description;
+    existingRole.claims = role.permissions;
+  }
+};
+
+const deleteRole = async (id: string) => {
+  const result = await confirmModal.value.open();
+  if (result) {
+    const res = await roleService.deleteRole(id);
+    if (res) {
+      roles.value = roles.value.filter((p) => p.id != id);
+    }
+  }
 };
 
 function formatDateTime(value: string): string {
@@ -61,7 +90,12 @@ const changePage = (pageNumber: number) => {
 </script>
 <template>
   <main class="w-full h-full px-10 pt-20 pb-10">
-    <ManageRolesModal ref="rolesModal" />
+    <RoleCreateModal ref="roleCreateModal" @addRole="addRole" @updateRole="updateRole" />
+    <ConfirmModal
+      ref="confirmModal"
+      title="Rolü silmek istediğinize emin misiniz?"
+      description="Bu işlem geri alınamaz."
+    />
     <div class="w-full flex">
       <!-- Filtreler -->
       <div></div>
@@ -73,30 +107,41 @@ const changePage = (pageNumber: number) => {
           class="border-b px-5 py-3 dark:border-gray-800 border-gray-200 flex justify-between items-center"
         >
           <span class="text-xl font-base dark:text-gray-50 text-gray-700">Roller</span>
-          <router-link
-            to="/management/form-templates/create"
+          <button
             class="border rounded-md dark:border-gray-700 border-gray-200 text-sm dark:text-gray-200 text-gray-700 dark:hover:bg-gray-700/20 hover:bg-gray-200/20 cursor-pointer px-3 py-1.5"
+            @click.stop="createRole()"
           >
             Rol Oluştur
-          </router-link>
+          </button>
         </div>
         <div class="px-5 py-5">
           <div
             class="dark:bg-gray-700/40 dark:text-gray-300 rounded-md border dark:border-gray-800 border-gray-200"
           >
-            <div class="ml-5 py-4">
-              <select
-                name="pageSize"
-                id="pageSize"
-                v-model.number="pageSize"
-                @change="getRoles()"
-                class="text-sm dark:text-gray-300 text-gray-700 dark:bg-gray-800 px-3 py-1 outline-none focus:border-indigo-600 rounded-md border dark:border-gray-700 border-gray-300"
-              >
-                <option :value="10">10</option>
-                <option :value="20" selected>20</option>
-                <option :value="30">30</option>
-              </select>
-              <span class="ml-2 dark:text-gray-400 text-gray-600"> kayıt göster</span>
+            <div class="flex justify-between items-center">
+              <div class="ml-5 py-4">
+                <select
+                  name="pageSize"
+                  id="pageSize"
+                  v-model.number="pageSize"
+                  @change="getRoles()"
+                  class="text-sm dark:text-gray-300 text-gray-700 dark:bg-gray-800 px-3 py-1 outline-none focus:border-indigo-600 rounded-md border dark:border-gray-700 border-gray-300"
+                >
+                  <option :value="10">10</option>
+                  <option :value="20" selected>20</option>
+                  <option :value="30">30</option>
+                </select>
+                <span class="ml-2 dark:text-gray-400 text-gray-600"> kayıt göster</span>
+              </div>
+              <div class="mr-5">
+                <button
+                  class="cursor-pointer hover:text-gray-950 dark:hover:text-gray-50"
+                  title="Yenile"
+                  @click.stop="getRoles()"
+                >
+                  <RefreshCw />
+                </button>
+              </div>
             </div>
             <table class="w-full text-sm">
               <thead class="">
@@ -231,14 +276,29 @@ const changePage = (pageNumber: number) => {
                   </td>
 
                   <td class="py-3 px-2">
-                    <button class="cursor-pointer pr-1 group" title="Önizleme">
-                      <FileSearch
-                        class="size-5 stroke-gray-600 dark:stroke-gray-400 dark:group-hover:stroke-sky-600 group-hover:stroke-sky-600"
-                      />
-                    </button>
-                    <button class="cursor-pointer pr-1 group" title="Rolleri Düzenle">
+                    <button
+                      class="cursor-pointer pr-1 group"
+                      title="Rolleri Düzenle"
+                      @click.stop="
+                        createRole({
+                          id: role.id,
+                          name: role.name ? role.name : '',
+                          description: role.description,
+                          permissions: role.claims,
+                        })
+                      "
+                    >
                       <KeyRound
                         class="size-5 stroke-gray-600 dark:stroke-gray-400 dark:group-hover:stroke-orange-600 group-hover:stroke-orange-600"
+                      />
+                    </button>
+                    <button
+                      class="cursor-pointer pl-1 group"
+                      title="Sil"
+                      @click="deleteRole(role.id)"
+                    >
+                      <Trash
+                        class="size-5 stroke-gray-600 dark:stroke-gray-400 dark:group-hover:stroke-red-600 group-hover:stroke-red-600"
                       />
                     </button>
                   </td>

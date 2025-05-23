@@ -6,9 +6,45 @@ import { useToastStore } from "@/modules/toast/store/toast.store";
 import { TokenInformation } from "../models/token-information.model";
 import { RoleDetailsModel } from "../models/role-detail.model";
 import { PaginatedResponse } from "@/models/response/paginated-response.model";
+import { RoleCreateModel } from "../models/role-create.model";
 
 class RoleService {
   toastStore = useToastStore();
+
+  async createRole(request: RoleCreateModel): Promise<string> {
+    try {
+      const res = await api.post<Result<string>>(`${import.meta.env.VITE_API_URL}/roles`, request);
+
+      return res.data.data;
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  }
+  async updateRole(request: RoleCreateModel): Promise<string> {
+    try {
+      const res = await api.put<Result<string>>(
+        `${import.meta.env.VITE_API_URL}/roles/${request.id}`,
+        request
+      );
+
+      return res.data.data;
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  }
+  async deleteRole(id: string): Promise<string> {
+    try {
+      const res = await api.delete<Result<string>>(`${import.meta.env.VITE_API_URL}/roles/${id}`);
+
+      return res.data.data;
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  }
+
   async getAllRoles(): Promise<RoleDto[]> {
     try {
       const res = await api.get<RoleDto[]>(`${import.meta.env.VITE_API_URL}/api/roles`);
