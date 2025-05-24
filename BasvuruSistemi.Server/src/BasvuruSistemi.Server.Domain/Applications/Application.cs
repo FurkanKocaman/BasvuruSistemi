@@ -1,10 +1,9 @@
 ﻿using BasvuruSistemi.Server.Domain.Abstractions;
+using BasvuruSistemi.Server.Domain.ApplicationEvaluations;
 using BasvuruSistemi.Server.Domain.ApplicationFieldValues;
 using BasvuruSistemi.Server.Domain.Enums;
 using BasvuruSistemi.Server.Domain.JobPostings;
 using BasvuruSistemi.Server.Domain.Users;
-using Microsoft.EntityFrameworkCore.Query.Internal;
-using Microsoft.EntityFrameworkCore.Update.Internal;
 
 namespace BasvuruSistemi.Server.Domain.Applications;
 public sealed class Application : Entity
@@ -23,6 +22,7 @@ public sealed class Application : Entity
     public AppUser? Reviewer { get; set; } 
 
     public ICollection<ApplicationFieldValue> FieldValues { get; private set; } = new List<ApplicationFieldValue>();
+    public ICollection<ApplicationEvaluation> Evaluations { get; private set; } = new List<ApplicationEvaluation>();
 
     private Application() { }
 

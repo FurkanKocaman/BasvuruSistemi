@@ -1,8 +1,11 @@
 ﻿using BasvuruSistemi.Server.Domain.Abstractions;
 using BasvuruSistemi.Server.Domain.Addresses;
+using BasvuruSistemi.Server.Domain.ApplicationEvaluations;
 using BasvuruSistemi.Server.Domain.ApplicationFieldValues;
 using BasvuruSistemi.Server.Domain.ApplicationFormTemplates;
+using BasvuruSistemi.Server.Domain.Comissions;
 using BasvuruSistemi.Server.Domain.Entities;
+using BasvuruSistemi.Server.Domain.Evaluations;
 using BasvuruSistemi.Server.Domain.FormFieldDefinitions;
 using BasvuruSistemi.Server.Domain.JobPostings;
 using BasvuruSistemi.Server.Domain.PostingGroups;
@@ -47,6 +50,16 @@ internal sealed class ApplicationDbContext: IdentityDbContext<AppUser, AppRole,G
     public DbSet<AppUserTenantRole> AppUserTenantRoles { get; set; }
     public DbSet<Address> Addresses { get; set; }
     public DbSet<InvitationToken> InvitationTokens { get; set; }
+
+    public DbSet<ApplicationEvaluation> ApplicationEvaluations { get; set; }
+    public DbSet<ApplicationEvaluationValue> ApplicationEvaluationValues { get; set; }
+
+    public DbSet<ApprovalCommission> ApprovalCommissions { get; set; }
+    public DbSet<CommissionMember> CommissionMembers { get; set; }
+
+    public DbSet<EvaluationForm> EvaluationForms { get; set; }
+    public DbSet<EvaluationFormFieldDefinition> EvaluationFormFieldDefinitions { get; set; }
+    public DbSet<EvaluationStage> EvaluationStages { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

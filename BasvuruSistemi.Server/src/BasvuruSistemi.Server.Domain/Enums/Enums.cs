@@ -33,6 +33,15 @@ public enum ApplicationStatus
     Hired = 8,           // Süreç tamamlandı
     JobPostingClosed = 9,
 }
+public enum EvaluationStatus
+{
+    Pending,        // Atanmış, bekleniyor
+    InProgress,     // Değerlendiriliyor
+    Submitted,      // Değerlendirici tarafından gönderildi
+    Accepted,       // Üst onay aldı
+    Rejected,       // Üst onay alamadı
+    NeedsRevision   // Revizyon istendi
+}
 
 public enum VerificationStatus
 {

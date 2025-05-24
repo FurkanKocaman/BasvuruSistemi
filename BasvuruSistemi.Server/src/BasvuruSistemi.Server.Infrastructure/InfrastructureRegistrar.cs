@@ -13,6 +13,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Scrutor;
+using Hangfire;
+using Hangfire.SqlServer;
 
 namespace BasvuruSistemi.Server.Infrastructure;
 
@@ -79,6 +81,22 @@ public static class InfrastructureRegistrar
           //          policy.RequireClaim("permission", claimValue));
           //  }
         });
+
+
+        services.AddHangfire(options =>
+        {
+            options.UseSqlServerStorage(configuration.GetConnectionString("SqlServer")!, new SqlServerStorageOptions
+            {
+                PrepareSchemaIfNecessary = true,
+                CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+                SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+                QueuePollInterval = TimeSpan.FromSeconds(15),
+                UseRecommendedIsolationLevel = true,
+                DisableGlobalLocks = true
+            });
+        });
+
+        services.AddHangfireServer();
 
         services.Scan(opt => opt
         .FromAssemblies(typeof(InfrastructureRegistrar).Assembly)
