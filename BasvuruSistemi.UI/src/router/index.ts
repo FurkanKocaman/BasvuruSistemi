@@ -215,6 +215,27 @@ const router = createRouter({
   ],
 });
 
+// Archive module routes
+router.addRoute({
+  path: "/archive",
+  component: () => import("@/modules/archive/layouts/ArchiveLayout.vue"),
+  children: [
+    {
+      path: "",
+      name: "archive",
+      component: () => import("@/modules/archive/pages/ArchivePage.vue"),
+      meta: { title: "Arşiv", requiresAuth: true, requireTenant: true },
+    },
+    {
+      path: ":year",
+      name: "archive-year",
+      component: () => import("@/modules/archive/pages/ArchiveYearPage.vue"),
+      props: true,
+      meta: { title: "Yıllık Arşiv", requiresAuth: true, requireTenant: true },
+    },
+  ],
+});
+
 router.beforeEach((to, from, next) => {
   const accessToken = localStorage.getItem("accessToken");
 
