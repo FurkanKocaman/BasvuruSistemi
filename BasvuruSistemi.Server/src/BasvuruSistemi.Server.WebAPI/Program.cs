@@ -8,6 +8,7 @@ using System.Threading.RateLimiting;
 using BasvuruSistemi.Server.WebAPI.Controllers.v1;
 using BasvuruSistemi.Server.WebAPI.Modules;
 using Microsoft.AspNetCore.Authentication;
+using Hangfire;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,10 +46,17 @@ builder.Services.AddExceptionHandler<ExceptionHandler>().AddProblemDetails();
 
 builder.Services.AddTransient<IClaimsTransformation, CustomClaimsTransformation>();
 
+//builder.Services.AddHangfire(config =>
+//{
+//    config.UseDashboardPath("/hangfire");
+//});
+
 var app = builder.Build();
 
 app.MapOpenApi();
 app.MapScalarApiReference();
+
+app.UseHangfireDashboard("/hangfire");
 
 app.MapDefaultEndpoints();
 
@@ -77,5 +85,14 @@ app.UseExceptionHandler();
 app.MapControllers().RequireRateLimiting("fixed").RequireAuthorization();
 
 //ExtensionsMiddleware.CreateFirstUser(app);
+
+app.MapPost("/schedule", (DateTime runAt, IBackgroundJobClient client) =>
+{
+    string jobId = client.Schedule(
+        () => Console.WriteLine($"Job çalýþtý: {DateTime.Now}"),
+        runAt - DateTime.Now
+    );
+    return Results.Ok(new { jobId });
+});
 
 app.Run();

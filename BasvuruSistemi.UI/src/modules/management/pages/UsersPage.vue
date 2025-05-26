@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from "vue";
 import { UserSummariesModel } from "../models/user-summaries.model";
 import { FileSearch, KeyRound } from "lucide-vue-next";
-import ManageRolesModal from "../components/ManageRolesModal.vue";
+import ManageRolesModal from "../components/modals/ManageRolesModal.vue";
 import userService from "../services/user.service";
 import { useVisiblePages } from "@/services/pagination.service";
 

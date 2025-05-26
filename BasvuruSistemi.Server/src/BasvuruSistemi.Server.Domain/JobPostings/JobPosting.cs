@@ -52,6 +52,8 @@ public sealed class JobPosting : Entity
     public Guid? PostingGroupId { get; private set; } // Ait olduğu İlan Grubu (opsiyonel)
     public PostingGroup? PostingGroup { get; private set; } // Navigation property
 
+    public string? HangfireJobId { get; set; }
+
     private JobPosting() { }
 
     public JobPosting(

@@ -1,4 +1,5 @@
-﻿using BasvuruSistemi.Server.Domain.Enums;
+﻿using BasvuruSistemi.Server.Application.Services;
+using BasvuruSistemi.Server.Domain.Enums;
 using BasvuruSistemi.Server.Domain.JobPostings;
 using BasvuruSistemi.Server.Domain.UnitOfWork;
 using MediatR;
@@ -13,7 +14,8 @@ public sealed record ChangeJobPostingStatusCommand(
 
 internal sealed class ChangeJobPostingStatusCommandHandler(
     IJobPostingRepository jobPostingRepository,
-    IUnitOfWork unitOfWork
+    IUnitOfWork unitOfWork,
+    IJobScheduler jobScheduler
     ) : IRequestHandler<ChangeJobPostingStatusCommand, Result<string>>
 {
     public async Task<Result<string>> Handle(ChangeJobPostingStatusCommand request, CancellationToken cancellationToken)
@@ -30,6 +32,10 @@ internal sealed class ChangeJobPostingStatusCommandHandler(
                 break;
             case JobPostingStatus.Published:
                 jobPosting.Publish();
+                if(jobPosting.HangfireJobId is not null)
+                {
+                    await jobScheduler.CancelScheduledPublishAsync(jobPosting.HangfireJobId);
+                }
                 break;
             case JobPostingStatus.Closed:
                 jobPosting.Close();

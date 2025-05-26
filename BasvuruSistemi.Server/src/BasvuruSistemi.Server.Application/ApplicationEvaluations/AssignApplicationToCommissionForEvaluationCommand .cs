@@ -1,0 +1,4 @@
+﻿namespace BasvuruSistemi.Server.Application.ApplicationEvaluations;
+internal class AssignApplicationToCommissionForEvaluationCommand
+{
+}
