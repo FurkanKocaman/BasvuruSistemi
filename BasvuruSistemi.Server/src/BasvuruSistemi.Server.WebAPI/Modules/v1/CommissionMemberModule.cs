@@ -19,7 +19,7 @@ public static class CommissionMemberModule
             .Produces<Result<string>>();
 
         group.MapPut("{id:guid}",
-            async (ISender sender, Guid Id, UpdateMemberByCommissionCommand request, CancellationToken cancellationToken) =>
+            async (ISender sender, Guid Id, UpdateCommissionMemberCommand request, CancellationToken cancellationToken) =>
             {
                 if(Id != request.Id)
                     return Results.BadRequest("Id in the route and body do not match.");

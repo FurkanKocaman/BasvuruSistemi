@@ -1,6 +1,4 @@
-﻿
-using BasvuruSistemi.Server.Application.Auth;
-using BasvuruSistemi.Server.Application.Comissions;
+﻿using BasvuruSistemi.Server.Application.Comissions;
 using MediatR;
 using TS.Result;
 
@@ -20,5 +18,17 @@ public static class ApprovalCommissionModule
             })
             .Produces<Result<string>>();
 
+        group.MapPut("{id:guid}",
+            async (ISender sender, Guid id, UpdateApprovalCommissionCommand request, CancellationToken cancellationToken) =>
+            {
+                if( request.Id != id)
+                {
+                    return Results.BadRequest("Commission ID in the request body does not match the ID in the URL.");
+                }
+
+                var response = await sender.Send(request, cancellationToken);
+                return response.IsSuccessful ? Results.Ok(response) : response.StatusCode == 404 ? Results.NotFound(response) : Results.InternalServerError(response);
+            })
+            .Produces<Result<string>>();
     }
 }

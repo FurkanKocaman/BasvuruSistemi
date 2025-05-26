@@ -193,6 +193,88 @@ const router = createRouter({
           ],
         },
         {
+          path: "commissions",
+          name: "commissions",
+          redirect: { name: "commissions-list" },
+          meta: { title: "Komisyonlar", requiresAuth: true, requireTenant: true },
+          children: [
+            {
+              path: "",
+              name: "commissions-list",
+              component: () => import("@/modules/management/pages/CommissionsPage.vue"),
+            },
+            {
+              path: "create",
+              name: "commission-create",
+              component: () => import("@/modules/management/pages/CreateCommissionPage.vue"),
+            },
+            {
+              path: "update/:id",
+              name: "commission-update",
+              component: () => import("@/modules/management/pages/CreateCommissionPage.vue"),
+            },
+          ],
+        },
+        {
+          path: "evaluation-stages",
+          name: "evaluation-stages",
+          redirect: { name: "evaluation-stages-list" },
+          meta: { title: "Değerlendirme Adımları", requiresAuth: true, requireTenant: true },
+          children: [
+            {
+              path: "",
+              name: "evaluation-stages-list",
+              component: () => import("@/modules/management/pages/EvaluationStagesPage.vue"),
+            },
+            {
+              path: "create",
+              name: "commission-create",
+              component: () => import("@/modules/management/pages/CreateCommissionPage.vue"),
+            },
+            {
+              path: "update/:id",
+              name: "commission-update",
+              component: () => import("@/modules/management/pages/CreateCommissionPage.vue"),
+            },
+          ],
+        },
+        {
+          path: "evaluation-forms",
+          name: "evaluation-forms",
+          redirect: { name: "evaluation-forms-list" },
+          meta: { title: "Değerlendirme Formları", requiresAuth: true, requireTenant: true },
+          children: [
+            {
+              path: ":id",
+              name: "evaluation-forms-list",
+              component: () => import("@/modules/management/pages/EvaluationFormspage.vue"),
+            },
+          ],
+        },
+        {
+          path: "commissions",
+          name: "commissions",
+          redirect: { name: "commissions-list" },
+          meta: { title: "Komisyonlar", requiresAuth: true, requireTenant: true },
+          children: [
+            {
+              path: "",
+              name: "commissions-list",
+              component: () => import("@/modules/management/pages/CommissionsPage.vue"),
+            },
+            {
+              path: "create",
+              name: "commission-create",
+              component: () => import("@/modules/management/pages/CreateCommissionPage.vue"),
+            },
+            {
+              path: "update/:id",
+              name: "commission-update",
+              component: () => import("@/modules/management/pages/CreateCommissionPage.vue"),
+            },
+          ],
+        },
+        {
           path: "roles",
           name: "roles",
           redirect: { name: "roles-list" },

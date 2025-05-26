@@ -22,4 +22,10 @@ public sealed class EvaluationForm : Entity
         CreatedAt = DateTimeOffset.Now;
         TenantId = tenantId;
     }
+    public void Update(string name, string? description = null)
+    {
+        Name = name;
+        Description = description;
+        UpdateAt = DateTimeOffset.Now;
+    }
 } 

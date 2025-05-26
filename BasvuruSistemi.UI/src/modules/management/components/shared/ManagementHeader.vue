@@ -13,6 +13,7 @@ const user = ref();
 const currentTheme = computed(() => themeStore.currentTheme);
 
 const isPostingMenuOpen = ref(false);
+const isEvaluationMenuOpen = ref(false);
 
 const apiUrl = import.meta.env.VITE_API_PUBLIC_URL;
 
@@ -28,6 +29,12 @@ const setTheme = (theme: Theme) => {
 
 function togglePostingMenu() {
   isPostingMenuOpen.value = !isPostingMenuOpen.value;
+  isEvaluationMenuOpen.value = false;
+}
+
+function toggleEvaluationMenu() {
+  isPostingMenuOpen.value = false;
+  isEvaluationMenuOpen.value = !isEvaluationMenuOpen.value;
 }
 </script>
 
@@ -86,17 +93,6 @@ function togglePostingMenu() {
               />
             </svg>
           </button>
-
-          <!--
-          'Product' flyout menu, show/hide based on flyout menu state.
-
-          Entering: "transition ease-out duration-200"
-            From: "opacity-0 translate-y-1"
-            To: "opacity-100 translate-y-0"
-          Leaving: "transition ease-in duration-150"
-            From: "opacity-100 translate-y-0"
-            To: "opacity-0 translate-y-1"
-        -->
           <div
             v-if="isPostingMenuOpen"
             class="absolute top-full -left-8 z-10 mt-3 w-screen max-w-md overflow-hidden rounded-xl bg-white dark:bg-gray-800 shadow-lg ring-1 ring-gray-900/5 border dark:border-gray-700 border-gray-200"
@@ -169,6 +165,92 @@ function togglePostingMenu() {
           class="text-sm/6 font-semibold text-gray-700 dark:text-gray-50"
           >Başvurular</router-link
         >
+        <div class="relative">
+          <button
+            type="button"
+            class="flex items-center gap-x-1 text-sm/6 font-semibold text-gray-700 dark:text-gray-50 cursor-pointer"
+            @click.prevent="toggleEvaluationMenu()"
+          >
+            Değerlendirme
+            <svg
+              class="size-5 flex-none text-gray-400"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              aria-hidden="true"
+              data-slot="icon"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </button>
+          <div
+            v-if="isEvaluationMenuOpen"
+            class="absolute top-full -left-8 z-10 mt-3 w-screen max-w-md overflow-hidden rounded-xl bg-white dark:bg-gray-800 shadow-lg ring-1 ring-gray-900/5 border dark:border-gray-700 border-gray-200"
+          >
+            <div class="px-2 py-2" v-if="hasClaim(ClaimTypes.ViewJobPosting)">
+              <div
+                class="group relative flex items-center gap-x-6 rounded-lg p-2 text-sm/6 hover:bg-gray-100 dark:hover:bg-gray-700/20"
+              >
+                <div class="flex-auto">
+                  <router-link
+                    v-if="hasClaim(ClaimTypes.ManageUsers)"
+                    to="/management/commissions"
+                    class="block font-semibold text-gray-700 dark:text-gray-200"
+                    @click.prevent="toggleEvaluationMenu()"
+                  >
+                    Komisyonlar
+                    <span class="absolute inset-0"></span>
+                  </router-link>
+                  <p class="mt-1 text-gray-600 dark:text-gray-500">
+                    Değerlendirme komisyonlarını görüntüleyin
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="px-2 py-2" v-if="hasClaim(ClaimTypes.CreateJobPosting)">
+              <div
+                class="group relative flex items-center gap-x-6 rounded-lg p-2 text-sm/6 hover:bg-gray-100 dark:hover:bg-gray-700/20"
+              >
+                <div class="flex-auto">
+                  <router-link
+                    v-if="hasClaim(ClaimTypes.ManageUsers)"
+                    to="/management/evaluation-stages"
+                    class="block font-semibold text-gray-700 dark:text-gray-200"
+                    @click.prevent="toggleEvaluationMenu()"
+                  >
+                    Değerlendirme Adımları
+                    <span class="absolute inset-0"></span>
+                  </router-link>
+                  <p class="mt-1 text-gray-600 dark:text-gray-500">
+                    İlanlarda kullanacağınız değerlendirme adımlarını görüntüleyin
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="px-2 py-2" v-if="hasClaim(ClaimTypes.CreateJobPosting)">
+              <div
+                class="group relative flex items-center gap-x-6 rounded-lg p-2 text-sm/6 hover:bg-gray-100 dark:hover:bg-gray-700/20"
+              >
+                <div class="flex-auto">
+                  <router-link
+                    to="/management/job-postings-group/create"
+                    class="block font-semibold text-gray-700 dark:text-gray-200"
+                    @click.prevent="toggleEvaluationMenu()"
+                  >
+                    Değerlendirme Formları
+                    <span class="absolute inset-0"></span>
+                  </router-link>
+                  <p class="mt-1 text-gray-600 dark:text-gray-500">
+                    İlanlarda kullanacağınız değerlendirme formlarını görüntüleyin
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
         <router-link
           v-if="hasClaim(ClaimTypes.ManageUnits)"
           to="/management/units"
@@ -181,6 +263,7 @@ function togglePostingMenu() {
           class="text-sm/6 font-semibold text-gray-700 dark:text-gray-50"
           >Kullanıcılar</router-link
         >
+
         <router-link
           v-if="hasClaim(ClaimTypes.ManageRoles)"
           to="/management/roles"

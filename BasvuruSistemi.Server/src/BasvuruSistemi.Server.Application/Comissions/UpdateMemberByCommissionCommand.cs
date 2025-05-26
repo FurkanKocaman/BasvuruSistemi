@@ -4,7 +4,7 @@ using MediatR;
 using TS.Result;
 
 namespace BasvuruSistemi.Server.Application.Comissions;
-public sealed record UpdateMemberByCommissionCommand(
+public sealed record UpdateCommissionMemberCommand(
     Guid Id,
     string RoleInCommission
     ) : IRequest<Result<string>>;
@@ -12,9 +12,9 @@ public sealed record UpdateMemberByCommissionCommand(
 internal sealed class UpdateMemberByCommissionCommandHandler(
     ICommissionMemberRepository commissionMemberRepository,
     IUnitOfWork unitOfWork
-    ) : IRequestHandler<UpdateMemberByCommissionCommand, Result<string>>
+    ) : IRequestHandler<UpdateCommissionMemberCommand, Result<string>>
 {
-    public async Task<Result<string>> Handle(UpdateMemberByCommissionCommand request, CancellationToken cancellationToken)
+    public async Task<Result<string>> Handle(UpdateCommissionMemberCommand request, CancellationToken cancellationToken)
     {
         var commissionMember = await commissionMemberRepository.FirstOrDefaultAsync(p => p.Id == request.Id, cancellationToken);
 

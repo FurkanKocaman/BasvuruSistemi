@@ -9,7 +9,7 @@ public sealed record GetApprovalCommissionByIdQuery(
     Guid Id
     ) : IRequest<Result<GetApprovalCommissionByIdQueryResponse>>;
 
-public sealed class GetApprovalCommissionByIdQueryResponse : Entity
+public sealed class GetApprovalCommissionByIdQueryResponse : EntityDto
 {
     public string Name { get; set; } = default!;
     public string? Description { get; set; }
@@ -38,9 +38,19 @@ internal sealed class GetApprovalCommissionByIdQueryHandler(
             {
                 UserId = m.UserId,
                 FullName = m.User.FullName,
+                Email = m.User.Email,
                 RoleInCommission = m.RoleInCommission,
                 CreatedAt = m.CreatedAt
-            }).ToList()
+            }).ToList(),
+            CreatedAt = commission.CreatedAt,
+            CreateUserId = commission.CreateUserId,
+            CreateUserName = "",
+            UpdateAt = commission.UpdateAt,
+            UpdateUserId = commission.UpdateUserId,
+            UpdateUserName = "",
+            DeleteAt = commission.DeleteAt,
+            IsDeleted = commission.IsDeleted,
+            IsActive = commission.IsActive,
         };
         return Result<GetApprovalCommissionByIdQueryResponse>.Succeed(response);
     }

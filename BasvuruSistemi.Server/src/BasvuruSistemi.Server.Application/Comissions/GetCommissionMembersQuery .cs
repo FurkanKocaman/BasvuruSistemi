@@ -12,6 +12,7 @@ public sealed class GetCommissionMembersQueryResponse
 {
     public Guid UserId { get; set; }
     public string FullName { get; set; } = default!;
+    public string? Email { get; set; }
     public string RoleInCommission { get; set; } = default!;
     public DateTimeOffset CreatedAt { get; set; }
 }
@@ -33,6 +34,7 @@ internal sealed class GetCommissionMembersQueryHandler(
         {
             UserId = commissionMember.UserId,
             FullName = commissionMember.User.FullName,
+            Email = commissionMember.User.Email,
             RoleInCommission = commissionMember.RoleInCommission,
             CreatedAt = commissionMember.CreatedAt
         }).ToList();
