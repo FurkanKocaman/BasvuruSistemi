@@ -12,14 +12,18 @@ public sealed class CommissionMember : Entity
 
     public string RoleInCommission { get; private set; } = default!; // Örneğin, "Başkan", "Üye"
 
-   private CommissionMember() { }
-    public CommissionMember(Guid commissionId, Guid userId, string roleInCommission)
+    public Guid TenantId { get; private set; } = default!;
+
+    private CommissionMember() { }
+    public CommissionMember(Guid commissionId, Guid userId, string roleInCommission, Guid tenantId, Guid createUserId)
     {
         Id = Guid.CreateVersion7();
         CommissionId = commissionId;
         UserId = userId;
         RoleInCommission = roleInCommission;
         CreatedAt = DateTimeOffset.Now;
+        TenantId = tenantId;
+        CreateUserId = createUserId;
     }
     public void UpdateRole(string newRole)
     {

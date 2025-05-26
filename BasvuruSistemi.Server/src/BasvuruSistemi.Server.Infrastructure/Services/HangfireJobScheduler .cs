@@ -1,23 +1,41 @@
 ﻿using BasvuruSistemi.Server.Application.Services;
 using BasvuruSistemi.Server.Domain.JobPostings;
+using BasvuruSistemi.Server.Domain.UnitOfWork;
 using Hangfire;
 
 namespace BasvuruSistemi.Server.Infrastructure.Services;
 internal sealed class HangfireJobScheduler(
     IBackgroundJobClient jobs,
-    IJobPostingRepository jobPostingRepository) : IJobScheduler
+    IJobPostingRepository jobPostingRepository,
+    IUnitOfWork unitOfWork) : IJobScheduler
 {
-    public async Task<string> SchedulePublishAsync(Guid adId, DateTimeOffset publishAt)
+    public async Task<string> SchedulePublishAsync(Guid jobPostingId, DateTimeOffset publishAt)
     {
-        throw new NotImplementedException();
+        string jobId = jobs.Schedule<IPublishJob>(
+            job => job.Execute(jobPostingId),
+            publishAt);
+
+        var jobPosting = await jobPostingRepository.FirstOrDefaultAsync(p => p.Id == jobPostingId);
+        if(jobPosting is null)
+        {
+            throw new InvalidOperationException($"Job posting with ID {jobPostingId} not found.");
+        }
+        jobPosting.HangfireJobId = jobId;
+        jobPostingRepository.Update(jobPosting);
+
+        await unitOfWork.SaveChangesAsync();
+
+        return jobId;
 
     }
-    public Task<string> ReschedulePublishAsync(Guid adId, DateTimeOffset newPublishAt, string existingJobId)
+    public async Task<string> ReschedulePublishAsync(Guid jobPostingId, DateTimeOffset newPublishAt, string existingJobId)
     {
-        throw new NotImplementedException();
+        jobs.Delete(existingJobId);
+
+        return await SchedulePublishAsync(jobPostingId, newPublishAt);
     }
     public Task<bool> CancelScheduledPublishAsync(string jobId)
     {
-        throw new NotImplementedException();
+        return Task.FromResult(jobs.Delete(jobId));
     }
 }

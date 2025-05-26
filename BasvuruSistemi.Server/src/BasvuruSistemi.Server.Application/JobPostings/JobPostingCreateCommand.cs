@@ -50,7 +50,8 @@ internal sealed class JobPostingCreateCommandHandler(
     ICurrentUserService currentUserService,
     IJobPostingRepository jobPostingRepository,
     IPostingGroupRepository postingGroupRepository,
-    IUnitOfWork unitOfWork
+    IUnitOfWork unitOfWork,
+    IJobScheduler jobScheduler
     ) : IRequestHandler<JobPostingCreateCommand, Result<string>>
 {
     public async Task<Result<string>> Handle(JobPostingCreateCommand request, CancellationToken cancellationToken)
@@ -134,6 +135,13 @@ internal sealed class JobPostingCreateCommandHandler(
         jobPostingRepository.Add(jobPosting);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        if(jobPosting.Status != JobPostingStatus.Published)
+        {
+            await jobScheduler.SchedulePublishAsync(
+                jobPosting.Id,
+                jobPosting.ValidFrom!.Value);
+        }
 
         return Result<string>.Succeed("Job posting created");
     }

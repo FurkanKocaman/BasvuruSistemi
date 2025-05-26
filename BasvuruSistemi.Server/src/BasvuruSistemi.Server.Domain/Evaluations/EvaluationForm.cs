@@ -11,12 +11,15 @@ public sealed class EvaluationForm : Entity
 
     public ICollection<EvaluationFormFieldDefinition> Fields { get; private set; } = new List<EvaluationFormFieldDefinition>();
 
+    public Guid TenantId { get; private set; } = default!; // Tenant ID for multi-tenancy support
+
     private EvaluationForm() { }
-    public EvaluationForm(string name, Guid evaluationStageId, string? description = null)
+    public EvaluationForm(string name, Guid evaluationStageId, Guid tenantId, string? description = null)
     {
         Name = name;
         EvaluationStageId = evaluationStageId;
         Description = description;
         CreatedAt = DateTimeOffset.Now;
+        TenantId = tenantId;
     }
-}
+} 

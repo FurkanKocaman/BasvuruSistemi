@@ -33,4 +33,17 @@ public sealed class EvaluationFormFieldDefinition
         HelpText = helpText;
         ValidationRules = validationRules;
     }
+    public void Update(string label, FieldTypeEnum fieldType,
+        string? options = null, bool isRequired = false, int order = 0, string? placeholder = null,
+        string? helpText = null, string? validationRules = null)
+    {
+        Label = label;
+        FieldType = fieldType;
+        Options = options;
+        IsRequired = isRequired;
+        Order = order;
+        Placeholder = placeholder;
+        HelpText = helpText;
+        ValidationRules = validationRules;
+    }
 }

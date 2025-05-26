@@ -10,12 +10,14 @@ public sealed class EvaluationStage : Entity
 
     public ICollection<EvaluationForm> EvaluationForms { get; private set; } = new List<EvaluationForm>();
 
+    public Guid TenantId { get; private set; } = default!; // Tenant ID for multi-tenancy support
     private EvaluationStage() { }
-    public EvaluationStage(string name, int order, string? description = null)
+    public EvaluationStage(string name, int order, Guid tenantId, string? description = null)
     {
         Name = name;
         Order = order;
         Description = description;
         CreatedAt = DateTimeOffset.Now;
+        TenantId = tenantId;
     }
 }

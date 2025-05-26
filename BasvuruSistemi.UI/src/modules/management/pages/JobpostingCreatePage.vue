@@ -16,11 +16,11 @@ import NewFormField from "../components/form-template-components/form-template-c
 import SelectedFormFields from "../components/form-template-components/form-template-create/SelectedFormFields.vue";
 import JobPostingGroupComponent from "../components/job-posting-components/JobPostingGroupComponent.vue";
 import { useToastStore } from "@/modules/toast/store/toast.store";
-import FormTemplateSaveModal from "../components/FormTemplateSaveModal.vue";
+import FormTemplateSaveModal from "../components/modals/FormTemplateSaveModal.vue";
 import { FormTemplateCreateReqeust } from "../models/form-template-create.model";
 import { getJobPostingStatusOptionByValue } from "@/models/constants/job-posting-status";
 import { Pen } from "lucide-vue-next";
-import JobPostingStatusUpdateModal from "../components/JobPostingStatusUpdateModal.vue";
+import JobPostingStatusUpdateModal from "../components/modals/JobPostingStatusUpdateModal.vue";
 
 const organizations: Ref<Unit[]> = ref([]);
 
