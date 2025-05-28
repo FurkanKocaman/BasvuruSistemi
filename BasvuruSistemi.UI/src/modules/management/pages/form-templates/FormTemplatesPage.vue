@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, Ref } from "vue";
-import { FormTemplateGetModel } from "../models/form-template-get.model";
-import formTemplateService from "../services/form-template.service";
+import { FormTemplateGetModel } from "../../models/form-template-get.model";
+import formTemplateService from "../../services/form-template.service";
 import { useRouter } from "vue-router";
 import { useVisiblePages } from "@/services/pagination.service";
 

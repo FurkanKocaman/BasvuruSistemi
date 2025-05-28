@@ -1,14 +1,21 @@
-import { FieldTypeEnum } from "@/models/constants/field-type";
-
 export interface EvaluationFormFieldDto {
   id: string;
   evaluationFormId: string;
-  fieldtype: FieldTypeEnum;
+
   label: string;
-  options?: string;
+  type: number;
   isRequired: boolean;
   order: number;
+  description?: string;
   placeholder?: string;
-  helpText?: string;
-  validationRules?: string;
+  optionsJson?: string;
+
+  isReadOnly: boolean;
+  defaultValue?: string;
+
+  verificationSource: number;
+  verificationParametersJson?: string;
+
+  allowedFileTypes?: string;
+  maxFileSizeMB?: number;
 }

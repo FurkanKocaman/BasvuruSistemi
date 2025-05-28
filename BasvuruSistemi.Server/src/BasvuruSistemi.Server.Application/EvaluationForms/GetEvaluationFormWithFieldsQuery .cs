@@ -29,14 +29,17 @@ internal sealed class GetEvaluationFormWithFieldsQueryhandler(
             .Select(f => new EvaluationFormFieldDto(
                 f.Id,
                 f.EvaluationFormId,
-                f.FieldType,
                 f.Label,
-                f.Options,
+                f.Description,
+                f.Type,
                 f.IsRequired,
                 f.Order,
                 f.Placeholder,
-                f.HelpText,
-                f.ValidationRules
+                f.OptionsJson,
+                f.IsReadOnly,
+                f.DefaultValue,
+                f.AllowedFileTypes,
+                f.MaxFileSizeMB
                 )).ToList(),
             evaluationForm.Description
         );

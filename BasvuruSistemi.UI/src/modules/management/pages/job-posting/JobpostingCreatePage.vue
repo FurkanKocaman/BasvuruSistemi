@@ -1,33 +1,31 @@
 <script setup lang="ts">
 import DatePicker from "primevue/datepicker";
-import { onMounted, reactive, Ref, ref } from "vue";
-import { useDropdown } from "../composables/useDropdown";
-import { JobPostingCreateModel } from "../models/job-posting-create.model";
-import organizationService from "../services/unit.service";
-import jobPostingService from "../services/job-posting.service";
+import { onMounted, reactive, Ref, ref, watch } from "vue";
+import { useDropdown } from "../../composables/useDropdown";
+import { JobPostingCreateModel } from "../../models/job-posting-create.model";
+import organizationService from "../../services/unit.service";
+import jobPostingService from "../../services/job-posting.service";
 import DOMPurify from "dompurify";
-import EditorComponent from "../components/job-posting-components/EditorComponent.vue";
-import formTemplateService from "../services/form-template.service";
-import { FormFieldDefinition } from "../models/form-field.model";
-import { Unit } from "../models/unit-node.model";
+import EditorComponent from "../../components/job-posting-components/EditorComponent.vue";
+import formTemplateService from "../../services/form-template.service";
+import { FormFieldDefinition } from "../../models/form-field.model";
+import { Unit } from "../../models/unit-node.model";
 import { useRoute, useRouter } from "vue-router";
-import FieldsFromFormTemplate from "../components/form-template-components/form-template-create/FieldsFromFormTemplate.vue";
-import NewFormField from "../components/form-template-components/form-template-create/NewFormField.vue";
-import SelectedFormFields from "../components/form-template-components/form-template-create/SelectedFormFields.vue";
-import JobPostingGroupComponent from "../components/job-posting-components/JobPostingGroupComponent.vue";
+import FieldsFromFormTemplate from "../../components/form-template-components/form-template-create/FieldsFromFormTemplate.vue";
+import NewFormField from "../../components/form-template-components/form-template-create/NewFormField.vue";
+import SelectedFormFields from "../../components/form-template-components/form-template-create/SelectedFormFields.vue";
+import JobPostingGroupComponent from "../../components/job-posting-components/JobPostingGroupComponent.vue";
 import { useToastStore } from "@/modules/toast/store/toast.store";
-import FormTemplateSaveModal from "../components/modals/FormTemplateSaveModal.vue";
-import { FormTemplateCreateReqeust } from "../models/form-template-create.model";
+import FormTemplateSaveModal from "../../components/modals/FormTemplateSaveModal.vue";
+import { FormTemplateCreateReqeust } from "../../models/form-template-create.model";
 import { getJobPostingStatusOptionByValue } from "@/models/constants/job-posting-status";
 import { Pen } from "lucide-vue-next";
-import JobPostingStatusUpdateModal from "../components/modals/JobPostingStatusUpdateModal.vue";
+import JobPostingStatusUpdateModal from "../../components/modals/JobPostingStatusUpdateModal.vue";
+import EvaluationStagesPipelineComponent from "./EvaluationStagesPipelineComponent.vue";
 
 const organizations: Ref<Unit[]> = ref([]);
 
 const organizationsDropdown = useDropdown();
-
-const evaluationType = ref(0);
-const commissionDropdown = useDropdown();
 
 const toastStore = useToastStore();
 const router = useRouter();
@@ -85,6 +83,8 @@ const request = reactive<JobPostingCreateModel>({
   formTemplateId: "",
 
   postingGroupId: undefined,
+
+  evaluationPipelineStages: [],
 });
 
 const response = ref<JobPostingCreateModel | undefined>(undefined);
@@ -103,7 +103,6 @@ onMounted(async () => {
 const getJobPosting = async (id: string) => {
   const res = await jobPostingService.getJobPosting(id);
   if (res) {
-    console.log("res", res);
     response.value = res.data;
 
     request.id = res.data.id;
@@ -200,6 +199,8 @@ const setAllowedNationalIds = () => {
 };
 
 const handleSubmit = async () => {
+  console.log(request.evaluationPipelineStages);
+
   request.description = DOMPurify.sanitize(request.description);
   if (request.responsibilities)
     request.responsibilities = DOMPurify.sanitize(request.responsibilities);
@@ -357,6 +358,8 @@ const updateStatus = async () => {
     );
   }
 };
+
+watch(request.evaluationPipelineStages, () => console.log(request.evaluationPipelineStages));
 </script>
 
 <template>
@@ -367,6 +370,7 @@ const updateStatus = async () => {
       description=""
     />
     <JobPostingStatusUpdateModal ref="statusModal" title="İlanın durumunu güncelleyin" />
+
     <div
       class="w-full dark:bg-gray-800/40 bg-gray-50 rounded-xl border dark:border-gray-800 border-gray-200"
     >
@@ -582,57 +586,7 @@ const updateStatus = async () => {
           ></EditorComponent>
 
           <!-- Commission or SingleUser start -->
-          <div class="mt-5 flex flex-col">
-            <div>
-              <span class="dark:text-gray-300 text-gray-800">İlan Değerlendirme Türü</span>
-            </div>
-            <div class="my-3">
-              <select
-                name="evaluationType"
-                id="evaluationType"
-                v-model="evaluationType"
-                class="px-2 py-1 outline-none border rounded-md border-gray-200 dark:border-gray-700 dark:text-gray-300 text-gray-800 dark:bg-gray-800 bg-gray-50"
-              >
-                <option :value="0">Tek Kullanıcı</option>
-                <option :value="1">Komisyon</option>
-              </select>
-            </div>
-            <div class="relative" v-if="evaluationType">
-              <div class="flex-1 flex flex-col my-2 items-start 2xl:mr-3">
-                <label
-                  for="formTeplate"
-                  class="w-full text-sm my-1 dark:text-gray-300 text-gray-600"
-                  >Komisyon</label
-                >
-                <input
-                  type="text"
-                  name="formTeplate"
-                  id="formTeplate"
-                  :ref="commissionDropdown.inputRef"
-                  v-model="commissionDropdown.selectedLabel.value"
-                  @focus="commissionDropdown.handleFocus"
-                  @blur="commissionDropdown.handleBlur"
-                  readonly
-                  placeholder="komisyon seçin..."
-                  autocomplete="off"
-                  class="w-[50%] border outline-none rounded-md py-1.5 px-2 dark:border-gray-700 dark:bg-gray-900/50 text-sm border-gray-200 dark:focus:border-indigo-600 focus:border-indigo-600"
-                />
-              </div>
-              <div
-                v-if="commissionDropdown.isOpen.value"
-                class="absolute w-fit mt-0 text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow z-10 max-h-60 overflow-auto"
-              >
-                <div
-                  v-for="option in formTemplateSummaries"
-                  :key="option.id"
-                  @mousedown.prevent="commissionDropdown.selectOption(option.name)"
-                  class="px-4 py-2 hover:bg-gray-300/30 dark:hover:bg-gray-700/40 cursor-pointer text-sm"
-                >
-                  {{ option.name }}
-                </div>
-              </div>
-            </div>
-          </div>
+          <EvaluationStagesPipelineComponent v-model="request.evaluationPipelineStages" />
           <!-- Commission or SingleUser end -->
           <!-- FormTemplate Edit and Select start -->
 

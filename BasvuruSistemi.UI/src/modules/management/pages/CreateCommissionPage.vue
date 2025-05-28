@@ -29,15 +29,19 @@ const isUpdate = ref<boolean>(false);
 onMounted(async () => {
   if (id) {
     isUpdate.value = true;
-    const res = await commissionService.getCommissionById(id);
-    if (res) {
-      request.id = res.id;
-      request.name = res.name;
-      request.description = res.description;
-      commissionMembers.value = res.commissionMembers;
-    }
+    getCommission(id);
   }
 });
+
+const getCommission = async (id: string) => {
+  const res = await commissionService.getCommissionById(id);
+  if (res) {
+    request.id = res.id;
+    request.name = res.name;
+    request.description = res.description;
+    commissionMembers.value = res.commissionMembers;
+  }
+};
 
 const handleSubmit = async () => {
   if (request.name.trim() !== "") {
@@ -68,6 +72,7 @@ const addMember = async () => {
   const result = await addMemberModal.value.open(request.id);
   if (result) {
     console.log(result);
+    if (id) getCommission(id);
   } else {
     console.log(result);
   }

@@ -1,4 +1,5 @@
-﻿using BasvuruSistemi.Server.Application.Applications;
+﻿using BasvuruSistemi.Server.Application.ApplicationEvaluations;
+using BasvuruSistemi.Server.Application.Applications;
 using BasvuruSistemi.Server.Application.Comissions;
 using BasvuruSistemi.Server.Application.EvaluationForms;
 using BasvuruSistemi.Server.Application.Evaluations;
@@ -311,5 +312,34 @@ public class AppController(ISender sender) : ControllerBase
     {
         var response = await sender.Send(new ListEvaluationFormsByStageQuery(id), cancellationToken);
         return StatusCode(response.StatusCode, response.StatusCode == 200 ? response.Data : response.ErrorMessages);
+    }
+
+    [HttpGet("list-pending-evaluations")]
+    [Authorize()]
+    public async Task<ActionResult<ListPendingCommissionEvaluationsQueryResponse>> GetPendingApplicationEvaluations(CancellationToken cancellationToken = default)
+    {
+        var response = await sender.Send(new ListPendingCommissionEvaluationsQuery(),cancellationToken);
+        return StatusCode(response.StatusCode, response.Data);
+    }
+
+    [HttpGet("evaluation-form")]
+    [Authorize()]
+    public async Task<ActionResult<GetEvaluationFormForApplicationEvaluationQueryResponse>> GetEvaliationForm(
+        [FromQuery] Guid applicationId,
+        [FromQuery] Guid evaluationPipelineStageId,
+        CancellationToken cancellationToken = default)
+    {
+        var response = await sender.Send(new GetEvaluationFormForApplicationEvaluationQuery(applicationId, evaluationPipelineStageId), cancellationToken);
+        return StatusCode(response.StatusCode, response.Data);
+    }
+
+    [HttpGet("application-evaluations/process")]
+    [Authorize()]
+    public async Task<ActionResult<List<GetApplicationEvaluationProcessQueryResponse>>> getApplicationEvaluationProcess(
+    [FromQuery] Guid applicationId,
+    CancellationToken cancellationToken = default)
+    {
+        var response = await sender.Send(new GetApplicationEvaluationProcessQuery(applicationId), cancellationToken);
+        return StatusCode(response.StatusCode, response.Data);
     }
 }

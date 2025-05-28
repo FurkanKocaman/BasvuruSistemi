@@ -7,6 +7,7 @@ namespace BasvuruSistemi.Server.Application.JobPostingEvaluationPipelineStages;
 public sealed record CreateJobPostingEvaluationPipelineStageCommand(
     Guid JobPostingId,
     Guid EvaluationStageId,
+    Guid ResponsibleCommissionId,
     int OrderInPipeline,
     bool IsMandatory,
     Guid? EvaluationFormId,
@@ -24,6 +25,7 @@ internal sealed class CreateJobPostingEvaluationPipelineStageCommandHandler(
         var jobPostingEvaluationPipelineStage = new JobPostingEvaluationPipelineStage(
             request.JobPostingId,
             request.EvaluationStageId,
+            request.ResponsibleCommissionId,
             request.OrderInPipeline,
             request.IsMandatory,
             request.EvaluationFormId,

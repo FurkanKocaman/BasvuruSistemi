@@ -3,8 +3,8 @@ import { computed, onMounted, ref } from "vue";
 import { FileSearch, KeyRound } from "lucide-vue-next";
 import { useVisiblePages } from "@/services/pagination.service";
 import { useRouter } from "vue-router";
-import evaluationService from "../services/evaluation.service";
-import { EvaluationStageDto } from "../models/evaluation/evaluation-stage.model";
+import evaluationService from "../../services/evaluation.service";
+import { EvaluationStageDto } from "../../models/evaluation/evaluation-stage.model";
 
 const evaluationStages = ref<EvaluationStageDto[]>([]);
 const page = ref(1);
@@ -51,11 +51,7 @@ const changePage = (pageNumber: number) => {
 };
 
 const updateStage = (id: string) => {
-  router.push({ name: "commission-update", params: { id: id } });
-};
-
-const routeForms = (id: string) => {
-  router.push({ name: "evaluation-forms-list", params: { id: id } });
+  router.push({ name: "evaluations-stage-update", params: { id: id } });
 };
 </script>
 <template>
@@ -74,7 +70,7 @@ const routeForms = (id: string) => {
             >Değerlendirme Adımları</span
           >
           <router-link
-            to="/management/commissions/create"
+            to="/management/evaluation-stages/create"
             class="border rounded-md dark:border-gray-700 border-gray-200 text-sm dark:text-gray-200 text-gray-700 dark:hover:bg-gray-700/20 hover:bg-gray-200/20 cursor-pointer px-3 py-1.5"
           >
             Değerlendirme Adımı Oluştur
@@ -220,7 +216,7 @@ const routeForms = (id: string) => {
                   <td class="py-3 px-2">
                     <button class="cursor-pointer pr-1 group" title="Önizleme">
                       <FileSearch
-                        @click="routeForms(evaluationStage.id)"
+                        @click="updateStage(evaluationStage.id)"
                         class="size-5 stroke-gray-600 dark:stroke-gray-400 dark:group-hover:stroke-sky-600 group-hover:stroke-sky-600"
                       />
                     </button>

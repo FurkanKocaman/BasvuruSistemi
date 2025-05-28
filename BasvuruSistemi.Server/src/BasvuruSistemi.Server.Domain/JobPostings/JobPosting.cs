@@ -55,7 +55,8 @@ public sealed class JobPosting : Entity
 
     public ICollection<JobPostingEvaluationPipelineStage> EvaluationPipelineStages { get; private set; } = new List<JobPostingEvaluationPipelineStage>();
 
-    public string? HangfireJobId { get; set; }
+    public string? HangfirePublishJobId { get; set; }
+    public string? HangfireCloseJobId { get; set; }
 
     private JobPosting() { }
 

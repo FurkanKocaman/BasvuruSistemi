@@ -29,15 +29,18 @@ internal sealed class GetEvaluationFormByIdQueryHandler(
             .Select(f => new EvaluationFormFieldDto(
                 f.Id,
                 f.EvaluationFormId,
-                f.FieldType,
                 f.Label,
-                f.Options,
+                f.Description,
+                f.Type,
                 f.IsRequired,
                 f.Order,
                 f.Placeholder,
-                f.HelpText,
-                f.ValidationRules
-                )).ToList(),
+                f.OptionsJson,
+                f.IsReadOnly,
+                f.DefaultValue,
+                f.AllowedFileTypes,
+                f.MaxFileSizeMB
+                )).OrderBy(p => p.Order).ToList(),
             evaluationForm.Description
         );
 

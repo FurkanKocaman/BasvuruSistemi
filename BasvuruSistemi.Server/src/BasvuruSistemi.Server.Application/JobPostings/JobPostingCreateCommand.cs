@@ -1,5 +1,7 @@
 ﻿using BasvuruSistemi.Server.Application.Services;
+using BasvuruSistemi.Server.Domain.DTOs;
 using BasvuruSistemi.Server.Domain.Enums;
+using BasvuruSistemi.Server.Domain.JobPostingEvaluationPipelineStages;
 using BasvuruSistemi.Server.Domain.JobPostings;
 using BasvuruSistemi.Server.Domain.PostingGroups;
 using BasvuruSistemi.Server.Domain.UnitOfWork;
@@ -42,7 +44,9 @@ public sealed record JobPostingCreateCommand(
 
     Guid formTemplateId,
 
-    Guid? postingGroupId
+    Guid? postingGroupId,
+
+    List<PipelineStageDto> evaluationPipelineStages
     ) : IRequest<Result<string>>;
 
 
@@ -51,98 +55,142 @@ internal sealed class JobPostingCreateCommandHandler(
     IJobPostingRepository jobPostingRepository,
     IPostingGroupRepository postingGroupRepository,
     IUnitOfWork unitOfWork,
-    IJobScheduler jobScheduler
+    IJobScheduler jobScheduler,
+    IJobPostingEvaluationPipelineStageRepository jobPostingEvaluationPipelineStageRepository
     ) : IRequestHandler<JobPostingCreateCommand, Result<string>>
 {
     public async Task<Result<string>> Handle(JobPostingCreateCommand request, CancellationToken cancellationToken)
     {
-        Guid? tenantId = currentUserService.TenantId;
 
-        if (!tenantId.HasValue)
-            return Result<string>.Failure("Tenant not found");
 
-        if(request.postingGroupId is not null && request.unitId is not null)
+        using(var transaction = unitOfWork.BeginTransaction())
         {
-            var postingGroup = await postingGroupRepository.Where(p => p.Id == request.postingGroupId && !p.IsDeleted).Include(p => p.Unit).ThenInclude(p => p!.Children).ThenInclude(p => p.Children).ThenInclude(p => p.Children).FirstOrDefaultAsync();
-            if (postingGroup is null)
-                return Result<string>.Failure(404, "Posting group not found or already deleted");
-
-            if(postingGroup.Unit is not null)
+            try
             {
-                if (!postingGroup.Unit.Children.Any(p => p.Id == request.unitId) && !postingGroup.Unit.Children.Any(p => p.Children.Any(p => p.Id == request.unitId)) && postingGroup.Unit.Id != request.unitId)
+                Guid? tenantId = currentUserService.TenantId;
+
+                if (!tenantId.HasValue)
+                    return Result<string>.Failure("Tenant not found");
+
+                if (request.postingGroupId is not null && request.unitId is not null)
                 {
-                    return Result<string>.Failure("JobPosting's unit is not a child of parent group or not the same unit");
+                    var postingGroup = await postingGroupRepository.Where(p => p.Id == request.postingGroupId && !p.IsDeleted).Include(p => p.Unit).ThenInclude(p => p!.Children).ThenInclude(p => p.Children).ThenInclude(p => p.Children).FirstOrDefaultAsync();
+                    if (postingGroup is null)
+                        return Result<string>.Failure(404, "Posting group not found or already deleted");
+
+                    if (postingGroup.Unit is not null)
+                    {
+                        if (!postingGroup.Unit.Children.Any(p => p.Id == request.unitId) && !postingGroup.Unit.Children.Any(p => p.Children.Any(p => p.Id == request.unitId)) && postingGroup.Unit.Id != request.unitId)
+                        {
+                            return Result<string>.Failure("JobPosting's unit is not a child of parent group or not the same unit");
+                        }
+                    }
                 }
+
+                if (!System.Enum.IsDefined(typeof(JobPostingStatus), request.status))
+                {
+                    return Result<string>.Failure($"Invalid JobPostingStatus: {request.status}.");
+                }
+                JobPostingStatus status = (JobPostingStatus)request.status;
+
+                if (request.employementType is not null && !System.Enum.IsDefined(typeof(EmploymentType), request.employementType))
+                {
+                    return Result<string>.Failure($"Invalid JobPostingStatus: {request.status}.");
+                }
+                EmploymentType? employementType = (EmploymentType?)request.employementType;
+
+                if (request.experienceLevelRequired is not null && !System.Enum.IsDefined(typeof(ExperienceLevel), request.experienceLevelRequired))
+                {
+                    return Result<string>.Failure($"Invalid JobPostingStatus: {request.experienceLevelRequired}.");
+                }
+                ExperienceLevel? experienceLevelRequired = (ExperienceLevel?)request.experienceLevelRequired;
+
+                JobPosting jobPosting = new(
+                     request.title
+                    , request.description
+                    , request.datePosted
+                    , request.applicationDeadline
+                    , tenantId.Value
+                    , request.unitId
+                    , request.formTemplateId
+                    , request.postingGroupId
+                    , status
+                    , request.isPublic
+                    , request.isAnonymous
+
+                    , request.validFrom
+                    , request.validTo
+
+                    , request.contactInfo
+
+                    , request.responsibilities
+                    , request.qualifications
+                    , request.benefits
+                    , request.locationText
+                    , request.isRemote
+                    , employementType
+                    , experienceLevelRequired
+                    , request.vacancyCount
+                    , request.skillsRequired
+
+                    , request.minSalary
+                    , request.maxSalary
+                    , request.currency
+                    );
+
+                if (request.allowedNationalIds is not null)
+                {
+                    jobPosting.SetAllowedNationalIds(request.allowedNationalIds);
+                }
+
+                jobPostingRepository.Add(jobPosting);
+
+                await unitOfWork.SaveChangesAsync(cancellationToken);
+
+                if (request.evaluationPipelineStages is not null && request.evaluationPipelineStages.Count > 0)
+                {
+                    foreach (var stage in request.evaluationPipelineStages)
+                    {
+                        var evaluationStagePipeline = new JobPostingEvaluationPipelineStage(
+                            jobPosting.Id,
+                            stage.EvaluationStageId,
+                            stage.ResponsibleCommissionId,
+                            stage.OrderInPipeline,
+                            stage.IsMandatory,
+                            stage.EvaluationFormId,
+                            stage.StartDate,
+                            stage.EndDate
+                        );
+                        jobPostingEvaluationPipelineStageRepository.Add(evaluationStagePipeline);
+                    }
+                }
+
+                await unitOfWork.SaveChangesAsync(cancellationToken);
+
+                if (jobPosting.Status != JobPostingStatus.Published)
+                {
+                    await jobScheduler.SchedulePublishAsync(
+                        jobPosting.Id,
+                        jobPosting.ValidFrom!.Value);
+                }
+                if (jobPosting.ValidTo.HasValue)
+                {
+                    await jobScheduler.ScheduleCloseAsync(jobPosting.Id, jobPosting.ValidTo.Value);
+                }
+
+                await jobScheduler.ScheduleInReviewApplications(jobPosting.Id);
+
+                await unitOfWork.CommitTransactionAsync(transaction);
+
+                return Result<string>.Succeed("Job posting created");
+
+            }
+            catch (Exception ex)
+            {
+                await unitOfWork.RollbackTransactionAsync(transaction);
+                return Result<string>.Failure(ex.Message);
             }
         }
-
-        if (!System.Enum.IsDefined(typeof(JobPostingStatus), request.status))
-        {
-            return Result<string>.Failure($"Invalid JobPostingStatus: {request.status}.");
-        }
-        JobPostingStatus status = (JobPostingStatus)request.status;
-
-        if (request.employementType is not null &&  !System.Enum.IsDefined(typeof(EmploymentType), request.employementType))
-        {
-            return Result<string>.Failure($"Invalid JobPostingStatus: {request.status}.");
-        }
-        EmploymentType? employementType = (EmploymentType?)request.employementType ;
-
-        if (request.experienceLevelRequired is not null && !System.Enum.IsDefined(typeof(ExperienceLevel), request.experienceLevelRequired))
-        {
-            return Result<string>.Failure($"Invalid JobPostingStatus: {request.experienceLevelRequired}.");
-        }
-        ExperienceLevel? experienceLevelRequired = (ExperienceLevel?)request.experienceLevelRequired;
-
-        JobPosting jobPosting = new(
-             request.title
-            ,request.description
-            ,request.datePosted
-            ,request.applicationDeadline
-            ,tenantId.Value
-            ,request.unitId
-            ,request.formTemplateId
-            ,request.postingGroupId
-            ,status
-            ,request.isPublic
-            ,request.isAnonymous
-
-            , request.validFrom
-            ,request.validTo
-
-            ,request.contactInfo
-
-            ,request.responsibilities
-            ,request.qualifications
-            ,request.benefits
-            ,request.locationText
-            ,request.isRemote
-            ,employementType
-            ,experienceLevelRequired
-            ,request.vacancyCount
-            ,request.skillsRequired
-
-            ,request.minSalary
-            ,request.maxSalary
-            ,request.currency
-            );
-
-        if(request.allowedNationalIds is not null)
-        {
-            jobPosting.SetAllowedNationalIds(request.allowedNationalIds);
-        }
-
-        jobPostingRepository.Add(jobPosting);
-
-        await unitOfWork.SaveChangesAsync(cancellationToken);
-
-        if(jobPosting.Status != JobPostingStatus.Published)
-        {
-            await jobScheduler.SchedulePublishAsync(
-                jobPosting.Id,
-                jobPosting.ValidFrom!.Value);
-        }
-
-        return Result<string>.Succeed("Job posting created");
+       
     }
 }

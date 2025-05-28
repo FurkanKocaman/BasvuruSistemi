@@ -1,3 +1,5 @@
+import { PipelineStageDto } from "./evaluation/pipeline-stage.model";
+
 export interface JobPostingCreateModel {
   id?: string;
 
@@ -36,4 +38,6 @@ export interface JobPostingCreateModel {
   formTemplateId: string;
 
   postingGroupId?: string;
+
+  evaluationPipelineStages: PipelineStageDto[];
 }

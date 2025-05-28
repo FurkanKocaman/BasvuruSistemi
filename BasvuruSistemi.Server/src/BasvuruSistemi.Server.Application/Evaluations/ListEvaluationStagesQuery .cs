@@ -35,18 +35,21 @@ internal sealed class ListEvaluationStagesQueryHandler(
                 f.Name,
                 f.EvaluationStageId,
                 f.CreatedAt,
-                f.Fields.Select(field => new EvaluationFormFieldDto(
-                    field.Id,
-                    field.EvaluationFormId,
-                    field.FieldType,
-                    field.Label,
-                    field.Options,
-                    field.IsRequired,
-                    field.Order,
-                    field.Placeholder,
-                    field.HelpText,
-                    field.ValidationRules
-                )).ToList(),
+                f.Fields.Select(f => new EvaluationFormFieldDto(
+                    f.Id,
+                    f.EvaluationFormId,
+                    f.Label,
+                    f.Description,
+                    f.Type,
+                    f.IsRequired,
+                    f.Order,
+                    f.Placeholder,
+                    f.OptionsJson,
+                    f.IsReadOnly,
+                    f.DefaultValue,
+                    f.AllowedFileTypes,
+                    f.MaxFileSizeMB
+                )).OrderBy(p => p.Order).ToList(),
                 f.Description
             )).ToList(),
             evaluationStage.CreatedAt

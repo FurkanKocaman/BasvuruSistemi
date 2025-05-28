@@ -37,6 +37,10 @@ internal sealed class UploadFileByFieldCommandhandler(
         if (!allowedExtensions.Contains(extension))
             return Result<string>.Failure("İnvalid file extension.");
 
+        var wwwrootPath = webHostEnvironment.WebRootPath;
+        if (!Directory.Exists(wwwrootPath))
+            Directory.CreateDirectory(wwwrootPath);
+
         var uploadsRoot = Path.Combine(webHostEnvironment.WebRootPath, "uploads", "application_files",request.applicationId.ToString(), userId.Value.ToString());
 
         if (!Directory.Exists(uploadsRoot))

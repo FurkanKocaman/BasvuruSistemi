@@ -1,5 +1,6 @@
 ﻿namespace BasvuruSistemi.Server.Application.Services;
 public interface IPublishJob
 {
-    Task Execute(Guid jobPostingId);
+    Task Publish(Guid jobPostingId);
+    Task Close(Guid jobPostingId);
 }

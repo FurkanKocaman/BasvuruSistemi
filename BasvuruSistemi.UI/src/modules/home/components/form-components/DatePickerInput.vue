@@ -47,9 +47,9 @@ function onDateChange(val: Date | Date[] | (Date | null)[] | null | undefined) {
       :readonly="field.isReadOnly"
       showButtonBar
       showIcon
-      class="!w-full !border !outline-none !rounded-md !text-gray-800 dark:!text-gray-200 dark:!border-gray-700 !border-gray-200 !py-2 !px-2 !bg-gray-50 dark:!bg-gray-900 dark:!focus:border-indigo-600 focus:border-indigo-600"
+      class="!w-full !border !outline-none !rounded-md !text-gray-800 dark:!text-gray-200 dark:!border-gray-600 !border-gray-400 !py-2 !px-2 !bg-gray-50 dark:!bg-gray-900 dark:!focus:border-indigo-600 focus:border-indigo-600"
       inputClass="!text-start !text-sm"
-      panel-class="dark:!bg-gray-900 !bg-gray-50 dark:!text-gray-200 !border !outline-none !rounded-md dark:!border-gray-700 !border-gray-200 !p-3"
+      panel-class="dark:!bg-gray-900 !bg-gray-50 dark:!text-gray-200 !border !outline-none !rounded-md dark:!border-gray-600 !border-gray-400 !p-3"
     />
 
     <p v-if="field.description" class="text-xs text-gray-500 mt-1">

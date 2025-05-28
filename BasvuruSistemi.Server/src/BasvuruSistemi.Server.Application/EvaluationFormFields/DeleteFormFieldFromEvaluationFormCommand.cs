@@ -1,6 +1,7 @@
 ﻿using BasvuruSistemi.Server.Domain.Evaluations;
 using BasvuruSistemi.Server.Domain.UnitOfWork;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TS.Result;
 
 namespace BasvuruSistemi.Server.Application.EvaluationFormFields;
@@ -19,6 +20,16 @@ internal sealed class DeleteFormFieldFromEvaluationFormCommandHandler(
         if(evaluationFormFieldDefinition is null)
         {
             return Result<string>.Failure(404,$"Evaluation form field with ID {request.Id} not found.");
+        }
+
+        var fieldDefinitions = await evaluationFormFieldDefinitionRepository.WhereWithTracking(p => p.EvaluationFormId == evaluationFormFieldDefinition.EvaluationFormId && p.Order > evaluationFormFieldDefinition.Order).ToListAsync(cancellationToken);
+
+        foreach ( var fieldDefinition in fieldDefinitions)
+        {
+            if(fieldDefinition is not null)
+            {
+                fieldDefinition.SetOrder(fieldDefinition.Order - 1);
+            }
         }
 
         evaluationFormFieldDefinitionRepository.Delete(evaluationFormFieldDefinition);

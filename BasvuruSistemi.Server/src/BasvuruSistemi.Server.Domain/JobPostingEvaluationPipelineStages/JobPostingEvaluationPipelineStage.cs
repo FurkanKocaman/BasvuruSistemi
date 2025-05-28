@@ -1,4 +1,5 @@
 ﻿using BasvuruSistemi.Server.Domain.Abstractions;
+using BasvuruSistemi.Server.Domain.Comissions;
 using BasvuruSistemi.Server.Domain.Evaluations;
 using BasvuruSistemi.Server.Domain.JobPostings;
 
@@ -17,20 +18,28 @@ public sealed class JobPostingEvaluationPipelineStage : Entity
     public Guid? EvaluationFormId { get; set; } // Foreign Key: EvaluationForm
     public EvaluationForm EvaluationForm { get; set; } = default!;
 
+    public Guid ResponsibleCommissionId { get; private set; } // Foreign Key: ApprovalCommission
+    public ApprovalCommission ResponsibleCommission { get; private set; } = default!;
+
     public DateTimeOffset? StartDate { get; set; } // Aşamanın başlangıç tarihi (isteğe bağlı)
     public DateTimeOffset? EndDate { get; set; } // Aşamanın bitiş tarihi (isteğe bağlı)
 
+    public string? HangfireStartJobId { get; set; }
+    public string? HangfireEndJobId { get; set; }
+
     private JobPostingEvaluationPipelineStage() { }
-    public JobPostingEvaluationPipelineStage(Guid jobPostingId, Guid evaluationStageId, int orderInPipeline, bool isMandatory = true, Guid? evaluationFormId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
+    public JobPostingEvaluationPipelineStage(Guid jobPostingId, Guid evaluationStageId, Guid responsibleCommissionId, int orderInPipeline, bool isMandatory = true, Guid? evaluationFormId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
     {
         JobPostingId = jobPostingId;
         EvaluationStageId = evaluationStageId;
         OrderInPipeline = orderInPipeline;
         IsMandatory = isMandatory;
         EvaluationFormId = evaluationFormId;
+        ResponsibleCommissionId = responsibleCommissionId;
         CreatedAt = DateTimeOffset.Now;
         StartDate = startDate;
         EndDate = endDate;
+        IsActive = false;
     }
     public void UpdateStartAndEndDates(DateTimeOffset? startDate, DateTimeOffset? endDate)
     {
@@ -48,5 +57,10 @@ public sealed class JobPostingEvaluationPipelineStage : Entity
     public void SetEvaluationForm(Guid evaluationFormId)
     {
         EvaluationFormId = evaluationFormId;
+    }
+
+    public void SetActive(bool isActive)
+    {
+        IsActive = isActive;
     }
 }

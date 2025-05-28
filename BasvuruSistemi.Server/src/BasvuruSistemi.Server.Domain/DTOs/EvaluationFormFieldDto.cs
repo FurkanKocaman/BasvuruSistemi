@@ -4,12 +4,15 @@ namespace BasvuruSistemi.Server.Domain.DTOs;
 public sealed record EvaluationFormFieldDto(
     Guid Id,
     Guid EvaluationFormId,
-    FieldTypeEnum FieldType,
-    string label,
-    string? Options,
+    string Label,
+    string? Description,
+    FieldTypeEnum Type,
     bool IsRequired,
     int Order,
-    string? Placeholder = null,
-    string? HelpText = null,
-    string? ValidationRules = null 
+    string? Placeholder,
+    string? OptionsJson,
+    bool IsReadonly,
+    string? DefaultValue,
+    string? AllowedFileTypes,
+    int? MaxFileSizeMB
 );

@@ -1,18 +1,18 @@
 <script setup lang="ts">
 import DatePicker from "primevue/datepicker";
 import { onMounted, reactive, Ref, ref } from "vue";
-import { useDropdown } from "../composables/useDropdown";
-import organizationService from "../services/unit.service";
+import { useDropdown } from "../../composables/useDropdown";
+import organizationService from "../../services/unit.service";
 import DOMPurify from "dompurify";
 import EditorComponent from "../components/job-posting-components/EditorComponent.vue";
 
-import { Unit } from "../models/unit-node.model";
+import { Unit } from "../../models/unit-node.model";
 import { useRoute, useRouter } from "vue-router";
-import { PostingGroupCreateModel } from "../models/posting-group-create.model";
+import { PostingGroupCreateModel } from "../../models/posting-group-create.model";
 import ConfirmModal from "@/components/ConfirmModal.vue";
 import { useToastStore } from "@/modules/toast/store/toast.store";
-import jobPostingService from "../services/job-posting.service";
-import { JobPostingSummaryDto } from "../models/posting-group-get.model";
+import jobPostingService from "../../services/job-posting.service";
+import { JobPostingSummaryDto } from "../../models/posting-group-get.model";
 import { getJobPostingStatusOptionByValue } from "@/models/constants/job-posting-status";
 
 const toastStore = useToastStore();

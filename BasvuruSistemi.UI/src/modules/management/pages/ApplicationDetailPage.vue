@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import applicationService from "@/services/application.service";
-import ApplicationManagementService from "../services/application.service";
 import { useRoute } from "vue-router";
 import { ApplicationGetDetailModel } from "../models/application-get-detail.model";
 import { getFieldTypeOptionByValue } from "@/models/constants/field-type";
@@ -9,6 +8,7 @@ import ConfirmModal from "@/components/ConfirmModal.vue";
 import { getApplicationStatusOptionByValue } from "@/models/constants/application-status";
 import profileService from "@/modules/profile/services/profile.service";
 import { Profile } from "@/modules/profile/models/profile.model";
+import ApplicationEvaluationForm from "./application-evaluations/ApplicationEvaluationForm.vue";
 
 const route = useRoute();
 const id = route.params.id as string | undefined;
@@ -53,31 +53,32 @@ onMounted(() => {
 const getApplicationDetail = async () => {
   if (id) {
     const res = await applicationService.getApplication(id);
-    if (res.statusCode == 200) {
-      application.value = res.data;
-      userData.value = await profileService.getUserProfile(res.data.userId);
+
+    if (res) {
+      application.value = res;
+      userData.value = await profileService.getUserProfile(res.userId);
     }
   }
 };
 
-const reviewApplication = async (id: string, status: number) => {
-  if (status == 2) {
-    modalTitle.value = "Başvuruyu onaylamak istediğinize emin misiniz?";
-  } else {
-    modalTitle.value = "Başvuruyu reddetmek istediğinize emin misiniz?";
-  }
-  const result = await confirmModal.value.open();
-  if (result) {
-    await ApplicationManagementService.reviewApplication(
-      id,
-      status,
-      application.value.reviewDescription
-    );
-    getApplicationDetail();
-  } else {
-    console.log("Kullanıcı iptal etti.");
-  }
-};
+// const reviewApplication = async (id: string, status: number) => {
+//   if (status == 2) {
+//     modalTitle.value = "Başvuruyu onaylamak istediğinize emin misiniz?";
+//   } else {
+//     modalTitle.value = "Başvuruyu reddetmek istediğinize emin misiniz?";
+//   }
+//   const result = await confirmModal.value.open();
+//   if (result) {
+//     await ApplicationManagementService.reviewApplication(
+//       id,
+//       status,
+//       application.value.reviewDescription
+//     );
+//     getApplicationDetail();
+//   } else {
+//     console.log("Kullanıcı iptal etti.");
+//   }
+// };
 
 function formatDateTime(value: string): string {
   const date = new Date(value);
@@ -630,7 +631,8 @@ function formatDateTime(value: string): string {
           </table>
         </div>
       </div>
-      <div
+      <ApplicationEvaluationForm />
+      <!-- <div
         class="w-full border dark:border-gray-800 border-gray-200 rounded-lg mb-5 py-3 px-5 flex flex-col items-start"
       >
         <span class="text-lg dark:text-gray-100 font-semibold">Başvuru Değerlendirme</span>
@@ -664,7 +666,7 @@ function formatDateTime(value: string): string {
             </button>
           </div>
         </div>
-      </div>
+      </div> -->
     </div>
   </main>
 </template>

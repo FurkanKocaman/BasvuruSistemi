@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, Ref } from "vue";
-import jobPostingService from "../services/job-posting.service";
+import jobPostingService from "../../services/job-posting.service";
 import { useRouter } from "vue-router";
-import { JobPostingSummariesByTenantResponse } from "../models/job-posting-summaries-by-tenant.model";
+import { JobPostingSummariesByTenantResponse } from "../../models/job-posting-summaries-by-tenant.model";
 import { getJobPostingStatusOptionByValue } from "@/models/constants/job-posting-status";
-import { formatDateTime } from "../composables/formatDateTime";
+import { formatDateTime } from "../../composables/formatDateTime";
 import ConfirmModal from "@/components/ConfirmModal.vue";
 import { getJobPostingtypeOptionByValue } from "@/models/constants/job-posting-type";
 import { useVisiblePages } from "@/services/pagination.service";

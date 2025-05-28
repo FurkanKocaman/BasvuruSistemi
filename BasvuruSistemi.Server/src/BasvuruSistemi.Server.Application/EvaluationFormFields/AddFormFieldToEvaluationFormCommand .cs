@@ -8,13 +8,16 @@ namespace BasvuruSistemi.Server.Application.EvaluationForms;
 public sealed record AddFormFieldToEvaluationFormCommand(
     Guid EvaluationFormId,
     string Label,
-    int FieldType,
-    string? Options = null,
-    bool IsRequired = false,
-    int Order = 0,
-    string? Placeholder = null,
-    string? HelpText = null,
-    string? ValidationRules = null
+    string? Description,
+    int Type,
+    bool IsRequired,
+    int Order,
+    string? Placeholder,
+    string? OptionsJson,
+    bool IsReadonly,
+    string? DefaultValue,
+    string? AllowedFileTypes,
+    int? MaxFileSizeMb
     ) : IRequest<Result<string>>;
 
 internal sealed class AddFormFieldToEvaluationFormCommandHandler(
@@ -24,23 +27,26 @@ internal sealed class AddFormFieldToEvaluationFormCommandHandler(
 {
     public async Task<Result<string>> Handle(AddFormFieldToEvaluationFormCommand request, CancellationToken cancellationToken)
     {
-        if (!Enum.IsDefined(typeof(FieldTypeEnum), request.FieldType))
+        if (!Enum.IsDefined(typeof(FieldTypeEnum), request.Type))
         {
-            return Result<string>.Failure($"Invalid FielType: {request.FieldType}.");
+            return Result<string>.Failure($"Invalid FielType: {request.Type}.");
         }
-        var fieldType = (FieldTypeEnum)request.FieldType;
+        var fieldType = (FieldTypeEnum)request.Type;
 
         var evaluationFormFieldDefinition = new EvaluationFormFieldDefinition(
             request.EvaluationFormId,
             request.Label,
+            request.Description,
             fieldType,
-            request.Options,
             request.IsRequired,
             request.Order,
             request.Placeholder,
-            request.HelpText,
-            request.ValidationRules
-        );
+            request.OptionsJson,
+            request.IsReadonly,
+            request.DefaultValue,
+            request.AllowedFileTypes,
+            request.MaxFileSizeMb
+            );
         evaluationFormFieldDefinitionRepository.Add(evaluationFormFieldDefinition);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);

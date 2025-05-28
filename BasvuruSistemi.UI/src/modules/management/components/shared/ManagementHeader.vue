@@ -165,7 +165,13 @@ function toggleEvaluationMenu() {
           class="text-sm/6 font-semibold text-gray-700 dark:text-gray-50"
           >Başvurular</router-link
         >
-        <div class="relative">
+        <router-link
+          v-if="hasClaim(ClaimTypes.ViewApplications)"
+          to="/management/pending-evaluations"
+          class="text-sm/6 font-semibold text-gray-700 dark:text-gray-50"
+          >Değerlendirme Bekleyen Başvurular</router-link
+        >
+        <div class="relative" v-if="hasClaim(ClaimTypes.ManageUsers)">
           <button
             type="button"
             class="flex items-center gap-x-1 text-sm/6 font-semibold text-gray-700 dark:text-gray-50 cursor-pointer"
@@ -226,25 +232,6 @@ function toggleEvaluationMenu() {
                   </router-link>
                   <p class="mt-1 text-gray-600 dark:text-gray-500">
                     İlanlarda kullanacağınız değerlendirme adımlarını görüntüleyin
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div class="px-2 py-2" v-if="hasClaim(ClaimTypes.CreateJobPosting)">
-              <div
-                class="group relative flex items-center gap-x-6 rounded-lg p-2 text-sm/6 hover:bg-gray-100 dark:hover:bg-gray-700/20"
-              >
-                <div class="flex-auto">
-                  <router-link
-                    to="/management/job-postings-group/create"
-                    class="block font-semibold text-gray-700 dark:text-gray-200"
-                    @click.prevent="toggleEvaluationMenu()"
-                  >
-                    Değerlendirme Formları
-                    <span class="absolute inset-0"></span>
-                  </router-link>
-                  <p class="mt-1 text-gray-600 dark:text-gray-500">
-                    İlanlarda kullanacağınız değerlendirme formlarını görüntüleyin
                   </p>
                 </div>
               </div>

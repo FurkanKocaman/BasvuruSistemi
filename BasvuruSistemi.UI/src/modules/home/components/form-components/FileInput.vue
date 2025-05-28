@@ -38,7 +38,7 @@ const handleFileChange = (event: Event) => {
       :accept="field.allowedFileTypes"
       :disabled="field.isReadOnly"
       @change="handleFileChange"
-      class="w-full file:px-3 file:py-2 file:border-0 file:bg-indigo-600 file:text-white file:rounded-md dark:file:bg-indigo-500"
+      class="w-full file:px-3 file:py-2 file:border-0 file:bg-indigo-600 file:text-white file:rounded-md dark:file:bg-indigo-500 text-gray-800 dark:text-gray-200"
     />
   </div>
 </template>

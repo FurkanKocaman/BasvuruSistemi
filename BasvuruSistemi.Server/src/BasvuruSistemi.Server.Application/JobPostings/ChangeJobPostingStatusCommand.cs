@@ -32,9 +32,9 @@ internal sealed class ChangeJobPostingStatusCommandHandler(
                 break;
             case JobPostingStatus.Published:
                 jobPosting.Publish();
-                if(jobPosting.HangfireJobId is not null)
+                if(jobPosting.HangfirePublishJobId is not null)
                 {
-                    await jobScheduler.CancelScheduledPublishAsync(jobPosting.HangfireJobId);
+                    await jobScheduler.CancelScheduleAsync(jobPosting.HangfirePublishJobId);
                 }
                 break;
             case JobPostingStatus.Closed:

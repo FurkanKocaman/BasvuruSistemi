@@ -3,7 +3,7 @@ import { FormFieldResponse } from "@/modules/management/models/form-filed-respon
 import { defineProps, defineEmits, ref, onMounted, watch } from "vue";
 
 interface Props {
-  modelValue: string[];
+  modelValue: string[] | undefined;
   field: FormFieldResponse;
 }
 

@@ -1,12 +1,21 @@
 export interface AddFormFieldToEvaluationFormModel {
   id?: string;
-  evaluationFormId?: string;
+  evaluationFormId: string;
+
   label: string;
-  fieldType: number;
-  options?: string;
+  type: number;
   isRequired: boolean;
   order: number;
+  description?: string;
   placeholder?: string;
-  helpText?: string;
-  validationRules?: string;
+  optionsJson?: string;
+
+  isReadOnly: boolean;
+  defaultValue?: string;
+
+  verificationSource: number;
+  verificationParametersJson?: string;
+
+  allowedFileTypes?: string;
+  maxFileSizeMB?: number;
 }

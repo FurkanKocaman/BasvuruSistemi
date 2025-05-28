@@ -24,5 +24,11 @@ internal sealed class JobPostingEvaluationPipelineStageConfiguration : IEntityTy
             .WithMany()
             .HasForeignKey(p => p.EvaluationFormId)
             .OnDelete(DeleteBehavior.SetNull);
+
+        builder
+            .HasOne(p => p.ResponsibleCommission)
+            .WithMany()
+            .HasForeignKey(p => p.ResponsibleCommissionId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
