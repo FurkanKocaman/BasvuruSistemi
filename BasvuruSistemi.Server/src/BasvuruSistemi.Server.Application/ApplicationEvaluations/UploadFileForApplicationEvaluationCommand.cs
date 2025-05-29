@@ -9,7 +9,7 @@ namespace BasvuruSistemi.Server.Application.ApplicationEvaluations;
 public sealed record UploadFileForApplicationEvaluationCommand(
     Guid formFieldId,
     IFormFile file,
-    Guid evaluationPipelineStageId
+    Guid applicationEvaluationId
     ) : IRequest<Result<string>>;
 
 internal sealed class UploadFileForApplicationEvaluationCommandHandler(
@@ -41,7 +41,7 @@ internal sealed class UploadFileForApplicationEvaluationCommandHandler(
         if (!Directory.Exists(wwwrootPath))
             Directory.CreateDirectory(wwwrootPath);
 
-        var uploadsRoot = Path.Combine(webHostEnvironment.WebRootPath, "uploads", "evaluation_files", request.evaluationPipelineStageId.ToString(), userId.Value.ToString());
+        var uploadsRoot = Path.Combine(webHostEnvironment.WebRootPath, "uploads", "evaluation_files", request.applicationEvaluationId.ToString(), userId.Value.ToString());
 
         if (!Directory.Exists(uploadsRoot))
             Directory.CreateDirectory(uploadsRoot);
@@ -54,7 +54,7 @@ internal sealed class UploadFileForApplicationEvaluationCommandHandler(
             await request.file.CopyToAsync(stream, cancellationToken);
         }
 
-        var relativePath = $"/uploads/evaluation_files/{request.evaluationPipelineStageId.ToString()}/{userId.Value.ToString()}/{uniqueFileName}";
+        var relativePath = $"/uploads/evaluation_files/{request.applicationEvaluationId.ToString()}/{userId.Value.ToString()}/{uniqueFileName}";
         return Result<string>.Succeed(relativePath);
     }
 }

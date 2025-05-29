@@ -43,40 +43,44 @@ internal sealed class GetApplicationEvaluationProcessQueryResponseHandler(
 {
     public async Task<Result<List<GetApplicationEvaluationProcessQueryResponse>>> Handle(GetApplicationEvaluationProcessQuery request, CancellationToken cancellationToken)
     {
-        var application = await applicationRepository.FirstOrDefaultAsync(p => p.Id == request.ApplicationId,cancellationToken);
+        var application = await applicationRepository.FirstOrDefaultAsync(p => p.Id == request.ApplicationId, cancellationToken);
         if (application is null)
-            Result< List < GetApplicationEvaluationProcessQueryResponse >>.Failure(404, "Application not found");
+            return Result<List<GetApplicationEvaluationProcessQueryResponse>>.Failure(404, "Application not found");
 
-        var evaluationPipelineStages = await jobPostingEvaluationPipelineStageRepository
-                    .Where(p => p.JobPostingId == application!.JobPostingId)
-                    .Include(p => p.EvaluationStage)
-                    .Include(p => p.EvaluationForm)
-                    .Include(p => p.ResponsibleCommission)
-                    .ToListAsync(cancellationToken);
+        var pipelineStages = await jobPostingEvaluationPipelineStageRepository
+            .Where(p => p.JobPostingId == application.JobPostingId && !p.IsDeleted)
+            .Include(p => p.EvaluationStage)
+            .Include(p => p.EvaluationForm)
+            .Include(p => p.ResponsibleCommission)
+            .ToListAsync(cancellationToken);
 
-        var applicationEvaluations = await applicationEvaluationRepository.Where(p => p.ApplicationId == application!.Id).ToListAsync();
+        var applicationEvaluations = await applicationEvaluationRepository
+            .Where(p => p.ApplicationId == application.Id && !p.IsDeleted)
+            .Include(p => p.Evaluator)
+            .ToListAsync(cancellationToken);
 
-        var response = evaluationPipelineStages.Select(pipelineStage => new GetApplicationEvaluationProcessQueryResponse
+        var response = pipelineStages.Select(pipelineStage => new GetApplicationEvaluationProcessQueryResponse
         {
             StageId = pipelineStage.EvaluationStageId,
             StageName = pipelineStage.EvaluationStage.Name,
 
             EvaluationFormId = pipelineStage.EvaluationFormId,
-            EvaluationFormName = pipelineStage.EvaluationForm.Name,
+            EvaluationFormName = pipelineStage.EvaluationForm?.Name,
 
             CommissionId = pipelineStage.ResponsibleCommissionId,
-            CommissionName = pipelineStage.ResponsibleCommission.Name,
+            CommissionName = pipelineStage.ResponsibleCommission?.Name,
 
-            CommissionEvaluationSummaries = applicationEvaluations.Where(p => p.JobPostingEvaluationPipelineStageId == pipelineStage.Id ).Select(applicationEvaluation => new ApplicationEvaluationSummary
-            {
-                UserId = applicationEvaluation.EvaluatorId,
-                UserName = applicationEvaluation.Evaluator != null ? applicationEvaluation.Evaluator.FullName : null,
-
-                Status = applicationEvaluation.Status,
-                StatusDescription = applicationEvaluation.OverallComment,
-            }).ToList(),
-
-        } ).ToList();
+            CommissionEvaluationSummaries = applicationEvaluations
+                .Where(ae => ae.JobPostingEvaluationPipelineStageId == pipelineStage.Id)
+                .Select(ae => new ApplicationEvaluationSummary
+                {
+                    UserId = ae.EvaluatorId,
+                    UserName = ae.Evaluator?.FullName,
+                    Status = ae.Status,
+                    StatusDescription = ae.OverallComment
+                })
+                .ToList()
+        }).ToList();
 
         return Result<List<GetApplicationEvaluationProcessQueryResponse>>.Succeed(response);
     }

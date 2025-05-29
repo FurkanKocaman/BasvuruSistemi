@@ -20,6 +20,45 @@ class CommissionMember {
       throw err;
     }
   }
+  async updateMemberByCommission(request: AddMemberToCommissionModel): Promise<string> {
+    try {
+      const res = await api.put(
+        `${import.meta.env.VITE_API_URL}/commission-members/${request.id}`,
+        request
+      );
+
+      this.toastStore.addToast({
+        message: res.status == 200 ? "Komisyon üyesi güncellendi" : "Hata oluştu",
+        type: res.status == 200 ? "success" : "error",
+        duration: 3000,
+      });
+
+      return res.data.data;
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  }
+  async removeMemberFromCommission(userId: string, commissionId: string): Promise<string> {
+    try {
+      const res = await api.delete(
+        `${
+          import.meta.env.VITE_API_URL
+        }/commission-members?userId=${userId}&commissionId=${commissionId}`
+      );
+
+      this.toastStore.addToast({
+        message: res.status == 200 ? "Komisyon üyesi silindi" : "Hata oluştu",
+        type: res.status == 200 ? "success" : "error",
+        duration: 3000,
+      });
+
+      return res.data.data;
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  }
 }
 
 export default new CommissionMember();

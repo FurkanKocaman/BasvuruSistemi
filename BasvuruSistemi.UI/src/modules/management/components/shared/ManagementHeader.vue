@@ -324,14 +324,17 @@ function toggleEvaluationMenu() {
             </g>
           </svg>
         </div>
-        <div class="flex items-center cursor-pointer select-none">
+        <router-link to="/profile" class="flex items-center cursor-pointer select-none">
           <img
             class="size-10 rounded-full object-cover mx-2"
             :src="userStore.user?.avatarUrl ?? apiUrl + '/user.png'"
             alt=""
           />
-          <span class="dark:text-gray-200 text-gray-700"> {{ userStore.user?.fullName }} </span>
-        </div>
+          <div class="flex flex-col">
+            <span class="dark:text-gray-200 text-gray-700"> {{ userStore.user?.fullName }} </span>
+            <span class="text-xs text-gray-500 dark:text-gray-400">Profil Sayfası</span>
+          </div>
+        </router-link>
       </div>
     </nav>
   </header>

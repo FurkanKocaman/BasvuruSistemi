@@ -1,15 +1,13 @@
 ﻿using BasvuruSistemi.Server.Application.FormTemplates;
 using BasvuruSistemi.Server.Application.Services;
-using BasvuruSistemi.Server.Domain.Applications;
-using BasvuruSistemi.Server.Domain.JobPostingEvaluationPipelineStages;
+using BasvuruSistemi.Server.Domain.ApplicationEvaluations;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TS.Result;
 
 namespace BasvuruSistemi.Server.Application.ApplicationEvaluations;
 public sealed record GetEvaluationFormForApplicationEvaluationQuery(
-    Guid ApplicationId,
-    Guid EvaluationPipelineStageId
+    Guid ApplicationEvaluationId
     ) : IRequest<Result<GetEvaluationFormForApplicationEvaluationQueryResponse>>;
 
 public sealed class GetEvaluationFormForApplicationEvaluationQueryResponse
@@ -21,8 +19,7 @@ public sealed class GetEvaluationFormForApplicationEvaluationQueryResponse
 
 internal sealed class GetEvaluationFormForApplicationEvaluationQueryHandler(
     ICurrentUserService currentUserService,
-    IApplicationRepository applicationRepository,
-    IJobPostingEvaluationPipelineStageRepository jobPostingEvaluationPipelineStageRepository
+    IApplicationEvaluationRepository applicationEvaluationRepository
     ) : IRequestHandler<GetEvaluationFormForApplicationEvaluationQuery, Result<GetEvaluationFormForApplicationEvaluationQueryResponse>>
 {
     public async Task<Result<GetEvaluationFormForApplicationEvaluationQueryResponse>> Handle(GetEvaluationFormForApplicationEvaluationQuery request, CancellationToken cancellationToken)
@@ -32,17 +29,19 @@ internal sealed class GetEvaluationFormForApplicationEvaluationQueryHandler(
         if (!userId.HasValue)
             return Result<GetEvaluationFormForApplicationEvaluationQueryResponse>.Failure(401,"User not found");
 
-        var application = await applicationRepository.Where(p => p.Id == request.ApplicationId && !p.IsDeleted && p.Status == Domain.Enums.ApplicationStatus.InReview).FirstOrDefaultAsync();
+        var applicationEvaluation = await applicationEvaluationRepository
+            .Where(p => p.Id == request.ApplicationEvaluationId)
+            .Include(p => p.JobPostingEvaluationPipelineStage)
+                .ThenInclude(p => p.EvaluationStage)
+            .Include(p => p.JobPostingEvaluationPipelineStage)
+                .ThenInclude(p => p.EvaluationForm)
+                .ThenInclude(p => p.Fields)
+            .FirstOrDefaultAsync();
 
-        if (application is null)
+        if (applicationEvaluation is null)
             return Result<GetEvaluationFormForApplicationEvaluationQueryResponse>.Failure(404, "Application not found");
 
-        var evaluationPipelineStage = await jobPostingEvaluationPipelineStageRepository
-            .Where(p => p.Id == request.EvaluationPipelineStageId && p.JobPostingId == application.JobPostingId && p.IsActive && !p.IsDeleted)
-            .Include(p => p.EvaluationForm)
-                .ThenInclude(p => p.Fields)
-            .Include(p => p.EvaluationStage)
-            .FirstOrDefaultAsync(cancellationToken);
+        var evaluationPipelineStage = applicationEvaluation.JobPostingEvaluationPipelineStage;
 
         if (evaluationPipelineStage is null)
             return Result<GetEvaluationFormForApplicationEvaluationQueryResponse>.Failure(404, "PipelineStage not found");

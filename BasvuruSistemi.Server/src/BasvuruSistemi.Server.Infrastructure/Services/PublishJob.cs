@@ -13,7 +13,7 @@ internal sealed class PublishJob(
         if (jobPosting is null || jobPosting.Status == Domain.Enums.JobPostingStatus.Published)
             return;
 
-        jobPosting.Publish();
+        jobPosting.Close();
         jobPostingRepository.Update(jobPosting);
         await unitOfWork.SaveChangesAsync();
     }
@@ -24,7 +24,7 @@ internal sealed class PublishJob(
         if (jobPosting is null || jobPosting.Status == Domain.Enums.JobPostingStatus.Published)
             return;
 
-        jobPosting.Close();
+        jobPosting.Publish();
         jobPostingRepository.Update(jobPosting);
         await unitOfWork.SaveChangesAsync();
     }

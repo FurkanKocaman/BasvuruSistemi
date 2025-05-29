@@ -16,14 +16,14 @@ internal sealed class ListEvaluationFormsByStageQueryHandler(
     public async Task<Result<List<EvaluationFormDto>>> Handle(ListEvaluationFormsByStageQuery request, CancellationToken cancellationToken)
     {
         var evaluationStage = await evaluationStageRepository
-            .Where(p => p.Id == request.EvaluationStageId)
+            .Where(p => p.Id == request.EvaluationStageId && !p.IsDeleted)
             .Include(p => p.EvaluationForms)
             .FirstOrDefaultAsync(cancellationToken);
 
         if(evaluationStage is null)
             return Result<List<EvaluationFormDto>>.Failure(404, "EvaluationStage not found");
 
-        var response = evaluationStage.EvaluationForms.Select(EvaluationForms => new EvaluationFormDto(
+        var response = evaluationStage.EvaluationForms.Where(p => !p.IsDeleted).Select(EvaluationForms => new EvaluationFormDto(
             EvaluationForms.Id,
             EvaluationForms.Name,
             EvaluationForms.EvaluationStageId,

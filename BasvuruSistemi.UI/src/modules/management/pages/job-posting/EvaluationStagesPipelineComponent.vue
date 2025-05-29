@@ -47,6 +47,10 @@ const updatePipelineStage = async (pipelineStage: PipelineStageDto) => {
   }
 };
 
+const removePipelineStage = async (pipelineStage: PipelineStageDto) => {
+  pipelineStages.value = pipelineStages.value.filter((p) => p != pipelineStage);
+};
+
 const getEvaluationStages = async () => {
   const res = await evaluationService.listEvaluationStages();
   if (res) {
@@ -161,7 +165,10 @@ function formatDateTime(value: string): string {
                       />
                     </svg>
                   </button>
-                  <button class="cursor-pointer pr-1">
+                  <button
+                    class="cursor-pointer pr-1"
+                    @click.stop="removePipelineStage(pipelineStage)"
+                  >
                     <svg
                       class="size-5 group"
                       viewBox="0 0 24 24"

@@ -1,6 +1,5 @@
 ﻿using BasvuruSistemi.Server.Application.EvaluationFormFields;
 using BasvuruSistemi.Server.Application.EvaluationForms;
-using BasvuruSistemi.Server.Application.Evaluations;
 using MediatR;
 using TS.Result;
 
@@ -16,15 +15,34 @@ public static class EvaluationFormModule
             async (ISender sender, CreateEvaluationFormCommand request, CancellationToken cancellationToken) =>
             {
                 var response = await sender.Send(request, cancellationToken);
-                return response.IsSuccessful ? Results.Ok(response) : Results.InternalServerError(response);
+                return response.IsSuccessful ? Results.Ok(response) : response.StatusCode == 404 ? Results.NotFound(response) : Results.InternalServerError(response);
             })
             .RequireAuthorization().Produces<Result<string>>().WithName("EvaluationFormCreate");
+
+        group.MapPut("{id:guid}",
+           async (ISender sender, Guid id, UpdateEvaluationFormCommand request, CancellationToken cancellationToken) =>
+           {
+               if (id != request.Id)
+                   return Results.BadRequest("Id is not match");
+
+               var response = await sender.Send(request, cancellationToken);
+               return response.IsSuccessful ? Results.Ok(response) : response.StatusCode == 404 ? Results.NotFound(response) : Results.InternalServerError(response);
+           })
+           .RequireAuthorization().Produces<Result<string>>().WithName("EvaluationFormUpdate");
+
+        group.MapDelete("{id:guid}",
+            async (ISender sender, Guid id, CancellationToken cancellationToken) =>
+            {
+                var response = await sender.Send(new DeleteEvaluationFormCommand(id), cancellationToken);
+                return response.IsSuccessful ? Results.Ok(response) : response.StatusCode == 404 ? Results.NotFound(response) : Results.InternalServerError(response);
+            })
+            .RequireAuthorization().Produces<Result<string>>().WithName("EvaluationFormDelete");
 
         group.MapPost("fields",
            async (ISender sender, AddFormFieldToEvaluationFormCommand request, CancellationToken cancellationToken) =>
            {
                var response = await sender.Send(request, cancellationToken);
-               return response.IsSuccessful ? Results.Ok(response) : Results.InternalServerError(response);
+               return response.IsSuccessful ? Results.Ok(response) : response.StatusCode == 404 ? Results.NotFound(response) : Results.InternalServerError(response);
            })
            .RequireAuthorization().Produces<Result<string>>().WithName("EvaluationFormFieldCreate");
 
@@ -35,7 +53,7 @@ public static class EvaluationFormModule
                     return Results.BadRequest("ID in route does not match ID in body.");
 
               var response = await sender.Send(request, cancellationToken);
-              return response.IsSuccessful ? Results.Ok(response) : Results.InternalServerError(response);
+              return response.IsSuccessful ? Results.Ok(response) : response.StatusCode == 404 ? Results.NotFound(response) : Results.InternalServerError(response);
           })
           .RequireAuthorization().Produces<Result<string>>().WithName("EvaluationFormFieldUpdate");
 
@@ -43,7 +61,7 @@ public static class EvaluationFormModule
           async (ISender sender, Guid id, CancellationToken cancellationToken) =>
           {
               var response = await sender.Send(new DeleteFormFieldFromEvaluationFormCommand(id), cancellationToken);
-              return response.IsSuccessful ? Results.Ok(response) : Results.InternalServerError(response);
+              return response.IsSuccessful ? Results.Ok(response) : response.StatusCode == 404 ? Results.NotFound(response) : Results.InternalServerError(response);
           })
           .RequireAuthorization().Produces<Result<string>>().WithName("EvaluationFormFieldDelete");
     }

@@ -10,8 +10,7 @@ using TS.Result;
 
 namespace BasvuruSistemi.Server.Application.ApplicationEvaluations;
 public sealed record SubmitEvaluationCommand(
-    Guid ApplicationId,
-    Guid EvaluationPipelineStageId,
+    Guid Id,
     int status,
     string? overallComment,
     List<FieldValueDto> Values
@@ -21,7 +20,6 @@ public sealed record SubmitEvaluationCommand(
 
 internal sealed class SubmitEvaluationCommandHandler(
     ICurrentUserService currentUserService,
-    IApplicationRepository applicationRepository,
     IApplicationEvaluationRepository applicationEvaluationRepository,
     IApplicationEvaluationValueRepository applicationEvaluationValueRepository,
     IUnitOfWork unitOfWork
@@ -43,20 +41,14 @@ internal sealed class SubmitEvaluationCommandHandler(
                 }
                 var status = (EvaluationStatus)request.status;
 
-                var application = await applicationRepository.Where(p => p.Id == request.ApplicationId).Include(p => p.JobPosting).FirstOrDefaultAsync(cancellationToken);
+                var applicationEvaluation = await applicationEvaluationRepository.Where(p => p.Id == request.Id).FirstOrDefaultAsync(cancellationToken);
 
-                if (application is null)
-                    return Result<string>.Failure(404, "Application not found");
+                if (applicationEvaluation is null)
+                    return Result<string>.Failure(404, "applicationEvaluation not found");
 
-                var applicationEvaluation = new ApplicationEvaluation(
-                    request.ApplicationId,
-                    request.EvaluationPipelineStageId,
-                    userId.Value,
-                    status,
-                    request.overallComment
-                    );
+                applicationEvaluation.Update(status,request.overallComment);
 
-                applicationEvaluationRepository.Add(applicationEvaluation);
+                applicationEvaluationRepository.Update(applicationEvaluation);
 
                 await unitOfWork.SaveChangesAsync(cancellationToken);
 

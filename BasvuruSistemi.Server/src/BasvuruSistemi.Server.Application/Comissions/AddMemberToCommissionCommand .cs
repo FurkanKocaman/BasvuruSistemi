@@ -10,7 +10,8 @@ namespace BasvuruSistemi.Server.Application.Comissions;
 public sealed record AddMemberToCommissionCommand(
     Guid CommissionId,
     string Email,
-    string Role
+    string Role,
+    bool IsManager
     ) : IRequest<Result<string>>;
 
 internal sealed class AddMemberToCommissionCommandHandler(
@@ -50,6 +51,7 @@ internal sealed class AddMemberToCommissionCommandHandler(
             request.CommissionId,
             user.Id,
             request.Role,
+            request.IsManager,
             tenantId.Value,
             userId.Value
         );

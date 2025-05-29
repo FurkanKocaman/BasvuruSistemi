@@ -30,14 +30,32 @@ class EvaluationService {
   }
   async updateEvaluatonStage(request: EvaluationStageCreateModel): Promise<string> {
     try {
-      console.error("İmplement update to backend");
       const res = await api.put<Result<string>>(
         `${import.meta.env.VITE_API_URL}/evaluation-stages`,
         request
       );
 
       this.toastStore.addToast({
-        message: res.status == 200 ? "Değerlendirme adımı oluşturuldu" : "Hata oluştu",
+        message: res.status == 200 ? "Değerlendirme adımı Güncellendi" : "Hata oluştu",
+        type: res.status == 200 ? "success" : "error",
+        duration: 3000,
+      });
+
+      return res.data.data;
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  }
+
+  async deleteEvaluatonStage(id: string): Promise<string> {
+    try {
+      const res = await api.delete<Result<string>>(
+        `${import.meta.env.VITE_API_URL}/evaluation-stages/${id}`
+      );
+
+      this.toastStore.addToast({
+        message: res.status == 200 ? "Değerlendirme adımı silindi" : "Hata oluştu",
         type: res.status == 200 ? "success" : "error",
         duration: 3000,
       });
@@ -102,6 +120,24 @@ class EvaluationService {
 
       this.toastStore.addToast({
         message: res.status == 200 ? "Değerlendirme formu güncellendi" : "Hata oluştu",
+        type: res.status == 200 ? "success" : "error",
+        duration: 3000,
+      });
+
+      return res.data.data;
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  }
+  async deleteEvaluatonForm(id: string): Promise<string> {
+    try {
+      const res = await api.delete<Result<string>>(
+        `${import.meta.env.VITE_API_URL}/evaluation-forms/${id}`
+      );
+
+      this.toastStore.addToast({
+        message: res.status == 200 ? "Değerlendirme formu silindi" : "Hata oluştu",
         type: res.status == 200 ? "success" : "error",
         duration: 3000,
       });

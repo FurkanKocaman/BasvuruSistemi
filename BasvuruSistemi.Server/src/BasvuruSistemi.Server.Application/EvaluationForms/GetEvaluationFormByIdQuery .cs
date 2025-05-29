@@ -15,7 +15,7 @@ internal sealed class GetEvaluationFormByIdQueryHandler(
 {
     public async Task<Result<EvaluationFormDto>> Handle(GetEvaluationFormByIdQuery request, CancellationToken cancellationToken)
     {
-        var evaluationForm = await evaluationFormRepository.Where(p => p.Id == request.Id).Include(p => p.Fields).FirstOrDefaultAsync(cancellationToken);
+        var evaluationForm = await evaluationFormRepository.Where(p => p.Id == request.Id && !p.IsDeleted).Include(p => p.Fields).FirstOrDefaultAsync(cancellationToken);
 
         if (evaluationForm is null)
             return Result<EvaluationFormDto>.Failure(404,"EvaluationForm not found");

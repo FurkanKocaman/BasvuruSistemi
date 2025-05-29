@@ -4,7 +4,7 @@ import { onMounted, reactive, Ref, ref } from "vue";
 import { useDropdown } from "../../composables/useDropdown";
 import organizationService from "../../services/unit.service";
 import DOMPurify from "dompurify";
-import EditorComponent from "../components/job-posting-components/EditorComponent.vue";
+import EditorComponent from "../../components/job-posting-components/EditorComponent.vue";
 
 import { Unit } from "../../models/unit-node.model";
 import { useRoute, useRouter } from "vue-router";

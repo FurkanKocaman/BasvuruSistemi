@@ -17,13 +17,44 @@ class FormTeplateSerive {
 
       if (res.status == 200) {
         this.toastStore.addToast({
-          message: res.data.data,
+          message: "Form şablonu başarıyla oluşturuldu",
           type: "success",
           duration: 3000,
         });
       } else {
         this.toastStore.addToast({
-          message: res.data.data,
+          message: "Hata oluştu",
+          type: "error",
+          duration: 3000,
+        });
+      }
+
+      return res.data.data;
+    } catch (err) {
+      this.toastStore.addToast({
+        message: "Hata oluştu",
+        type: "error",
+        duration: 3000,
+      });
+      console.error(err);
+      throw err;
+    }
+  }
+  async deleteFormTemplate(id: string): Promise<string> {
+    try {
+      const res = await api.delete<Result<string>>(
+        `${import.meta.env.VITE_API_URL}/form-templates/${id}`
+      );
+
+      if (res.status == 200) {
+        this.toastStore.addToast({
+          message: "Form şablonu silindi",
+          type: "success",
+          duration: 3000,
+        });
+      } else {
+        this.toastStore.addToast({
+          message: "Hata oluştu",
           type: "error",
           duration: 3000,
         });
@@ -47,13 +78,13 @@ class FormTeplateSerive {
       console.log("Update res", res);
       if (res.status == 200) {
         this.toastStore.addToast({
-          message: res.data.data,
+          message: "Form şablonu başarıyla güncellendi",
           type: "success",
           duration: 3000,
         });
       } else {
         this.toastStore.addToast({
-          message: res.data.data,
+          message: "Hata oluştu",
           type: "error",
           duration: 3000,
         });

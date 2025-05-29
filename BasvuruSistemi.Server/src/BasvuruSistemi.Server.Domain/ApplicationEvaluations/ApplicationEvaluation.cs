@@ -39,6 +39,15 @@ public sealed class ApplicationEvaluation : Entity
         OverallComment = overallComment;
         EvaluatorId = evaluatorId;
         CreatedAt = DateTimeOffset.Now;
-        EvaluationDate = DateTimeOffset.Now;
+    }
+    public void Update(EvaluationStatus status, string? overallComment)
+    {
+        Status = status;
+        OverallComment = overallComment;
+    }
+
+    public void SetActive(bool active)
+    {
+        IsActive = active;
     }
 }

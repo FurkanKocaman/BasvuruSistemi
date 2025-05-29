@@ -76,6 +76,8 @@ internal sealed class HangfireJobScheduler(
         if (jobPosting is null)
             return false;
 
+        Console.WriteLine(jobPosting.Title);
+
         var pipelineEvaluationStages = await jobPostingEvaluationPipelineStageRepository.WhereWithTracking(p => p.JobPostingId == jobPostingId && !p.IsDeleted).OrderBy(p => p.OrderInPipeline).ToListAsync();
             
 
@@ -103,7 +105,6 @@ internal sealed class HangfireJobScheduler(
                 jobPostingEvaluationPipelineStageRepository.Update(pipeline);
                 await unitOfWork.SaveChangesAsync();
             }
-
         }
 
         return true;

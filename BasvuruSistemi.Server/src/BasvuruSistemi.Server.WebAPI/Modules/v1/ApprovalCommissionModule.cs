@@ -30,5 +30,14 @@ public static class ApprovalCommissionModule
                 return response.IsSuccessful ? Results.Ok(response) : response.StatusCode == 404 ? Results.NotFound(response) : Results.InternalServerError(response);
             })
             .Produces<Result<string>>();
+
+        group.MapDelete("{id:guid}",
+           async (ISender sender, Guid id, CancellationToken cancellationToken) =>
+           {
+
+               var response = await sender.Send(new DeleteCommissionCommand(id), cancellationToken);
+               return response.IsSuccessful ? Results.Ok(response) : response.StatusCode == 404 ? Results.NotFound(response) : Results.InternalServerError(response);
+           })
+           .Produces<Result<string>>();
     }
 }

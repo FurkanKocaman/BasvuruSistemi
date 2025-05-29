@@ -585,9 +585,9 @@ watch(request.evaluationPipelineStages, () => console.log(request.evaluationPipe
             :label="'Gereken Özellikler '"
           ></EditorComponent>
 
-          <!-- Commission or SingleUser start -->
+          <!-- Evaluation start -->
           <EvaluationStagesPipelineComponent v-model="request.evaluationPipelineStages" />
-          <!-- Commission or SingleUser end -->
+          <!-- Evaluation end -->
           <!-- FormTemplate Edit and Select start -->
 
           <div class="flex flex-col mt-5">

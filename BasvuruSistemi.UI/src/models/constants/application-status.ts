@@ -21,7 +21,7 @@ export const ApplicationStatusOptions = [
   {
     label: "Değerlendirmede",
     value: ApplicationStatusEnum.InReview,
-    class: "bg-yellow-500",
+    class: "bg-blue-500",
     icon: "TextCursorInput",
   },
   {

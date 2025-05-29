@@ -1,10 +1,10 @@
-﻿using BasvuruSistemi.Server.Domain.Applications;
+﻿using BasvuruSistemi.Server.Domain.ApplicationEvaluations;
+using BasvuruSistemi.Server.Domain.Applications;
 using BasvuruSistemi.Server.Domain.DTOs;
 using BasvuruSistemi.Server.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting.Internal;
 using TS.Result;
 
 namespace BasvuruSistemi.Server.Application.Applications;
@@ -41,6 +41,7 @@ public sealed class GetApplicationQueryResponse
 
 internal sealed class GetApplicationQueryHandler(
     IApplicationRepository applicationRepository,
+    IApplicationEvaluationRepository applicationEvaluationRepository,
     IHttpContextAccessor httpContextAccessor
     ) : IRequestHandler<GetApplicationQuery, Result<GetApplicationQueryResponse>>
 {
@@ -48,8 +49,10 @@ internal sealed class GetApplicationQueryHandler(
         GetApplicationQuery request,
         CancellationToken cancellationToken)
     {
+        var applicationEvaluation = await applicationEvaluationRepository.Where(p => p.Id == request.applicationId).FirstOrDefaultAsync(cancellationToken);
+
         var application = await applicationRepository
-            .Where(p => p.Id == request.applicationId)
+            .Where(p => p.Id == request.applicationId ||(applicationEvaluation != null ? p.Id == applicationEvaluation.ApplicationId : false))
             .Include(p => p.User)
                 .ThenInclude(u => u.Addresses)
             .Include(p => p.FieldValues)

@@ -60,5 +60,19 @@ class CommissionService {
 
     return res.data.data;
   }
+
+  async deleteCommission(id: string): Promise<string> {
+    const res = await api.delete<Result<string>>(
+      `${import.meta.env.VITE_API_URL}/commissions/${id}`
+    );
+
+    this.toastStore.addToast({
+      message: res.status == 200 ? "Komisyon başarıyla silindi" : "Hata oluştu",
+      type: res.status == 200 ? "success" : "error",
+      duration: 3000,
+    });
+
+    return res.data.data;
+  }
 }
 export default new CommissionService();

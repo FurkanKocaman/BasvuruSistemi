@@ -13,7 +13,6 @@ const route = useRoute();
 const router = useRouter();
 
 const id = route.params.id as string | undefined;
-const evaluationPipelineStageId = route.query.evaluationPipelineStageId as string | undefined;
 
 const values = ref<Record<string, any>>({});
 const fields = ref<FormFieldResponse[]>([]);
@@ -21,8 +20,7 @@ const fields = ref<FormFieldResponse[]>([]);
 const toastStore = useToastStore();
 
 const request = ref<SubmitEvaluationModel>({
-  applicationId: "",
-  evaluationPipelineStageId: "",
+  id: "",
   status: -1,
   values: [],
 });
@@ -32,10 +30,9 @@ onMounted(() => {
 });
 
 const getEvaluationForm = async () => {
-  if (id && evaluationPipelineStageId) {
-    request.value.applicationId = id;
-    request.value.evaluationPipelineStageId = evaluationPipelineStageId;
-    const res = await evaluationFormService.getEvaluationForm(id, evaluationPipelineStageId);
+  if (id) {
+    request.value.id = id;
+    const res = await evaluationFormService.getEvaluationForm(id);
     if (res) {
       fields.value = res.fields;
       res.fields.forEach((element) => {
@@ -53,12 +50,12 @@ const submitForm = async () => {
   for (const field of fields.value) {
     if (field.type === 6 || field.type === 13 || field.type === 15 || field.type === 16) {
       const file = values.value[field.id];
-      if (file && evaluationPipelineStageId) {
+      if (file && id) {
         try {
           const res = await applicationEvaluationService.uploadEvaluationFile({
             formFieldId: field.id,
             file: file,
-            evaluationPipelineStageId: evaluationPipelineStageId,
+            applicationEvaluationId: id,
           });
           if (res.statusCode === 200) {
             values.value[field.id] = res.data;
@@ -112,7 +109,7 @@ const submit = () => {
 
 <template>
   <div
-    v-if="evaluationPipelineStageId"
+    v-if="id"
     class="w-full border dark:border-gray-800 border-gray-200 rounded-lg mb-5 py-3 px-5 flex flex-col items-start"
   >
     <span class="text-lg dark:text-gray-100 font-semibold" @click="submit"
@@ -143,7 +140,6 @@ const submit = () => {
       <div class="w-full flex flex-col mt-3">
         <label for="evaluationStatus" class="text-sm mb-2 dark:text-gray-300 text-gray-700"
           >Değerlendirme Durumu
-          <span class="ml-1 text-gray-500 dark:text-gray-500">(opsiyonel)</span>
         </label>
         <select
           name="evaluationStatus"

@@ -19,6 +19,14 @@ public static class FormTemplateModule
             })
             .RequireAuthorization(CustomClaimTypes.ManageTemplates).Produces<Result<string>>().WithName("FormTemplateCreate");
 
+        group.MapDelete("{id:guid}",
+            async (ISender sender, Guid id, CancellationToken cancellationToken) =>
+            {
+                var response = await sender.Send(new DeleteFormTemplateCommand(id), cancellationToken);
+                return response.IsSuccessful ? Results.Ok(response) : Results.InternalServerError(response);
+            })
+            .RequireAuthorization(CustomClaimTypes.ManageTemplates).Produces<Result<string>>().WithName("FormTemplateDelete");
+
 
         group.MapPost("temp",
             async (ISender sender, FormTemplateCreateTempCommand request, CancellationToken cancellationToken) =>

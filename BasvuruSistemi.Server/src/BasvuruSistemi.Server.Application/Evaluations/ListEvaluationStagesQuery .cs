@@ -30,7 +30,7 @@ internal sealed class ListEvaluationStagesQueryHandler(
             evaluationStage.Description,
             evaluationStage.Order,
             evaluationStage.DefaultEvaluationFormId,
-            evaluationStage.EvaluationForms?.Select(f => new EvaluationFormDto(
+            evaluationStage.EvaluationForms?.Where(p => !p.IsDeleted).Select(f => new EvaluationFormDto(
                 f.Id,
                 f.Name,
                 f.EvaluationStageId,

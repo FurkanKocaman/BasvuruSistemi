@@ -44,11 +44,10 @@ function formatDateTime(value: string): string {
 
   return `${day}.${month}.${year} ${hours}:${minutes}`;
 }
-const goToApplicationDetail = (id: string, evaluationPipelineStageId: string) => {
+const goToApplicationDetail = (id: string) => {
   router.push({
     name: "pending-evaluations-evaluate",
     params: { id },
-    query: { evaluationPipelineStageId: evaluationPipelineStageId },
   });
 };
 

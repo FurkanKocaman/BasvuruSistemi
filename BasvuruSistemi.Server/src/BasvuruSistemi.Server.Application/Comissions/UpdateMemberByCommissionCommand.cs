@@ -6,7 +6,8 @@ using TS.Result;
 namespace BasvuruSistemi.Server.Application.Comissions;
 public sealed record UpdateCommissionMemberCommand(
     Guid Id,
-    string RoleInCommission
+    string Role,
+    bool IsManager
     ) : IRequest<Result<string>>;
 
 internal sealed class UpdateMemberByCommissionCommandHandler(
@@ -21,7 +22,7 @@ internal sealed class UpdateMemberByCommissionCommandHandler(
         if(commissionMember is null)
             return Result<string>.Failure(404, "Commission member not found.");
 
-        commissionMember.UpdateRole(request.RoleInCommission);
+        commissionMember.UpdateRole(request.Role,request.IsManager);
 
         commissionMemberRepository.Update(commissionMember);
 

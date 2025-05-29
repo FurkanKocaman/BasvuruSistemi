@@ -4,11 +4,14 @@ import { FormTemplateGetModel } from "../../models/form-template-get.model";
 import formTemplateService from "../../services/form-template.service";
 import { useRouter } from "vue-router";
 import { useVisiblePages } from "@/services/pagination.service";
+import ConfirmModal from "@/components/ConfirmModal.vue";
 
 const formTemplates: Ref<FormTemplateGetModel[] | undefined> = ref([]);
 const page = ref(0);
 const pageSize = ref(20);
 const totalCount = ref(0);
+
+const confirmModal = ref();
 
 const totalPages = computed(() => {
   return Math.ceil(totalCount.value / pageSize.value);
@@ -49,8 +52,14 @@ const goToFormTemplate = (id: string) => {
   router.push({ name: "form-templates-update", params: { id } });
 };
 
-const handleDelete = (id: string) => {
-  console.error("implement template delete", id);
+const handleDelete = async (id: string) => {
+  const result = await confirmModal.value.open();
+  if (result) {
+    const res = await formTemplateService.deleteFormTemplate(id);
+    if (res) {
+      formTemplates.value = formTemplates.value?.filter((p) => p.id != id);
+    }
+  }
 };
 const handlePreview = (id: string) => {
   console.error("implement template preview", id);
@@ -66,6 +75,11 @@ const changePage = (pageNumber: number) => {
 
 <template>
   <main class="w-full h-full px-10 pt-20 pb-10">
+    <ConfirmModal
+      ref="confirmModal"
+      title="Form şablonunu silmek istediğinize emin misiniz?"
+      description="Bu işlem geri alınamaz."
+    />
     <div class="w-full flex">
       <!-- Filtreler -->
       <div></div>

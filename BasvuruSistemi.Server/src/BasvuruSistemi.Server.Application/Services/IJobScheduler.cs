@@ -19,6 +19,5 @@ public interface IJobScheduler
     ///Deletes the existing job from Hangfire.
     /// </summary>
     Task<bool> CancelScheduleAsync(string jobId);
-
     Task<bool> ScheduleInReviewApplications(Guid jobPostingId);
 }

@@ -325,11 +325,10 @@ public class AppController(ISender sender) : ControllerBase
     [HttpGet("evaluation-form")]
     [Authorize()]
     public async Task<ActionResult<GetEvaluationFormForApplicationEvaluationQueryResponse>> GetEvaliationForm(
-        [FromQuery] Guid applicationId,
-        [FromQuery] Guid evaluationPipelineStageId,
+        [FromQuery] Guid applicationEvaluationId,
         CancellationToken cancellationToken = default)
     {
-        var response = await sender.Send(new GetEvaluationFormForApplicationEvaluationQuery(applicationId, evaluationPipelineStageId), cancellationToken);
+        var response = await sender.Send(new GetEvaluationFormForApplicationEvaluationQuery(applicationEvaluationId), cancellationToken);
         return StatusCode(response.StatusCode, response.Data);
     }
 

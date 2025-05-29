@@ -20,9 +20,9 @@ public static class ApplicationEvaluationModule
             .RequireAuthorization().Produces<Result<string>>();
 
         group.MapPost("upload-file/{formFieldId:guid}",
-          async (ISender sender, Guid formFieldId, [FromQuery] Guid evaluationPipelineStageId, IFormFile file, CancellationToken cancellationToken) =>
+          async (ISender sender, Guid formFieldId, [FromQuery] Guid applicationEvaluationId, IFormFile file, CancellationToken cancellationToken) =>
           {
-              var command = new UploadFileForApplicationEvaluationCommand(formFieldId, file, evaluationPipelineStageId);
+              var command = new UploadFileForApplicationEvaluationCommand(formFieldId, file, applicationEvaluationId);
               var response = await sender.Send(command, cancellationToken);
               return response.IsSuccessful ? Results.Ok(response) : response.StatusCode == 404 ? Results.NotFound(response) : Results.InternalServerError(response);
           })

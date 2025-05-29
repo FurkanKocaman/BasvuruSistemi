@@ -34,12 +34,14 @@ internal sealed class GetApprovalCommissionByIdQueryHandler(
             Id = commission.Id,
             Name = commission.Name,
             Description = commission.Description,
-            CommissionMembers = commission.CommissionMembers.Select(m => new GetCommissionMembersQueryResponse
+            CommissionMembers = commission.CommissionMembers.Where(p => !p.IsDeleted).Select(m => new GetCommissionMembersQueryResponse
             {
+                Id = m.Id,  
                 UserId = m.UserId,
                 FullName = m.User.FullName,
                 Email = m.User.Email,
                 RoleInCommission = m.RoleInCommission,
+                IsManager = m.IsManager,
                 CreatedAt = m.CreatedAt
             }).ToList(),
             CreatedAt = commission.CreatedAt,
