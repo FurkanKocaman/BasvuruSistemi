@@ -1,18 +1,16 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, Ref } from "vue";
-import jobPostingService from "../services/job-posting.service";
+import { FormTemplateGetModel } from "../../models/form-template-get.model";
+import formTemplateService from "../../services/form-template.service";
 import { useRouter } from "vue-router";
-import { JobPostingSummariesByTenantResponse } from "../models/job-posting-summaries-by-tenant.model";
-import { getJobPostingStatusOptionByValue } from "@/models/constants/job-posting-status";
-import { formatDateTime } from "../composables/formatDateTime";
-import ConfirmModal from "@/components/ConfirmModal.vue";
-import { getJobPostingtypeOptionByValue } from "@/models/constants/job-posting-type";
 import { useVisiblePages } from "@/services/pagination.service";
+import ConfirmModal from "@/components/ConfirmModal.vue";
 
-const jobPostings: Ref<JobPostingSummariesByTenantResponse[]> = ref([]);
-const page = ref(1);
-const pageSize = ref(10);
+const formTemplates: Ref<FormTemplateGetModel[] | undefined> = ref([]);
+const page = ref(0);
+const pageSize = ref(20);
 const totalCount = ref(0);
+
 const confirmModal = ref();
 
 const totalPages = computed(() => {
@@ -23,56 +21,55 @@ const visiblePages = useVisiblePages(totalPages, page);
 
 const router = useRouter();
 
-onMounted(async () => {
-  getJobPostings();
+onMounted(() => {
+  getFormTemplates();
 });
 
-const getJobPostings = async () => {
-  const res = await jobPostingService.getJobPostings(page.value, pageSize.value);
+const getFormTemplates = async () => {
+  const res = await formTemplateService.getFormTemplates(page.value, pageSize.value);
   if (res) {
-    jobPostings.value = res.items;
+    formTemplates.value = res.items;
     totalCount.value = res.totalCount;
-    page.value = res.page;
     pageSize.value = res.pageSize;
+    page.value = res.page;
   }
+};
+
+function formatDateTime(value: string): string {
+  const date = new Date(value);
+
+  const day = date.getDate().toString().padStart(2, "0");
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const year = date.getFullYear();
+
+  const hours = date.getHours().toString().padStart(2, "0");
+  const minutes = date.getMinutes().toString().padStart(2, "0");
+
+  return `${day}.${month}.${year} ${hours}:${minutes}`;
+}
+
+const goToFormTemplate = (id: string) => {
+  router.push({ name: "form-templates-update", params: { id } });
+};
+
+const handleDelete = async (id: string) => {
+  const result = await confirmModal.value.open();
+  if (result) {
+    const res = await formTemplateService.deleteFormTemplate(id);
+    if (res) {
+      formTemplates.value = formTemplates.value?.filter((p) => p.id != id);
+    }
+  }
+};
+const handlePreview = (id: string) => {
+  console.error("implement template preview", id);
 };
 
 const changePage = (pageNumber: number) => {
   if (!(pageNumber <= 0 || pageNumber > totalPages.value)) {
     page.value = pageNumber;
-    getJobPostings();
+    getFormTemplates();
   }
-};
-
-const goToJobPostingEdit = (id: string, type: number) => {
-  if (type == 1) {
-    router.push({ name: "job-posting-update", params: { id } });
-  } else if (type == 2) {
-    router.push({ name: "job-posting-group-update", params: { id } });
-  }
-};
-
-const handleDelete = async (id: string, type: number) => {
-  var result = await confirmModal.value.open();
-  if (type == 1) {
-    if (result) {
-      const res = await jobPostingService.deleteJobPosting(id);
-      if (res) {
-        jobPostings.value = jobPostings.value.filter((p) => p.id != id);
-      }
-    }
-  } else if (type == 2) {
-    if (result) {
-      const res = await jobPostingService.deleteJobPosting(id);
-      if (res) {
-        jobPostings.value = jobPostings.value.filter((p) => p.id != id);
-      }
-    }
-  }
-};
-
-const handlePreview = (id: string) => {
-  console.error("implement preview", id);
 };
 </script>
 
@@ -80,8 +77,8 @@ const handlePreview = (id: string) => {
   <main class="w-full h-full px-10 pt-20 pb-10">
     <ConfirmModal
       ref="confirmModal"
-      title="Bu ilanı silmek istediğinize emin misiniz?"
-      description="Bu işlem geri alınamaz"
+      title="Form şablonunu silmek istediğinize emin misiniz?"
+      description="Bu işlem geri alınamaz."
     />
     <div class="w-full flex">
       <!-- Filtreler -->
@@ -90,8 +87,16 @@ const handlePreview = (id: string) => {
       <div
         class="w-full dark:bg-gray-800/40 bg-gray-50 rounded-xl border dark:border-gray-800 border-gray-200"
       >
-        <div class="border-b px-5 py-3 dark:border-gray-800 border-gray-200">
-          <span class="text-xl font-base dark:text-gray-50 text-gray-700">İlan Listesi</span>
+        <div
+          class="border-b px-5 py-3 dark:border-gray-800 border-gray-200 flex justify-between items-center"
+        >
+          <span class="text-xl font-base dark:text-gray-50 text-gray-700">Form Şablonları</span>
+          <router-link
+            to="/management/form-templates/create"
+            class="border rounded-md dark:border-gray-700 border-gray-200 text-sm dark:text-gray-200 text-gray-700 dark:hover:bg-gray-700/20 hover:bg-gray-200/20 cursor-pointer px-3 py-1.5"
+          >
+            Şablon Oluştur
+          </router-link>
         </div>
         <div class="px-5 py-5">
           <div
@@ -102,7 +107,7 @@ const handlePreview = (id: string) => {
                 name="pageSize"
                 id="pageSize"
                 v-model="pageSize"
-                @change="getJobPostings()"
+                @change="getFormTemplates()"
                 class="text-sm dark:text-gray-300 text-gray-700 dark:bg-gray-800 px-3 py-1 outline-none focus:border-indigo-600 rounded-md border dark:border-gray-700 border-gray-300"
               >
                 <option :value="10">10</option>
@@ -134,7 +139,7 @@ const handlePreview = (id: string) => {
                     class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200 cursor-pointer select-none dark:text-gray-400 text-sm"
                   >
                     <div class="flex items-center justify-between">
-                      <span>İlan Adı</span>
+                      <span>Şablon Adı</span>
                       <svg
                         class="size-6 dark:fill-gray-500"
                         viewBox="0 0 1024 1024"
@@ -150,7 +155,7 @@ const handlePreview = (id: string) => {
                     class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200 cursor-pointer select-none dark:text-gray-400 text-sm"
                   >
                     <div class="flex items-center justify-between">
-                      <span>İlan Tipi</span>
+                      <span>Şablon Açıklama</span>
                       <svg
                         class="size-6 dark:fill-gray-500"
                         viewBox="0 0 1024 1024"
@@ -166,7 +171,7 @@ const handlePreview = (id: string) => {
                     class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200 cursor-pointer select-none dark:text-gray-400 text-sm"
                   >
                     <div class="flex items-center justify-between">
-                      <span>İlk Başvuru Tarihi</span>
+                      <span>Alanlar</span>
                       <svg
                         class="size-6 dark:fill-gray-500"
                         viewBox="0 0 1024 1024"
@@ -182,7 +187,7 @@ const handlePreview = (id: string) => {
                     class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200 cursor-pointer select-none dark:text-gray-400 text-sm"
                   >
                     <div class="flex items-center justify-between">
-                      <span>Son Başvuru Tarihi</span>
+                      <span>Oluşturulma Tarihi</span>
                       <svg
                         class="size-6 dark:fill-gray-500"
                         viewBox="0 0 1024 1024"
@@ -198,7 +203,7 @@ const handlePreview = (id: string) => {
                     class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200 cursor-pointer select-none dark:text-gray-400 text-sm"
                   >
                     <div class="flex items-center justify-between">
-                      <span>Kontenjan Var Mı</span>
+                      <span>Oluşturan</span>
                       <svg
                         class="size-6 dark:fill-gray-500"
                         viewBox="0 0 1024 1024"
@@ -210,22 +215,7 @@ const handlePreview = (id: string) => {
                       </svg>
                     </div>
                   </td>
-                  <td
-                    class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200 cursor-pointer select-none dark:text-gray-400 text-sm"
-                  >
-                    <div class="flex items-center justify-between">
-                      <span>Başvuru sayısı</span>
-                      <svg
-                        class="size-6 dark:fill-gray-500"
-                        viewBox="0 0 1024 1024"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M620.6 562.3l36.2 36.2L512 743.3 367.2 598.5l36.2-36.2L512 670.9l108.6-108.6zM512 353.1l108.6 108.6 36.2-36.2L512 280.7 367.2 425.5l36.2 36.2L512 353.1z"
-                        />
-                      </svg>
-                    </div>
-                  </td>
+
                   <td
                     class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200 cursor-pointer select-none dark:text-gray-400 text-sm"
                   >
@@ -247,64 +237,39 @@ const handlePreview = (id: string) => {
               </thead>
               <tbody class="">
                 <tr
-                  v-for="(jobPosting, index) in jobPostings"
-                  :key="jobPosting.id"
+                  v-for="(formTemplate, index) in formTemplates"
+                  :key="formTemplate.id"
                   class="border-b dark:border-gray-700/30 border-gray-200"
                 >
                   <td class="py-3 pr-2 pl-4 border-r dark:border-gray-700/30 border-gray-200">
                     {{ index + 1 }}
                   </td>
                   <td class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200">
-                    <span class="cursor-pointer">{{ jobPosting.title }}</span>
+                    <span class="cursor-pointer">{{ formTemplate.name }}</span>
                   </td>
                   <td class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200">
-                    {{ getJobPostingtypeOptionByValue(jobPosting.type)?.label }}
+                    {{ formTemplate.description ?? "-" }}
                   </td>
                   <td class="py-3 px-2 border-r text-sm dark:border-gray-700/30 border-gray-200">
-                    {{ jobPosting.validFrom ? formatDateTime(jobPosting.validFrom) : "-" }}
+                    {{ formTemplate.fields.length }}
                   </td>
                   <td class="py-3 px-2 border-r text-sm dark:border-gray-700/30 border-gray-200">
-                    {{ jobPosting.validTo ? formatDateTime(jobPosting.validTo) : "-" }}
+                    {{ formatDateTime(formTemplate.createdAt.toString()) }}
                   </td>
                   <td class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200">
-                    <span
-                      class="py-0.5 px-1.5 rounded-lg"
-                      :class="
-                        jobPosting.vacancyCount
-                          ? 'dark:bg-blue-500/60 bg-blue-500/20 dark:text-gray-200 text-gray-600'
-                          : 'dark:bg-red-500/60 bg-red-500/20 dark:text-red-200 text-red-600'
-                      "
-                      >{{ jobPosting.vacancyCount ? jobPosting.vacancyCount : "yok" }}</span
-                    >
+                    {{ formTemplate.createUserName }}
                   </td>
                   <td class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200">
-                    {{ jobPosting.totalApplicationsCount }}
+                    <span class="px-2 py-1 bg-green-600 text-gray-100 rounded-lg">{{
+                      formTemplate.isActive ? "Aktif" : "Pasif"
+                    }}</span>
                   </td>
-                  <td class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200">
-                    <span
-                      class="py-0.5 px-1.5 rounded-lg text-gray-100"
-                      :class="
-                        jobPosting.status == 1
-                          ? 'bg-yellow-600'
-                          : jobPosting.status == 2
-                          ? 'bg-green-600'
-                          : jobPosting.status == 3
-                          ? 'bg-red-500'
-                          : jobPosting.status == 4
-                          ? 'bg-red-600'
-                          : jobPosting.status == 5
-                          ? 'bg-orange-500'
-                          : jobPosting.status == 6
-                          ? 'bg-cyan-600'
-                          : 'bg-blue-600'
-                      "
-                      >{{ getJobPostingStatusOptionByValue(jobPosting.status)?.label }}</span
-                    >
-                  </td>
+
                   <td class="py-3 px-2">
                     <button
                       class="cursor-pointer pr-1 group"
-                      @click.stop="goToJobPostingEdit(jobPosting.id, jobPosting.type)"
+                      title="Düzenle"
+                      @click="goToFormTemplate(formTemplate.id)"
                     >
                       <svg
                         class="size-5 dark:fill-gray-400 fill-gray-600 group-hover:fill-blue-600 dark:group-hover:fill-blue-600"
@@ -318,7 +283,8 @@ const handlePreview = (id: string) => {
                     </button>
                     <button
                       class="cursor-pointer pr-1"
-                      @click.stop="handleDelete(jobPosting.id, jobPosting.type)"
+                      title="Sil"
+                      @click.stop="handleDelete(formTemplate.id)"
                     >
                       <svg
                         class="size-5 group"
@@ -359,7 +325,8 @@ const handlePreview = (id: string) => {
                     </button>
                     <button
                       class="cursor-pointer pr-1 group"
-                      @click.stop="handlePreview(jobPosting.id)"
+                      title="Önizleme"
+                      @click.stop="handlePreview(formTemplate.id)"
                     >
                       <svg
                         class="size-5 group"

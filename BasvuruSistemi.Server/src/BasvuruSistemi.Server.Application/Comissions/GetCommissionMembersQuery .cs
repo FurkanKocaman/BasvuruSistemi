@@ -10,9 +10,12 @@ public sealed record GetCommissionMembersQuery(
 
 public sealed class GetCommissionMembersQueryResponse
 {
+    public Guid Id { get; set; }
     public Guid UserId { get; set; }
     public string FullName { get; set; } = default!;
+    public string? Email { get; set; }
     public string RoleInCommission { get; set; } = default!;
+    public bool IsManager { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
 }
 
@@ -29,11 +32,14 @@ internal sealed class GetCommissionMembersQueryHandler(
         if (commissionMembers is null || !commissionMembers.Any())
             return Result<List<GetCommissionMembersQueryResponse>>.Failure(404, "Commission not found.");
 
-        var response = commissionMembers.Select(commissionMember => new GetCommissionMembersQueryResponse
+        var response = commissionMembers.Where(p => !p.IsDeleted).Select(commissionMember => new GetCommissionMembersQueryResponse
         {
+            Id = commissionMember.Id,
             UserId = commissionMember.UserId,
             FullName = commissionMember.User.FullName,
+            Email = commissionMember.User.Email,
             RoleInCommission = commissionMember.RoleInCommission,
+            IsManager = commissionMember.IsManager,
             CreatedAt = commissionMember.CreatedAt
         }).ToList();
 

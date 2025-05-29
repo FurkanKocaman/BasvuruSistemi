@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { onMounted, reactive, Ref, ref } from "vue";
-import { FormTemplateCreateReqeust } from "../models/form-template-create.model";
-import formTemplateService from "../services/form-template.service";
+import { FormTemplateCreateReqeust } from "../../models/form-template-create.model";
+import formTemplateService from "../../services/form-template.service";
 import { useRoute, useRouter } from "vue-router";
-import { FormFieldDefinition } from "../models/form-field.model";
-import { useDropdown } from "../composables/useDropdown";
-import FieldsFromFormTemplate from "../components/form-template-components/form-template-create/FieldsFromFormTemplate.vue";
-import NewFormField from "../components/form-template-components/form-template-create/NewFormField.vue";
-import SelectedFormFields from "../components/form-template-components/form-template-create/SelectedFormFields.vue";
+import { FormFieldDefinition } from "../../models/form-field.model";
+import { useDropdown } from "../../composables/useDropdown";
+import FieldsFromFormTemplate from "../../components/form-template-components/form-template-create/FieldsFromFormTemplate.vue";
+import NewFormField from "../../components/form-template-components/form-template-create/NewFormField.vue";
+import SelectedFormFields from "../../components/form-template-components/form-template-create/SelectedFormFields.vue";
 import { useToastStore } from "@/modules/toast/store/toast.store";
 
 const formFieldAddingType = ref("FormTemplateAll");

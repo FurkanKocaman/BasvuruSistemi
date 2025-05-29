@@ -1,6 +1,75 @@
-﻿namespace BasvuruSistemi.Server.Application.ApplicationEvaluations;
-internal class SubmitEvaluationCommand
-{
-}
+﻿using BasvuruSistemi.Server.Application.Services;
+using BasvuruSistemi.Server.Domain.ApplicationEvaluations;
+using BasvuruSistemi.Server.Domain.Applications;
+using BasvuruSistemi.Server.Domain.DTOs;
+using BasvuruSistemi.Server.Domain.Enums;
+using BasvuruSistemi.Server.Domain.UnitOfWork;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using TS.Result;
+
+namespace BasvuruSistemi.Server.Application.ApplicationEvaluations;
+public sealed record SubmitEvaluationCommand(
+    Guid Id,
+    int status,
+    string? overallComment,
+    List<FieldValueDto> Values
+    ) : IRequest<Result<string>>;
 
 //Değerlendiren kişinin değerlendirme formunu doldurup göndermesi için kullanılan command (Örn : Ön değerlendirme) 
+
+internal sealed class SubmitEvaluationCommandHandler(
+    ICurrentUserService currentUserService,
+    IApplicationEvaluationRepository applicationEvaluationRepository,
+    IApplicationEvaluationValueRepository applicationEvaluationValueRepository,
+    IUnitOfWork unitOfWork
+    ) : IRequestHandler<SubmitEvaluationCommand, Result<string>>
+{
+    public async Task<Result<string>> Handle(SubmitEvaluationCommand request, CancellationToken cancellationToken)
+    {
+        using(var transaction = unitOfWork.BeginTransaction())
+        {
+            try
+            {
+                Guid? userId = currentUserService.UserId;
+                if (!userId.HasValue)
+                    return Result<string>.Failure(401, "Unauthorized");
+
+                if (!Enum.IsDefined(typeof(EvaluationStatus), request.status))
+                {
+                    return Result<string>.Failure($"Invalid EvaluationStatus: {request.status}.");
+                }
+                var status = (EvaluationStatus)request.status;
+
+                var applicationEvaluation = await applicationEvaluationRepository.Where(p => p.Id == request.Id).FirstOrDefaultAsync(cancellationToken);
+
+                if (applicationEvaluation is null)
+                    return Result<string>.Failure(404, "applicationEvaluation not found");
+
+                applicationEvaluation.Update(status,request.overallComment);
+
+                applicationEvaluationRepository.Update(applicationEvaluation);
+
+                await unitOfWork.SaveChangesAsync(cancellationToken);
+
+                foreach(var value in request.Values)
+                {
+                    var fieldValue = new ApplicationEvaluationValue(applicationEvaluation.Id,value.FieldDefinitionId,value.Value);
+
+                    applicationEvaluationValueRepository.Add(fieldValue);
+                }
+
+                await unitOfWork.SaveChangesAsync(cancellationToken);
+
+                await unitOfWork.CommitTransactionAsync(transaction);
+                return Result<string>.Succeed("Application evaluation submitted");
+            }
+            catch(Exception ex)
+            {
+                await unitOfWork.RollbackTransactionAsync( transaction );
+                return Result<string>.Failure(ex.Message);
+            }
+        }
+       
+    }
+}

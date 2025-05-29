@@ -4,24 +4,25 @@ using MediatR;
 using TS.Result;
 
 namespace BasvuruSistemi.Server.Application.Comissions;
-public sealed record UpdateMemberByCommissionCommand(
+public sealed record UpdateCommissionMemberCommand(
     Guid Id,
-    string RoleInCommission
+    string Role,
+    bool IsManager
     ) : IRequest<Result<string>>;
 
 internal sealed class UpdateMemberByCommissionCommandHandler(
     ICommissionMemberRepository commissionMemberRepository,
     IUnitOfWork unitOfWork
-    ) : IRequestHandler<UpdateMemberByCommissionCommand, Result<string>>
+    ) : IRequestHandler<UpdateCommissionMemberCommand, Result<string>>
 {
-    public async Task<Result<string>> Handle(UpdateMemberByCommissionCommand request, CancellationToken cancellationToken)
+    public async Task<Result<string>> Handle(UpdateCommissionMemberCommand request, CancellationToken cancellationToken)
     {
         var commissionMember = await commissionMemberRepository.FirstOrDefaultAsync(p => p.Id == request.Id, cancellationToken);
 
         if(commissionMember is null)
             return Result<string>.Failure(404, "Commission member not found.");
 
-        commissionMember.UpdateRole(request.RoleInCommission);
+        commissionMember.UpdateRole(request.Role,request.IsManager);
 
         commissionMemberRepository.Update(commissionMember);
 

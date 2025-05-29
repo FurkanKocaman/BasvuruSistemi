@@ -8,13 +8,16 @@ namespace BasvuruSistemi.Server.Application.EvaluationFormFields;
 public sealed record UpdateFormFieldByEvaluationFormCommand(
     Guid Id,
     string Label,
-    int FieldType,
-    string? Options = null,
-    bool IsRequired = false,
-    int Order = 0,
-    string? Placeholder = null,
-    string? HelpText = null,
-    string? ValidationRules = null
+    string? Description,
+    int Type,
+    bool IsRequired,
+    int Order,
+    string? Placeholder,
+    string? OptionsJson,
+    bool IsReadonly,
+    string? DefaultValue,
+    string? AllowedFileTypes,
+    int? MaxFileSizeMb
     ) : IRequest<Result<string>>;
 
 internal sealed class UpdateFormFieldByEvaluationFormCommandHandler(
@@ -29,21 +32,24 @@ internal sealed class UpdateFormFieldByEvaluationFormCommandHandler(
         {
             return Result<string>.Failure(404,"Form field not found.");
         }
-        if (!Enum.IsDefined(typeof(FieldTypeEnum), request.FieldType))
+        if (!Enum.IsDefined(typeof(FieldTypeEnum), request.Type))
         {
-            return Result<string>.Failure(400,$"Invalid FielType: {request.FieldType}.");
+            return Result<string>.Failure(400,$"Invalid FielType: {request.Type}.");
         }
-        var fieldType = (FieldTypeEnum)request.FieldType;
+        var fieldType = (FieldTypeEnum)request.Type;
 
         evaluationFormFieldDefinition.Update(
             request.Label,
+            request.Description,
             fieldType,
-            request.Options,
             request.IsRequired,
             request.Order,
             request.Placeholder,
-            request.HelpText,
-            request.ValidationRules
+            request.OptionsJson,
+            request.IsReadonly,
+            request.DefaultValue,
+            request.AllowedFileTypes,
+            request.MaxFileSizeMb
         );
 
         evaluationFormFieldDefinitionRepository.Update(evaluationFormFieldDefinition);

@@ -18,5 +18,8 @@ public static class RouteRegistrar
         app.RegisterRoleRoutes();
         app.RegisterApprovalCommissionRoutes();
         app.RegisterCommissionMemberRoutes();
+        app.RegisterApplicationEvaluationRoutes();
+        app.RegisterEvaluationStageRoutes();
+        app.RegisterEvaluationFormRoutes();
     }
 }

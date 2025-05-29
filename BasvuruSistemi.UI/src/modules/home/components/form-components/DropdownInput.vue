@@ -53,7 +53,7 @@ watch(
         @blur="handleBlur"
         :placeholder="field.placeholder"
         :required="field.isRequired"
-        class="w-full px-3 py-2 border rounded-md text-gray-800 dark:text-gray-200 dark:bg-gray-900 dark:border-gray-700 border-gray-200 outline-none focus:border-indigo-600 dark:focus:border-indigo-600 focus:shadow-lg"
+        class="w-full px-3 py-2 border rounded-md text-gray-800 dark:text-gray-200 dark:border-gray-600 border-gray-400 outline-none focus:border-indigo-600 dark:focus:border-indigo-600 focus:shadow-lg"
       />
       <ul
         v-if="isOpen && options.length"

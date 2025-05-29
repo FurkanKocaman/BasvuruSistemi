@@ -7,6 +7,7 @@ using BasvuruSistemi.Server.Domain.Comissions;
 using BasvuruSistemi.Server.Domain.Entities;
 using BasvuruSistemi.Server.Domain.Evaluations;
 using BasvuruSistemi.Server.Domain.FormFieldDefinitions;
+using BasvuruSistemi.Server.Domain.JobPostingEvaluationPipelineStages;
 using BasvuruSistemi.Server.Domain.JobPostings;
 using BasvuruSistemi.Server.Domain.PostingGroups;
 using BasvuruSistemi.Server.Domain.Roles;
@@ -60,6 +61,8 @@ internal sealed class ApplicationDbContext: IdentityDbContext<AppUser, AppRole,G
     public DbSet<EvaluationForm> EvaluationForms { get; set; }
     public DbSet<EvaluationFormFieldDefinition> EvaluationFormFieldDefinitions { get; set; }
     public DbSet<EvaluationStage> EvaluationStages { get; set; }
+
+    public DbSet<JobPostingEvaluationPipelineStage> JobPostingEvaluationPipelineStages { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

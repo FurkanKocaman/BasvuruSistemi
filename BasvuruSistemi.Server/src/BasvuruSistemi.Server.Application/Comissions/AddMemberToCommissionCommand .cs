@@ -1,18 +1,22 @@
 ﻿using BasvuruSistemi.Server.Application.Services;
 using BasvuruSistemi.Server.Domain.Comissions;
 using BasvuruSistemi.Server.Domain.UnitOfWork;
+using BasvuruSistemi.Server.Domain.Users;
 using MediatR;
+using Microsoft.AspNetCore.Identity;
 using TS.Result;
 
 namespace BasvuruSistemi.Server.Application.Comissions;
 public sealed record AddMemberToCommissionCommand(
     Guid CommissionId,
-    Guid UserId,
-    string Role
+    string Email,
+    string Role,
+    bool IsManager
     ) : IRequest<Result<string>>;
 
 internal sealed class AddMemberToCommissionCommandHandler(
     ICommissionMemberRepository commissionMemberRepository,
+    UserManager<AppUser> userManager,
     IUnitOfWork unitOfWork,
     ICurrentUserService currentUserService
     ) : IRequestHandler<AddMemberToCommissionCommand, Result<string>>
@@ -31,10 +35,23 @@ internal sealed class AddMemberToCommissionCommandHandler(
             return Result<string>.Failure(401,"Tenant ID is not set.");
         }
 
+        var user = await userManager.FindByEmailAsync(request.Email);
+
+        if (user is null)
+            return Result<string>.Failure(404, "User not found");
+
+        var isMemberExists = await commissionMemberRepository.AnyAsync(
+            p => p.CommissionId == request.CommissionId && p.UserId == user.Id && !p.IsDeleted,
+            cancellationToken
+        );
+        if (isMemberExists)
+            return Result<string>.Failure(409, "User is already a member of this commission.");
+
         var commissionMember = new CommissionMember(
             request.CommissionId,
-            request.UserId,
+            user.Id,
             request.Role,
+            request.IsManager,
             tenantId.Value,
             userId.Value
         );

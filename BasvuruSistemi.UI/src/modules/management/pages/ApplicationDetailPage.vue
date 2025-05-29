@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import applicationService from "@/services/application.service";
-import ApplicationManagementService from "../services/application.service";
 import { useRoute } from "vue-router";
 import { ApplicationGetDetailModel } from "../models/application-get-detail.model";
 import { getFieldTypeOptionByValue } from "@/models/constants/field-type";
@@ -9,6 +8,7 @@ import ConfirmModal from "@/components/ConfirmModal.vue";
 import { getApplicationStatusOptionByValue } from "@/models/constants/application-status";
 import profileService from "@/modules/profile/services/profile.service";
 import { Profile } from "@/modules/profile/models/profile.model";
+import EvaluationProcess from "../components/EvaluationProcess.vue";
 
 const route = useRoute();
 const id = route.params.id as string | undefined;
@@ -53,29 +53,11 @@ onMounted(() => {
 const getApplicationDetail = async () => {
   if (id) {
     const res = await applicationService.getApplication(id);
-    if (res.statusCode == 200) {
-      application.value = res.data;
-      userData.value = await profileService.getUserProfile(res.data.userId);
-    }
-  }
-};
 
-const reviewApplication = async (id: string, status: number) => {
-  if (status == 2) {
-    modalTitle.value = "Başvuruyu onaylamak istediğinize emin misiniz?";
-  } else {
-    modalTitle.value = "Başvuruyu reddetmek istediğinize emin misiniz?";
-  }
-  const result = await confirmModal.value.open();
-  if (result) {
-    await ApplicationManagementService.reviewApplication(
-      id,
-      status,
-      application.value.reviewDescription
-    );
-    getApplicationDetail();
-  } else {
-    console.log("Kullanıcı iptal etti.");
+    if (res) {
+      application.value = res;
+      userData.value = await profileService.getUserProfile(res.userId);
+    }
   }
 };
 
@@ -630,41 +612,7 @@ function formatDateTime(value: string): string {
           </table>
         </div>
       </div>
-      <div
-        class="w-full border dark:border-gray-800 border-gray-200 rounded-lg mb-5 py-3 px-5 flex flex-col items-start"
-      >
-        <span class="text-lg dark:text-gray-100 font-semibold">Başvuru Değerlendirme</span>
-        <div class="mt-5 w-full">
-          <div class="w-full flex flex-col">
-            <label for="reviewDescription" class="text-sm mb-2 dark:text-gray-300 text-gray-700"
-              >Değerlendirme Notu
-              <span class="ml-1 text-gray-500 dark:text-gray-500">(opsiyonel)</span>
-            </label>
-            <textarea
-              name="reviewDescription"
-              id="reviewDescription"
-              v-model="application.reviewDescription"
-              class="border rounded-sm border-gray-200 dark:border-gray-800 outline-none dark:focus:border-indigo-600 focus:border-indigo-600 px-2 py-2 text-gray-700 dark:text-gray-200 text-sm"
-            ></textarea>
-          </div>
-          <div class="w-full flex justify-end mt-5">
-            <button
-              class="px-3 py-1 border dark:border-gray-600 border-gray-400 cursor-pointer rounded-md dark:text-gray-200 text-gray-800 mr-3 hover:bg-red-600 text-sm hover:text-white"
-              :disabled="application.status != 0"
-              @click="reviewApplication(application.id, 3)"
-            >
-              Başvuruyu Reddet
-            </button>
-            <button
-              class="px-3 py-1 border dark:border-gray-600 border-gray-400 cursor-pointer rounded-md dark:text-gray-200 text-gray-800 ml-3 hover:bg-green-600 text-sm hover:text-white"
-              :disabled="application.status != 0"
-              @click="reviewApplication(application.id, 2)"
-            >
-              Başvuruyu Onayla
-            </button>
-          </div>
-        </div>
-      </div>
+      <EvaluationProcess />
     </div>
   </main>
 </template>

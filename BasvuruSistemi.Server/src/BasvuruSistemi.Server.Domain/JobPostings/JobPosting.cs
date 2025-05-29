@@ -2,6 +2,7 @@
 using BasvuruSistemi.Server.Domain.ApplicationFormTemplates;
 using BasvuruSistemi.Server.Domain.Applications;
 using BasvuruSistemi.Server.Domain.Enums;
+using BasvuruSistemi.Server.Domain.JobPostingEvaluationPipelineStages;
 using BasvuruSistemi.Server.Domain.PostingGroups;
 using BasvuruSistemi.Server.Domain.Tenants;
 using BasvuruSistemi.Server.Domain.Units;
@@ -52,7 +53,10 @@ public sealed class JobPosting : Entity
     public Guid? PostingGroupId { get; private set; } // Ait olduğu İlan Grubu (opsiyonel)
     public PostingGroup? PostingGroup { get; private set; } // Navigation property
 
-    public string? HangfireJobId { get; set; }
+    public ICollection<JobPostingEvaluationPipelineStage> EvaluationPipelineStages { get; private set; } = new List<JobPostingEvaluationPipelineStage>();
+
+    public string? HangfirePublishJobId { get; set; }
+    public string? HangfireCloseJobId { get; set; }
 
     private JobPosting() { }
 

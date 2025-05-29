@@ -1,4 +1,8 @@
-﻿using BasvuruSistemi.Server.Application.Applications;
+﻿using BasvuruSistemi.Server.Application.ApplicationEvaluations;
+using BasvuruSistemi.Server.Application.Applications;
+using BasvuruSistemi.Server.Application.Comissions;
+using BasvuruSistemi.Server.Application.EvaluationForms;
+using BasvuruSistemi.Server.Application.Evaluations;
 using BasvuruSistemi.Server.Application.FormTemplates;
 using BasvuruSistemi.Server.Application.JobPostings;
 using BasvuruSistemi.Server.Application.PostingGroups;
@@ -247,5 +251,94 @@ public class AppController(ISender sender) : ControllerBase
     {
         var response = await sender.Send(new GetApplicationsByUserQuery(page,pageSize), cancellationToken);
         return StatusCode(response.StatusCode, response.StatusCode == 200 ? response.Data : response.ErrorMessages);
+    }
+
+    [HttpGet("commissions/{id:guid}")]
+    [Authorize()]
+    public async Task<ActionResult<GetApprovalCommissionByIdQueryResponse>> GetApprovalCommission(
+        Guid id,
+       CancellationToken cancellationToken = default)
+    {
+        var response = await sender.Send(new GetApprovalCommissionByIdQuery(id), cancellationToken);
+        return StatusCode(response.StatusCode, response.StatusCode == 200 ? response.Data : response.ErrorMessages);
+    }
+
+    [HttpGet("commissions")]
+    [Authorize()]
+    public async Task<ActionResult<List<GetApprovalCommissionByIdQueryResponse>>> ListApprovalCommissions(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken cancellationToken = default)
+    {
+        var response = await sender.Send(new ListApprovalCommissionsQuery(), cancellationToken);
+        return StatusCode(response.StatusCode, response.StatusCode == 200 ? response.Data : response.ErrorMessages);
+    }
+
+    [HttpGet("evaluation-forms/{id:guid}")]
+    [Authorize()]
+    public async Task<ActionResult<EvaluationFormDto>> GetEvaluationFormById(
+        Guid id,
+        CancellationToken cancellationToken = default)
+    {
+        var response = await sender.Send(new GetEvaluationFormByIdQuery(id), cancellationToken);
+        return StatusCode(response.StatusCode, response.StatusCode == 200 ? response.Data : response.ErrorMessages);
+    }
+
+    [HttpGet("evaluation-stages")]
+    [Authorize()]
+    public async Task<ActionResult<EvaluationStageDto>> ListEvaluationStages(
+      Guid id,
+      CancellationToken cancellationToken = default)
+    {
+        var response = await sender.Send(new ListEvaluationStagesQuery(), cancellationToken);
+        return StatusCode(response.StatusCode, response.StatusCode == 200 ? response.Data : response.ErrorMessages);
+    }
+
+    [HttpGet("evaluation-stage/{id:guid}")]
+    [Authorize()]
+    public async Task<ActionResult<EvaluationStageDto>> GetEvaluationStageById(
+      Guid id,
+      CancellationToken cancellationToken = default)
+    {
+        var response = await sender.Send(new GetEvaluationStageByIdQuery(id), cancellationToken);
+        return StatusCode(response.StatusCode, response.StatusCode == 200 ? response.Data : response.ErrorMessages);
+    }
+
+    [HttpGet("evaluation-stage/forms/{id:guid}")]
+    [Authorize()]
+    public async Task<ActionResult<EvaluationFormDto>> GetEvaluationFormByStageId(
+       Guid id,
+       CancellationToken cancellationToken = default)
+    {
+        var response = await sender.Send(new ListEvaluationFormsByStageQuery(id), cancellationToken);
+        return StatusCode(response.StatusCode, response.StatusCode == 200 ? response.Data : response.ErrorMessages);
+    }
+
+    [HttpGet("list-pending-evaluations")]
+    [Authorize()]
+    public async Task<ActionResult<ListPendingCommissionEvaluationsQueryResponse>> GetPendingApplicationEvaluations(CancellationToken cancellationToken = default)
+    {
+        var response = await sender.Send(new ListPendingCommissionEvaluationsQuery(),cancellationToken);
+        return StatusCode(response.StatusCode, response.Data);
+    }
+
+    [HttpGet("evaluation-form")]
+    [Authorize()]
+    public async Task<ActionResult<GetEvaluationFormForApplicationEvaluationQueryResponse>> GetEvaliationForm(
+        [FromQuery] Guid applicationEvaluationId,
+        CancellationToken cancellationToken = default)
+    {
+        var response = await sender.Send(new GetEvaluationFormForApplicationEvaluationQuery(applicationEvaluationId), cancellationToken);
+        return StatusCode(response.StatusCode, response.Data);
+    }
+
+    [HttpGet("application-evaluations/process")]
+    [Authorize()]
+    public async Task<ActionResult<List<GetApplicationEvaluationProcessQueryResponse>>> getApplicationEvaluationProcess(
+    [FromQuery] Guid applicationId,
+    CancellationToken cancellationToken = default)
+    {
+        var response = await sender.Send(new GetApplicationEvaluationProcessQuery(applicationId), cancellationToken);
+        return StatusCode(response.StatusCode, response.Data);
     }
 }

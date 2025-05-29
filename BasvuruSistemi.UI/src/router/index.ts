@@ -85,18 +85,20 @@ const router = createRouter({
             {
               path: "",
               name: "job-posting-list",
-              component: () => import("@/modules/management/pages/JobPostingPage.vue"),
+              component: () => import("@/modules/management/pages/job-posting/JobPostingPage.vue"),
             },
             {
               path: "create",
               name: "job-posting-create",
-              component: () => import("@/modules/management/pages/JobpostingCreatePage.vue"),
+              component: () =>
+                import("@/modules/management/pages/job-posting/JobpostingCreatePage.vue"),
               meta: { title: "İlan Oluştur", requiresAuth: true, requireTenant: true },
             },
             {
               path: "update/:id",
               name: "job-posting-update",
-              component: () => import("@/modules/management/pages/JobpostingCreatePage.vue"),
+              component: () =>
+                import("@/modules/management/pages/job-posting/JobpostingCreatePage.vue"),
               meta: { title: "İlan Güncelle", requiresAuth: true, requireTenant: true },
             },
           ],
@@ -110,13 +112,15 @@ const router = createRouter({
             {
               path: "create",
               name: "job-posting-group-create",
-              component: () => import("@/modules/management/pages/JobpostingGroupCreatePage.vue"),
+              component: () =>
+                import("@/modules/management/pages/job-posting/JobpostingGroupCreatePage.vue"),
               meta: { title: "İlan Grubu Oluştur", requiresAuth: true, requireTenant: true },
             },
             {
               path: "update/:id",
               name: "job-posting-group-update",
-              component: () => import("@/modules/management/pages/JobpostingGroupCreatePage.vue"),
+              component: () =>
+                import("@/modules/management/pages/job-posting/JobpostingGroupCreatePage.vue"),
               meta: { title: "ilan Grubu Güncelle", requiresAuth: true, requireTenant: true },
             },
           ],
@@ -130,18 +134,21 @@ const router = createRouter({
             {
               path: "",
               name: "form-templates-list",
-              component: () => import("@/modules/management/pages/FormTemplatesPage.vue"),
+              component: () =>
+                import("@/modules/management/pages/form-templates/FormTemplatesPage.vue"),
             },
             {
               path: "create",
               name: "form-templates-create",
-              component: () => import("@/modules/management/pages/FormTemplateCreatePage.vue"),
+              component: () =>
+                import("@/modules/management/pages/form-templates/FormTemplateCreatePage.vue"),
               meta: { title: "Şablon Oluştur", requiresAuth: true, requireTenant: true },
             },
             {
               path: "update/:id",
               name: "form-templates-update",
-              component: () => import("@/modules/management/pages/FormTemplateCreatePage.vue"),
+              component: () =>
+                import("@/modules/management/pages/form-templates/FormTemplateCreatePage.vue"),
               meta: { title: "Şablon Güncelle", requiresAuth: true, requireTenant: true },
             },
           ],
@@ -163,6 +170,31 @@ const router = createRouter({
               name: "application-detail",
               component: () => import("@/modules/management/pages/ApplicationDetailPage.vue"),
               meta: { title: "Başvuru Detayı", requiresAuth: true, requireTenant: true },
+            },
+          ],
+        },
+        {
+          path: "pending-evaluations",
+          name: "pending-evaluations",
+          redirect: { name: "pending-evaluations-list" },
+          meta: {
+            title: "Değerlendirme Bekleyen Başvurular",
+            requiresAuth: true,
+            requireTenant: true,
+          },
+          children: [
+            {
+              path: "",
+              name: "pending-evaluations-list",
+              component: () => import("@/modules/management/pages/PendingEvaluationsPage.vue"),
+            },
+            {
+              path: "evaluate/:id",
+              name: "pending-evaluations-evaluate",
+              component: () =>
+                import(
+                  "@/modules/management/pages/application-evaluations/ApplicationEvaluatePage.vue"
+                ),
             },
           ],
         },
@@ -189,6 +221,91 @@ const router = createRouter({
               path: "",
               name: "users-list",
               component: () => import("@/modules/management/pages/UsersPage.vue"),
+            },
+          ],
+        },
+        {
+          path: "commissions",
+          name: "commissions",
+          redirect: { name: "commissions-list" },
+          meta: { title: "Komisyonlar", requiresAuth: true, requireTenant: true },
+          children: [
+            {
+              path: "",
+              name: "commissions-list",
+              component: () => import("@/modules/management/pages/CommissionsPage.vue"),
+            },
+            {
+              path: "create",
+              name: "commission-create",
+              component: () => import("@/modules/management/pages/CreateCommissionPage.vue"),
+            },
+            {
+              path: "update/:id",
+              name: "commission-update",
+              component: () => import("@/modules/management/pages/CreateCommissionPage.vue"),
+            },
+          ],
+        },
+        {
+          path: "evaluation-stages",
+          name: "evaluation-stages",
+          redirect: { name: "evaluation-stages-list" },
+          meta: { title: "Değerlendirme Adımları", requiresAuth: true, requireTenant: true },
+          children: [
+            {
+              path: "",
+              name: "evaluation-stages-list",
+              component: () =>
+                import("@/modules/management/pages/evaluations/EvaluationStagesPage.vue"),
+            },
+            {
+              path: "create",
+              name: "evaluations-stage-create",
+              component: () =>
+                import("@/modules/management/pages/evaluations/EvaluationStageCreatePage.vue"),
+            },
+            {
+              path: "update/:id",
+              name: "evaluations-stage-update",
+              component: () =>
+                import("@/modules/management/pages/evaluations/EvaluationStageCreatePage.vue"),
+            },
+            {
+              path: "create-form/:id",
+              name: "evaluations-form-create",
+              component: () =>
+                import("@/modules/management/pages/evaluations/EvaluationFormCreatePage.vue"),
+            },
+            {
+              path: "update-form/:id",
+              name: "evaluations-form-update",
+              component: () =>
+                import("@/modules/management/pages/evaluations/EvaluationFormCreatePage.vue"),
+            },
+          ],
+        },
+
+        {
+          path: "commissions",
+          name: "commissions",
+          redirect: { name: "commissions-list" },
+          meta: { title: "Komisyonlar", requiresAuth: true, requireTenant: true },
+          children: [
+            {
+              path: "",
+              name: "commissions-list",
+              component: () => import("@/modules/management/pages/CommissionsPage.vue"),
+            },
+            {
+              path: "create",
+              name: "commission-create",
+              component: () => import("@/modules/management/pages/CreateCommissionPage.vue"),
+            },
+            {
+              path: "update/:id",
+              name: "commission-update",
+              component: () => import("@/modules/management/pages/CreateCommissionPage.vue"),
             },
           ],
         },

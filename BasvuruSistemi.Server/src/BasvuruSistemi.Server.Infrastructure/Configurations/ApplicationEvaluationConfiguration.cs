@@ -13,16 +13,22 @@ internal sealed class ApplicationEvaluationConfiguration : IEntityTypeConfigurat
             .HasForeignKey(ae => ae.ApplicationId)
             .OnDelete(DeleteBehavior.NoAction);
 
-        builder
-            .HasOne(p => p.EvaluationStage)
-            .WithMany()
-            .HasForeignKey(p => p.EvaluationStageId)
-            .OnDelete(DeleteBehavior.NoAction);
+        //builder
+        //    .HasOne(p => p.EvaluationStage)
+        //    .WithMany()
+        //    .HasForeignKey(p => p.EvaluationStageId)
+        //    .OnDelete(DeleteBehavior.NoAction);
+
+        //builder
+        //    .HasOne(ae => ae.AssignedCommission)
+        //    .WithMany()
+        //    .HasForeignKey(ae => ae.AssignedCommissionId)
+        //    .OnDelete(DeleteBehavior.NoAction);
 
         builder
-            .HasOne(ae => ae.AssignedCommission)
+            .HasOne(ae => ae.JobPostingEvaluationPipelineStage)
             .WithMany()
-            .HasForeignKey(ae => ae.AssignedCommissionId)
+            .HasForeignKey(ae => ae.JobPostingEvaluationPipelineStageId)
             .OnDelete(DeleteBehavior.NoAction);
 
         builder

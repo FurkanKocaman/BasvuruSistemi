@@ -18,4 +18,11 @@ public sealed class ApprovalCommission : Entity
         CreatedAt = DateTimeOffset.Now;
         TenantId = tennatId;
     }
+
+    public void Update(string name, string? description)
+    {
+        Name = name;
+        Description = description;
+        UpdateAt = DateTimeOffset.Now;
+    }
 }

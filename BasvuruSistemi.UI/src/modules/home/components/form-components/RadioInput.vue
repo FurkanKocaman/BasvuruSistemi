@@ -3,7 +3,7 @@ import { FormFieldResponse } from "@/modules/management/models/form-filed-respon
 import { defineProps, defineEmits, ref, onMounted } from "vue";
 
 interface Props {
-  modelValue: string;
+  modelValue: string | undefined;
   field: FormFieldResponse;
 }
 
@@ -28,12 +28,13 @@ onMounted(() => {
       <input
         :id="`radio-${field.id}-${index}`"
         type="radio"
-        name="radio"
+        :name="`radio-${field.id}-${index}`"
         :placeholder="props.field.placeholder"
         :readonly="props.field.isReadOnly"
         :required="props.field.isRequired"
-        :value="props.modelValue"
-        @input="e => emit('update:modelValue', (e.target as HTMLInputElement).value)"
+        :value="option"
+        :checked="option == props.modelValue"
+        @change="e => emit('update:modelValue', (e.target as HTMLInputElement).value)"
         class="px-3 py-2 w-4 h-4 border rounded-md dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200 mr-3 outline-none accent-indigo-600"
       />
       <label

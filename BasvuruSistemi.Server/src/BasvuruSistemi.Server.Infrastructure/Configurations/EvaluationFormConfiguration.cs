@@ -18,5 +18,7 @@ internal sealed class EvaluationFormConfiguration : IEntityTypeConfiguration<Eva
             .WithOne(efd => efd.EvaluationForm)
             .HasForeignKey(efd => efd.EvaluationFormId)
             .OnDelete(DeleteBehavior.Cascade);
+
+
     }
 }

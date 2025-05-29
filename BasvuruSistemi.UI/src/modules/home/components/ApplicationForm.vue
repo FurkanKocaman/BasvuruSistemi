@@ -80,6 +80,9 @@ const submitForm = async () => {
         }
       }
     }
+    if (field.type === 3) {
+      values.value[field.id] = values.value[field.id].join(", ");
+    }
     if (field.isRequired && !values.value[field.id]) {
       isError = true;
       toastStore.addToast({
@@ -101,6 +104,7 @@ const submitForm = async () => {
   if (isError) {
     return;
   } else {
+    console.log("Request", request);
     await applicationService.createApplication(request.value);
 
     router.push("/jobs");
