@@ -69,6 +69,25 @@ internal sealed class HangfireJobScheduler(
         return Task.FromResult(jobs.Delete(jobId));
     }
 
+    public async Task<bool> CancelScheduleInReviewApplications(Guid jobPostingId)
+    {
+        var jobPosting = await jobPostingRepository.WhereWithTracking(p => p.Id == jobPostingId).Include(p => p.EvaluationPipelineStages).FirstOrDefaultAsync();
+
+        if (jobPosting is null)
+            return false;
+
+        var pipelineEvaluationStages = await jobPostingEvaluationPipelineStageRepository.WhereWithTracking(p => p.JobPostingId == jobPostingId && !p.IsDeleted).OrderBy(p => p.OrderInPipeline).ToListAsync();
+
+        foreach (var pipelineEvaluationStage in pipelineEvaluationStages)
+        {
+            jobs.Delete(pipelineEvaluationStage.HangfireStartJobId);
+            jobs.Delete(pipelineEvaluationStage.HangfireEndJobId);
+        }
+
+
+        return true;
+    }
+
     public async Task<bool> ScheduleInReviewApplications(Guid jobPostingId)
     {
         var jobPosting = await jobPostingRepository.WhereWithTracking(p => p.Id == jobPostingId).Include(p => p.EvaluationPipelineStages).FirstOrDefaultAsync();
@@ -76,7 +95,6 @@ internal sealed class HangfireJobScheduler(
         if (jobPosting is null)
             return false;
 
-        Console.WriteLine(jobPosting.Title);
 
         var pipelineEvaluationStages = await jobPostingEvaluationPipelineStageRepository.WhereWithTracking(p => p.JobPostingId == jobPostingId && !p.IsDeleted).OrderBy(p => p.OrderInPipeline).ToListAsync();
             

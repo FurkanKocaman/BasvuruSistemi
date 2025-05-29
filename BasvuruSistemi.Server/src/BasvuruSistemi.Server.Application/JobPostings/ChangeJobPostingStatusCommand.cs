@@ -8,7 +8,7 @@ using TS.Result;
 namespace BasvuruSistemi.Server.Application.JobPostings;
 public sealed record ChangeJobPostingStatusCommand(
     Guid jobPostingId,
-    JobPostingStatus status,
+    int status,
     DateTimeOffset? publishStartDate
     ) : IRequest<Result<string>>;
 
@@ -25,7 +25,13 @@ internal sealed class ChangeJobPostingStatusCommandHandler(
         if (jobPosting is null)
             return Result<string>.Failure("Job posting not found");
 
-        switch (request.status)
+        if (!System.Enum.IsDefined(typeof(JobPostingStatus), request.status))
+        {
+            return Result<string>.Failure($"Invalid JobPostingStatus: {request.status}.");
+        }
+        JobPostingStatus status = (JobPostingStatus)request.status;
+
+        switch (status)
         {
             case JobPostingStatus.Draft:
                 jobPosting.Draft();
@@ -36,9 +42,6 @@ internal sealed class ChangeJobPostingStatusCommandHandler(
                 {
                     await jobScheduler.CancelScheduleAsync(jobPosting.HangfirePublishJobId);
                 }
-                break;
-            case JobPostingStatus.Closed:
-                jobPosting.Close();
                 break;
             case JobPostingStatus.OnHold:
                 jobPosting.PutOnHold();

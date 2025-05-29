@@ -21,7 +21,6 @@ public sealed record JobPostingUpdateCommand(
     DateTimeOffset? ValidFrom,
     DateTimeOffset? ValidTo,
 
-    int Status, //JobPostingStatus Enum
     bool IsRemote,
     string? LocationText,
 
@@ -64,12 +63,6 @@ internal sealed class JobPostingUpdateCommandHandler(
         if (jobPosting is null)
             return Result<string>.Failure("Job posting nor found");
 
-        if (!System.Enum.IsDefined(typeof(JobPostingStatus), request.Status))
-        {
-            return Result<string>.Failure($"Invalid JobPostingStatus: {request.Status}.");
-        }
-        JobPostingStatus status = (JobPostingStatus)request.Status;
-
         if (request.EmploymentType is not null && !System.Enum.IsDefined(typeof(EmploymentType), request.EmploymentType))
         {
             return Result<string>.Failure($"Invalid EmploymentType: {request.EmploymentType}.");
@@ -90,7 +83,6 @@ internal sealed class JobPostingUpdateCommandHandler(
             request.UnitId,
             request.FormTemplateId,
             request.PostingGroupId,
-            status,
             request.IsPublic,
             request.IsAnonymous,
 

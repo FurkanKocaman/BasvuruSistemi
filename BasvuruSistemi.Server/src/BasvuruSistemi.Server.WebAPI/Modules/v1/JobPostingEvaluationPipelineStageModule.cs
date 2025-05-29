@@ -1,4 +1,5 @@
-﻿using BasvuruSistemi.Server.Application.FormTemplates;
+﻿using BasvuruSistemi.Server.Application.ApplicationEvaluations;
+using BasvuruSistemi.Server.Application.FormTemplates;
 using BasvuruSistemi.Server.Domain.Constants;
 using MediatR;
 using TS.Result;
@@ -17,6 +18,14 @@ public static class JobPostingEvaluationPipelineStageModule
                 var response = await sender.Send(request, cancellationToken);
                 return response.IsSuccessful ? Results.Ok(response) : Results.InternalServerError(response);
             })
-            .RequireAuthorization(CustomClaimTypes.ManageTemplates).Produces<Result<string>>().WithName("FormTemplateCreate");
+            .RequireAuthorization(CustomClaimTypes.ManageTemplates).Produces<Result<string>>().WithName("JobpostingEvaluationPipelineCreate");
+
+        group.MapPatch("",
+            async (ISender sender, SubmitStageEvaluationCommand request, CancellationToken cancellationToken) =>
+            {
+                var response = await sender.Send(request, cancellationToken);
+                return response.IsSuccessful ? Results.Ok(response) : Results.InternalServerError(response);
+            })
+            .RequireAuthorization().Produces<Result<string>>().WithName("JobpostingEvaluationPipelineSubmit");
     }
 }

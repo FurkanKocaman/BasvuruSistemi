@@ -5,6 +5,7 @@ export interface PendingCommissionEvaluationgetModel {
   userFullName: string;
   tckn?: string;
 
+  jobPostingId: string;
   jobPosting: string;
   appliedDate: string;
   status: number;

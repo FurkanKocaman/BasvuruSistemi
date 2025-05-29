@@ -153,6 +153,14 @@ public sealed class JobPosting : Entity
         // else: Hata fırlat veya logla (zaten yayınlanmış veya kapatılmış bir ilanı tekrar yayınlayamazsın)
     }
 
+    public void Republish(DateTimeOffset startDate,DateTimeOffset endDate)
+    {
+            Status = JobPostingStatus.Published;
+            ValidFrom = startDate;
+            ValidTo = endDate;
+        // else: Hata fırlat veya logla (zaten yayınlanmış veya kapatılmış bir ilanı tekrar yayınlayamazsın)
+    }
+
     public void Draft()
     {
         Status = JobPostingStatus.Draft;
@@ -189,7 +197,6 @@ public sealed class JobPosting : Entity
         Guid? unitId,
         Guid formTemplateId,
         Guid? postingGroupId = null,
-        JobPostingStatus status = JobPostingStatus.Draft,
         bool isPublic = true,
         bool isAnonymous = false,
 
@@ -223,7 +230,6 @@ public sealed class JobPosting : Entity
             UnitId = unitId;
             FormTemplateId = formTemplateId;
             PostingGroupId = postingGroupId;
-            Status = status;
             IsPublic = isPublic;
             IsAnonymous = isAnonymous;
 

@@ -1,5 +1,6 @@
 ﻿using BasvuruSistemi.Server.Domain.Abstractions;
 using BasvuruSistemi.Server.Domain.Comissions;
+using BasvuruSistemi.Server.Domain.Enums;
 using BasvuruSistemi.Server.Domain.Evaluations;
 using BasvuruSistemi.Server.Domain.JobPostings;
 
@@ -23,6 +24,9 @@ public sealed class JobPostingEvaluationPipelineStage : Entity
 
     public DateTimeOffset? StartDate { get; set; } // Aşamanın başlangıç tarihi (isteğe bağlı)
     public DateTimeOffset? EndDate { get; set; } // Aşamanın bitiş tarihi (isteğe bağlı)
+
+    public EvaluationStatus Status { get; set; } = EvaluationStatus.Pending;
+    public string? OverallComment { get; set; }
 
     public string? HangfireStartJobId { get; set; }
     public string? HangfireEndJobId { get; set; }
@@ -62,5 +66,11 @@ public sealed class JobPostingEvaluationPipelineStage : Entity
     public void SetActive(bool isActive)
     {
         IsActive = isActive;
+    }
+
+    public void SubmitEvaluation(EvaluationStatus status, string? comment)
+    {
+        Status = status;
+        OverallComment = comment;
     }
 }

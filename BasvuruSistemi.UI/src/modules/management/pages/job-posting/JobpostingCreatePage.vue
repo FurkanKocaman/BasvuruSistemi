@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import DatePicker from "primevue/datepicker";
-import { onMounted, reactive, Ref, ref, watch } from "vue";
+import { onMounted, reactive, Ref, ref, toRaw, watch } from "vue";
 import { useDropdown } from "../../composables/useDropdown";
 import { JobPostingCreateModel } from "../../models/job-posting-create.model";
 import organizationService from "../../services/unit.service";
@@ -102,47 +102,48 @@ onMounted(async () => {
 
 const getJobPosting = async (id: string) => {
   const res = await jobPostingService.getJobPosting(id);
+  console.log(res);
   if (res) {
-    response.value = res.data;
+    response.value = res;
 
-    request.id = res.data.id;
-    request.title = res.data.title;
-    request.description = res.data.description ?? "";
-    request.responsibilities = res.data.responsibilities ?? "";
-    request.qualifications = res.data.qualifications ?? "";
-    request.benefits = res.data.benefits ?? "";
+    request.id = res.id;
+    request.title = res.title;
+    request.description = res.description ?? "";
+    request.responsibilities = res.responsibilities ?? "";
+    request.qualifications = res.qualifications ?? "";
+    request.benefits = res.benefits ?? "";
 
-    request.datePosted = res.data.datePosted;
-    request.applicationDeadline = new Date(res.data.applicationDeadline);
-    request.validFrom = res.data.validFrom ? new Date(res.data.validFrom) : undefined;
-    request.validTo = res.data.validTo ? new Date(res.data.validTo) : undefined;
+    request.datePosted = new Date(res.datePosted);
+    request.applicationDeadline = new Date(res.applicationDeadline);
+    request.validFrom = res.validFrom ? new Date(res.validFrom) : undefined;
+    request.validTo = res.validTo ? new Date(res.validTo) : undefined;
 
-    request.status = res.data.status;
-    if (res.data.status == 2) isJobPostingPublished.value = true;
-    request.isRemote = res.data.isRemote;
-    request.locationText = res.data.locationText;
+    request.status = res.status;
+    if (res.status == 2) isJobPostingPublished.value = true;
+    request.isRemote = res.isRemote;
+    request.locationText = res.locationText;
 
-    request.vacancyCount = res.data.vacancyCount;
-    if (res.data.vacancyCount) isQuota.value = true;
-    request.employmentType = res.data.employmentType;
-    request.experienceLevelRequired = res.data.experienceLevelRequired;
-    request.skillsRequired = res.data.skillsRequired;
+    request.vacancyCount = res.vacancyCount;
+    if (res.vacancyCount) isQuota.value = true;
+    // request.employmentType = res.employmentType;
+    // request.experienceLevelRequired = res.experienceLevelRequired;
+    // request.skillsRequired = res.skillsRequired;
 
-    request.allowedNationalIds = res.data.allowedNationalIds;
-    if (res.data.allowedNationalIds?.length != 0) onlyDefinedUsers.value = true;
+    request.allowedNationalIds = res.allowedNationalIds;
+    if (res.allowedNationalIds?.length != 0) onlyDefinedUsers.value = true;
 
-    request.contactInfo = res.data.contactInfo;
-    request.isPublic = res.data.isPublic;
-    request.isAnonymous = res.data.isAnonymous;
-    request.minSalary = res.data.minSalary;
-    request.maxSalary = res.data.maxSalary;
-    request.currency = res.data.currency;
+    request.contactInfo = res.contactInfo;
+    request.isPublic = res.isPublic;
+    request.isAnonymous = res.isAnonymous;
+    request.minSalary = res.minSalary;
+    request.maxSalary = res.maxSalary;
+    request.currency = res.currency;
 
-    request.unitId = res.data.unitId;
+    request.unitId = res.unitId;
 
-    request.formTemplateId = res.data.formTemplateId;
+    request.formTemplateId = res.formTemplateId;
 
-    request.postingGroupId = res.data.postingGroupId;
+    request.postingGroupId = res.postingGroupId;
 
     if (organizations.value) {
       var organization = organizations.value.find((p) => p.id == request.unitId);
@@ -150,7 +151,7 @@ const getJobPosting = async (id: string) => {
         organizationsDropdown.selectOption(organization.name);
       }
     }
-    getExistingTemplate(res.data.formTemplateId);
+    getExistingTemplate(res.formTemplateId);
   }
 };
 
@@ -199,8 +200,6 @@ const setAllowedNationalIds = () => {
 };
 
 const handleSubmit = async () => {
-  console.log(request.evaluationPipelineStages);
-
   request.description = DOMPurify.sanitize(request.description);
   if (request.responsibilities)
     request.responsibilities = DOMPurify.sanitize(request.responsibilities);
@@ -249,10 +248,8 @@ const handleSubmit = async () => {
           }
         }
       } else {
-        console.log("Request", request);
-        const res = await jobPostingService.updateJobPostings(request);
+        const res = await jobPostingService.updateJobPostings(toRaw(request));
         if (res) {
-          console.log("Response", res);
           router.push({ name: "job-posting-list" });
         }
       }
@@ -294,10 +291,8 @@ const handleSubmit = async () => {
           }
         }
       } else {
-        console.log("Request", request);
-        const res = await jobPostingService.createJobPostings(request);
+        const res = await jobPostingService.createJobPostings(toRaw(request));
         if (res) {
-          console.log("Response", res);
           router.push({ name: "job-posting-list" });
         }
       }
@@ -348,8 +343,11 @@ const selectPostingGroupId = (id?: string) => {
   request.postingGroupId = id;
 };
 
-const updateStatus = async () => {
-  const result = await statusModal.value.open();
+const updateStatus = async (status: number, id?: string) => {
+  const result = await statusModal.value.open({
+    jobPostingId: id,
+    status: status,
+  });
   if (result) {
     await jobPostingService.jobPostingChangeStatus(
       request.id!,
@@ -385,7 +383,10 @@ watch(request.evaluationPipelineStages, () => console.log(request.evaluationPipe
           >
             {{ getJobPostingStatusOptionByValue(request.status)?.label }}
           </span>
-          <button class="cursor-pointer group" @click.stop="updateStatus()">
+          <button
+            class="cursor-pointer group"
+            @click.stop="updateStatus(request.status, request.id)"
+          >
             <Pen
               class="text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-50"
             />

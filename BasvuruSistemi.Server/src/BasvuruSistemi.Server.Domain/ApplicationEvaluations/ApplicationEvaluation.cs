@@ -44,6 +44,7 @@ public sealed class ApplicationEvaluation : Entity
     {
         Status = status;
         OverallComment = overallComment;
+        EvaluationDate = DateTimeOffset.Now;
     }
 
     public void SetActive(bool active)

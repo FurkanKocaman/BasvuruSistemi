@@ -47,9 +47,13 @@ internal sealed class PipelineActivationJob : IPipelineActivationJob
                     var members = commission.CommissionMembers;
                     foreach (var member in members)
                     {
-                        Console.WriteLine("Application evaluation created");
-                        var applicationEvaluation = new ApplicationEvaluation(application.Id, pipeline.Id, member.UserId, EvaluationStatus.Pending, null);
-                        _applicationEvaluationRepository.Add(applicationEvaluation);
+                        var applicationEvaluationExist = await _applicationEvaluationRepository.AnyAsync(p => p.ApplicationId == application.Id && p.EvaluatorId == member.Id && p.JobPostingEvaluationPipelineStageId == pipeline.Id);
+                        if (!applicationEvaluationExist)
+                        {
+                            var applicationEvaluation = new ApplicationEvaluation(application.Id, pipeline.Id, member.UserId, EvaluationStatus.Pending, null);
+                            _applicationEvaluationRepository.Add(applicationEvaluation);
+                        }
+                      
                     }
                 }
             }
@@ -77,7 +81,7 @@ internal sealed class PipelineActivationJob : IPipelineActivationJob
                     var members = commission.CommissionMembers;
                     foreach (var member in members)
                     {
-                        var applicationEvaluations = await _applicationEvaluationRepository.WhereWithTracking(p => p.ApplicationId == application.Id && p.JobPostingEvaluationPipelineStageId == pipeline.Id && p.EvaluatorId == member.Id).ToListAsync();
+                        var applicationEvaluations = await _applicationEvaluationRepository.WhereWithTracking(p => p.ApplicationId == application.Id && p.JobPostingEvaluationPipelineStageId == pipeline.Id && p.EvaluatorId == member.UserId).ToListAsync();
                         foreach (var applicationEvaluation in applicationEvaluations)
                         {
                             applicationEvaluation.SetActive(false);
@@ -89,4 +93,6 @@ internal sealed class PipelineActivationJob : IPipelineActivationJob
             await _unitOfWork.SaveChangesAsync();
         }
     }
+
+
 }

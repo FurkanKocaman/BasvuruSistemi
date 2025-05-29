@@ -23,9 +23,17 @@ class ApplicationService {
     }
   }
 
-  async getPendingCommissionEvaluations(): Promise<PendingCommissionEvaluationgetModel[]> {
+  async getPendingCommissionEvaluations(request: {
+    JobPostinId?: string;
+    EvaluationStageId?: string;
+  }): Promise<PendingCommissionEvaluationgetModel[]> {
     try {
-      const res = await api.get(`${import.meta.env.VITE_API_URL}/api/list-pending-evaluations`);
+      const res = await api.get(`${import.meta.env.VITE_API_URL}/api/list-pending-evaluations`, {
+        params: {
+          ...(request.JobPostinId && { jobPostingId: request.JobPostinId }),
+          ...(request.EvaluationStageId && { evaluationStageId: request.EvaluationStageId }),
+        },
+      });
       return res.data;
     } catch (err) {
       console.error(err);

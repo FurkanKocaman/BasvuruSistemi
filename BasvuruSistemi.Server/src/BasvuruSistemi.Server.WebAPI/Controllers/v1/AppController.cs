@@ -316,9 +316,12 @@ public class AppController(ISender sender) : ControllerBase
 
     [HttpGet("list-pending-evaluations")]
     [Authorize()]
-    public async Task<ActionResult<ListPendingCommissionEvaluationsQueryResponse>> GetPendingApplicationEvaluations(CancellationToken cancellationToken = default)
+    public async Task<ActionResult<ListPendingCommissionEvaluationsQueryResponse>> GetPendingApplicationEvaluations(
+        [FromQuery] Guid? jobPostingId,
+        [FromQuery] Guid? evaluationStageId,
+        CancellationToken cancellationToken = default)
     {
-        var response = await sender.Send(new ListPendingCommissionEvaluationsQuery(),cancellationToken);
+        var response = await sender.Send(new ListPendingCommissionEvaluationsQuery(jobPostingId,evaluationStageId),cancellationToken);
         return StatusCode(response.StatusCode, response.Data);
     }
 

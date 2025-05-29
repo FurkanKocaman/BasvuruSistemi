@@ -7,6 +7,8 @@ using TS.Result;
 
 namespace BasvuruSistemi.Server.Application.ApplicationEvaluations;
 public sealed record ListPendingCommissionEvaluationsQuery(
+    Guid? JobPostinId,
+    Guid? EvaluationStageId
     ) : IRequest<Result<List<ListPendingCommissionEvaluationsQueryResponse>>>;
 
 public sealed class ListPendingCommissionEvaluationsQueryResponse
@@ -17,6 +19,7 @@ public sealed class ListPendingCommissionEvaluationsQueryResponse
     public string UserFullName { get; set; } = default!;
     public string? TCKN { get; set; }
 
+    public Guid JobPostingId { get; set; }
     public string JobPosting { get; set; } = default!;
     public DateTimeOffset AppliedDate { get; set; }
     public EvaluationStatus Status { get; set; } = default!;
@@ -55,6 +58,16 @@ internal sealed class ListPendingCommissionEvaluationsQueryHandler(
                 .ThenInclude(p => p.EvaluationForm)
             .ToListAsync(cancellationToken);
 
+        if(request.JobPostinId != null)
+        {
+            applicationEvaluations = applicationEvaluations.Where(p => p.JobPostingEvaluationPipelineStage.JobPostingId == request.JobPostinId).ToList();
+        }
+
+        if (request.EvaluationStageId != null)
+        {
+            applicationEvaluations = applicationEvaluations.Where(p => p.JobPostingEvaluationPipelineStage.EvaluationStageId == request.EvaluationStageId).ToList();
+        }
+
         var response = applicationEvaluations.Select(applicationEvaluation => new ListPendingCommissionEvaluationsQueryResponse
         {
             Id = applicationEvaluation.Id,
@@ -63,6 +76,7 @@ internal sealed class ListPendingCommissionEvaluationsQueryHandler(
             UserFullName = applicationEvaluation.Application.User.FullName,
             TCKN = applicationEvaluation.Application.User.TCKN,
 
+            JobPostingId = applicationEvaluation.Application.JobPostingId,
             JobPosting = applicationEvaluation.Application.JobPosting.Title,
             AppliedDate = applicationEvaluation.Application.AppliedDate,
             Status = applicationEvaluation != null ? applicationEvaluation.Status : EvaluationStatus.Pending,

@@ -177,6 +177,18 @@ const getEvaluationProcess = async () => {
           </tbody>
         </table>
       </div>
+      <div class="flex w-full justify-end my-3">
+        <button
+          class="px-2 py-1 bg-yellow-600 text-gray-50 rounded-md cursor-pointer hover:bg-yellow-500 text-sm ml-4"
+        >
+          Tekrar Değerlendirmeye Al
+        </button>
+        <button
+          class="px-2 py-1 bg-indigo-600 text-gray-50 rounded-md cursor-pointer hover:bg-indigo-500 text-sm ml-4"
+        >
+          Süreci Bitir
+        </button>
+      </div>
     </div>
   </div>
 </template>

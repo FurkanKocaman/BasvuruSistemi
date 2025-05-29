@@ -26,9 +26,11 @@ class JobPostingService {
       throw err;
     }
   }
-  async getJobPosting(id: string): Promise<Result<JobPostingCreateModel> | undefined> {
+  async getJobPosting(id: string): Promise<JobPostingCreateModel | undefined> {
     try {
-      const res = await api.get(`${import.meta.env.VITE_API_URL}/api/job-postings/${id}`);
+      const res = await api.get<JobPostingCreateModel>(
+        `${import.meta.env.VITE_API_URL}/api/job-postings/${id}`
+      );
       return res.data;
     } catch (err) {
       console.error(err);
@@ -181,10 +183,15 @@ class JobPostingService {
     status: number,
     publishStartDate?: Date
   ): Promise<string> {
+    const dto: { newStatus: number; publishStartDate?: Date } = {
+      newStatus: status,
+      publishStartDate: publishStartDate,
+    };
+
     try {
       const res = await api.patch<Result<string>>(
         `${import.meta.env.VITE_API_URL}/api/job-postings/${id}/status`,
-        { newStatus: status, publishStartDate: publishStartDate }
+        dto
       );
       this.toastSore.addToast({
         message:
@@ -194,9 +201,10 @@ class JobPostingService {
         type: res.data.statusCode == 200 ? "success" : "error",
         duration: 3000,
       });
+      console.log("hata yok");
       return res.data.data;
     } catch (err) {
-      console.error(err);
+      console.error("Hata");
       throw err;
     }
   }

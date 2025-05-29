@@ -24,7 +24,7 @@
         <select
           name="name"
           id="name"
-          v-model="newStatus"
+          v-model="request.status"
           class="outline-none px-1.5 py-1 border border-gray-200 dark:border-gray-700 rounded-md text-gray-700 dark:text-gray-300 bg-transparent text-sm dark:focus:border-indigo-600 focus:border-indigo-600"
         >
           <option
@@ -46,7 +46,7 @@
         </button>
         <button
           class="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-500 text-white rounded-md cursor-pointer"
-          @click="confirm"
+          @click="submit"
         >
           Kaydet
         </button>
@@ -55,9 +55,11 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, defineExpose, defineProps } from "vue";
 import { JobPostingStatusOptions } from "@/models/constants/job-posting-status";
+import { JobPostingChangeStatusModel } from "../../models/job-posting/job-posting-change-status.model";
+import jobPostingService from "../../services/job-posting.service";
 const props = defineProps({
   title: String,
 });
@@ -65,18 +67,35 @@ const props = defineProps({
 const visible = ref(false);
 const resolveFn = ref(null);
 
-const newStatus = ref(0);
+const request = ref<JobPostingChangeStatusModel>({
+  jobPostingId: "",
+  status: 0,
+});
 
-function open() {
+function open(statusModel: JobPostingChangeStatusModel) {
   visible.value = true;
+
+  request.value.jobPostingId = statusModel.jobPostingId;
+  request.value.status = statusModel.status;
+
   return new Promise((resolve) => {
     resolveFn.value = resolve;
   });
 }
 
+const submit = async () => {
+  const res = await jobPostingService.jobPostingChangeStatus(
+    request.value.jobPostingId,
+    request.value.status
+  );
+  if (res) {
+    confirm();
+  }
+};
+
 function confirm() {
   visible.value = false;
-  resolveFn.value?.(newStatus.value);
+  resolveFn.value?.(true);
 }
 
 function cancel() {

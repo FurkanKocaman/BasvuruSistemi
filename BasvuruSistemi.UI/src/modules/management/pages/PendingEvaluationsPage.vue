@@ -1,34 +1,52 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
-import { getApplicationStatusOptionByValue } from "@/models/constants/application-status";
 import applicationService from "@/services/application.service";
 import { FileSearch } from "lucide-vue-next";
 import { useRouter } from "vue-router";
 import { useVisiblePages } from "@/services/pagination.service";
 import { PendingCommissionEvaluationgetModel } from "../models/evaluation/pending-commission-evaluation.model";
 import { getEvaluationStatusByValue } from "@/models/constants/evaluation-status";
+import { useDropdown } from "../composables/useDropdown";
 
 const pendingEvaluations = ref<PendingCommissionEvaluationgetModel[]>([]);
 const page = ref(1);
 const pageSize = ref(20);
 const totalCount = ref(0);
 
+const request = ref<{ JobPostinId?: string; EvaluationStageId?: string }>({});
+
+const jobPostingDropdown = useDropdown();
+const evaluationStageDropdown = useDropdown();
+
 const totalPages = computed(() => {
   return Math.ceil(totalCount.value / pageSize.value);
 });
+
+const evaluationStages = ref<{ id: string; name: string }[]>([]);
+const jobPostings = ref<{ id: string; name: string }[]>([]);
 
 const visiblePages = useVisiblePages(totalPages, page);
 
 const router = useRouter();
 
 onMounted(() => {
+  jobPostings.value.push({ id: "", name: "Tümü" });
+  evaluationStages.value.push({ id: "", name: "Tümü" });
   getPendingEvaluations();
 });
 
 const getPendingEvaluations = async () => {
-  const res = await applicationService.getPendingCommissionEvaluations();
+  const res = await applicationService.getPendingCommissionEvaluations(request.value);
   if (res) {
     pendingEvaluations.value = res;
+    res.forEach((evaluation) => {
+      if (!jobPostings.value.find((p) => p.id == evaluation.jobPostingId)) {
+        jobPostings.value.push({ id: evaluation.jobPostingId, name: evaluation.jobPosting });
+      }
+      if (!evaluationStages.value.find((p) => p.id == evaluation.stageId)) {
+        evaluationStages.value.push({ id: evaluation.stageId, name: evaluation.stageName });
+      }
+    });
   }
 };
 
@@ -57,6 +75,17 @@ const changePage = (pageNumber: number) => {
     getPendingEvaluations();
   }
 };
+
+const selectJobPostingFilter = async (option: { id: string; name: string }) => {
+  jobPostingDropdown.selectOption(option.name);
+  request.value.JobPostinId = option.id === "" ? undefined : option.id;
+  getPendingEvaluations();
+};
+const selectEvaluationStageFilter = async (option: { id: string; name: string }) => {
+  evaluationStageDropdown.selectOption(option.name);
+  request.value.EvaluationStageId = option.id === "" ? undefined : option.id;
+  getPendingEvaluations();
+};
 </script>
 
 <template>
@@ -74,6 +103,111 @@ const changePage = (pageNumber: number) => {
           <span class="text-xl font-base dark:text-gray-50 text-gray-700"
             >Değerlendirme Bekleyen Başvurular</span
           >
+        </div>
+        <!-- Başvuru Filtreleri -->
+        <div
+          class="bg-gray-50 dark:bg-gray-800/40 rounded-lg p-4 mb-6 border border-gray-200 dark:border-gray-700 my-5 mx-3"
+        >
+          <div class="flex flex-col md:flex-row md:items-center md:justify-start gap-4">
+            <!-- Arama -->
+            <div class="w-full md:w-1/3">
+              <label
+                for="search"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                >Arama</label
+              >
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg
+                    class="h-5 w-5 text-gray-400"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <input
+                  id="search"
+                  type="text"
+                  placeholder="İlan başlığı ara"
+                  class="pl-10 w-full rounded-md border-gray-200 dark:border-gray-700 outline-none dark:focus:border-indigo-600 focus:border-indigo-600 border py-1.5 text-gray-800 dark:text-gray-100"
+                />
+              </div>
+            </div>
+
+            <!-- Durum Filtresi -->
+            <div class="w-1/3">
+              <label
+                for="status"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                >İlan</label
+              >
+              <input
+                type="text"
+                name="formTeplate"
+                id="formTeplate"
+                :ref="jobPostingDropdown.inputRef"
+                v-model="jobPostingDropdown.selectedLabel.value"
+                @focus="jobPostingDropdown.handleFocus"
+                @blur="jobPostingDropdown.handleBlur"
+                readonly
+                placeholder="Durum seçin..."
+                autocomplete="off"
+                class="w-full border outline-none rounded-md py-2 px-2 text-gray-700 dark:text-gray-200 dark:border-gray-700 text-sm border-gray-200 dark:focus:border-indigo-600 focus:border-indigo-600 cursor-pointer"
+              />
+              <div
+                v-if="jobPostingDropdown.isOpen.value"
+                class="absolute w-fit text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow z-10 max-h-60 overflow-auto"
+              >
+                <div
+                  v-for="option in jobPostings"
+                  :key="option.name"
+                  @mousedown.prevent="selectJobPostingFilter(option)"
+                  class="px-4 py-2 hover:bg-gray-300/30 dark:hover:bg-gray-700/40 cursor-pointer text-sm"
+                >
+                  {{ option.name }}
+                </div>
+              </div>
+            </div>
+            <div class="w-full md:w-1/3">
+              <label
+                for="status"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                >Değerlendirme Adımı</label
+              >
+              <input
+                type="text"
+                name="formTeplate"
+                id="formTeplate"
+                :ref="evaluationStageDropdown.inputRef"
+                v-model="evaluationStageDropdown.selectedLabel.value"
+                @focus="evaluationStageDropdown.handleFocus"
+                @blur="evaluationStageDropdown.handleBlur"
+                readonly
+                placeholder="Durum seçin..."
+                autocomplete="off"
+                class="w-full border outline-none rounded-md py-2 px-2 text-gray-700 dark:text-gray-200 dark:border-gray-700 text-sm border-gray-200 dark:focus:border-indigo-600 focus:border-indigo-600 cursor-pointer"
+              />
+              <div
+                v-if="evaluationStageDropdown.isOpen.value"
+                class="absolute w-fit text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow z-10 max-h-60 overflow-auto"
+              >
+                <div
+                  v-for="option in evaluationStages"
+                  :key="option.name"
+                  @mousedown.prevent="selectEvaluationStageFilter(option)"
+                  class="px-4 py-2 hover:bg-gray-300/30 dark:hover:bg-gray-700/40 cursor-pointer text-sm"
+                >
+                  {{ option.name }}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="px-5 py-5">
           <div
@@ -302,9 +436,7 @@ const changePage = (pageNumber: number) => {
                     <button
                       class="cursor-pointer pr-1 group"
                       title="Düzenle"
-                      @click="
-                        goToApplicationDetail(application.id, application.evaluationPipelineStageId)
-                      "
+                      @click="goToApplicationDetail(application.id)"
                     >
                       <FileSearch
                         class="size-5 stroke-gray-600 dark:stroke-gray-400 dark:group-hover:stroke-sky-600 group-hover:stroke-sky-600"

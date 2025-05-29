@@ -6,11 +6,8 @@ import applicationService from "@/services/application.service";
 import { FileSearch } from "lucide-vue-next";
 import { useRouter } from "vue-router";
 import { useVisiblePages } from "@/services/pagination.service";
-import { PendingCommissionEvaluationgetModel } from "../models/evaluation/pending-commission-evaluation.model";
 
 const applications = ref<ApplicationGetSummariesModel[]>([]);
-
-const pendingEvaluations = ref<PendingCommissionEvaluationgetModel[]>([]);
 const page = ref(1);
 const pageSize = ref(20);
 const totalCount = ref(0);
@@ -26,7 +23,6 @@ const router = useRouter();
 
 onMounted(() => {
   getFormApplications();
-  getPendingEvaluations();
 });
 
 const getFormApplications = async () => {
@@ -42,15 +38,6 @@ const getFormApplications = async () => {
     page.value = res.page;
   }
 };
-
-const getPendingEvaluations = async () => {
-  const res = await applicationService.getPendingCommissionEvaluations();
-  if (res) {
-    pendingEvaluations.value = res;
-    console.log(res);
-  }
-};
-
 function formatDateTime(value: string): string {
   const date = new Date(value);
 

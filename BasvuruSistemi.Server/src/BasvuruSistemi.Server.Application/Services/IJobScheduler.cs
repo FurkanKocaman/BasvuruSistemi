@@ -20,4 +20,5 @@ public interface IJobScheduler
     /// </summary>
     Task<bool> CancelScheduleAsync(string jobId);
     Task<bool> ScheduleInReviewApplications(Guid jobPostingId);
+    Task<bool> CancelScheduleInReviewApplications(Guid jobPostingId);
 }

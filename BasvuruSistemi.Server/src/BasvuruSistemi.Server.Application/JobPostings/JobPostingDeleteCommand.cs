@@ -16,7 +16,8 @@ internal sealed class JobPostingDeleteCommandhandler(
     IApplicationRepository applicationRepository,
     IUnitOfWork unitOfWork,
     ICurrentUserService currentUserService,
-    IAuthorizationService authorizationService
+    IAuthorizationService authorizationService,
+    IJobScheduler jobScheduler
     ) : IRequestHandler<JobPostingDeleteCommand, Result<string>>
 {
     public async Task<Result<string>> Handle(JobPostingDeleteCommand request, CancellationToken cancellationToken)
@@ -48,6 +49,12 @@ internal sealed class JobPostingDeleteCommandhandler(
 
             return Result<string>.Succeed("Job posting deleted");
         }
+        if(jobPosting.HangfirePublishJobId != null)
+            await jobScheduler.CancelScheduleAsync(jobPosting.HangfirePublishJobId);
+        if (jobPosting.HangfireCloseJobId != null)
+            await jobScheduler.CancelScheduleAsync(jobPosting.HangfireCloseJobId);
+
+        await jobScheduler.CancelScheduleInReviewApplications(jobPosting.Id);
 
         return Result<string>.Failure("You dont have permission to delete this jobPosting");
     }

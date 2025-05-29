@@ -52,6 +52,7 @@ internal sealed class GetApplicationEvaluationProcessQueryResponseHandler(
             .Include(p => p.EvaluationStage)
             .Include(p => p.EvaluationForm)
             .Include(p => p.ResponsibleCommission)
+            .OrderBy(p => p.OrderInPipeline)
             .ToListAsync(cancellationToken);
 
         var applicationEvaluations = await applicationEvaluationRepository

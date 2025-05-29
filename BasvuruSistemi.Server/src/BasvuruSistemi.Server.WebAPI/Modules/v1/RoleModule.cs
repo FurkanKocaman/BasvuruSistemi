@@ -49,5 +49,12 @@ public static class RoleModule
                return response.IsSuccessful ? Results.Ok(response) : Results.InternalServerError(response);
            })
            .RequireAuthorization().Produces<Result<string>>();
+
+        group.MapPost("generate-default",
+           async (ISender sender, GenerateDefaultRolesCommand request, CancellationToken cancellationToken) =>
+           {
+               var response = await sender.Send(request, cancellationToken);
+               return response.IsSuccessful ? Results.Ok(response) : Results.InternalServerError(response);
+           }).RequireAuthorization().Produces<Result<string>>();
     }
 }

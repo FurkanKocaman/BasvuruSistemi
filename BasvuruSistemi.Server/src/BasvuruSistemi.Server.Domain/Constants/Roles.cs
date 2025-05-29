@@ -1,25 +1,40 @@
 ﻿namespace BasvuruSistemi.Server.Domain.Constants;
 public static class CustomClaimTypes
 {
+    // Job Postings
     public const string CreateJobPosting = "jobposting.create";
     public const string EditJobPosting = "jobposting.edit";
     public const string DeleteJobPosting = "jobposting.delete";
     public const string ViewJobPosting = "jobposting.view";
+    public const string PublishJobPosting = "jobposting.publish";
 
+    // Applications
     public const string CreateApplication = "application.create";
     public const string ViewApplications = "application.view";
     public const string ReviewApplications = "application.review";
     public const string ApproveApplications = "application.approve";
+    public const string ScoreApplications = "application.score";
 
+    // User, Role, Tenant, Unit
     public const string ManageUsers = "user.manage";
     public const string ManageRoles = "role.manage";
     public const string ManageTenants = "tenant.manage";
     public const string ManageUnits = "unit.manage";
 
+    // Commission
+    public const string CommissionMember = "commission.member";
+    public const string CommissionManager = "commission.manager";
+
+    // Templates, Forms
     public const string ManageTemplates = "template.manage";
     public const string ManageFormFields = "formfield.manage";
 
+    // Documents
     public const string DownloadDocuments = "document.download";
+
+    // New
+    public const string AssignCommission = "commission.assign";
+    public const string ConfigurePipeline = "pipeline.configure";
 }
 
 public sealed record RoleDefinition(
@@ -133,6 +148,34 @@ public static class Roles
         }
     );
 
+    public static readonly RoleDefinition CommissionManager = new(
+        Name: "CommissionManager",
+        Description: "Komisyon yöneticisi",
+        AllowedClaims: new[]
+        {
+                CustomClaimTypes.ViewJobPosting,
+                CustomClaimTypes.CommissionManager,
+                CustomClaimTypes.ViewApplications,
+                CustomClaimTypes.ReviewApplications,
+                CustomClaimTypes.ApproveApplications,
+                CustomClaimTypes.DownloadDocuments,
+        }
+    );
+
+    public static readonly RoleDefinition CommissionMember = new(
+      Name: "CommissionMember",
+      Description: "Komisyon Üyesi",
+      AllowedClaims: new[]
+      {
+                CustomClaimTypes.ViewJobPosting,
+                CustomClaimTypes.CommissionManager,
+                CustomClaimTypes.ViewApplications,
+                CustomClaimTypes.ReviewApplications,
+                CustomClaimTypes.ApproveApplications,
+                CustomClaimTypes.DownloadDocuments,
+      }
+  );
+
     /// <summary>Aday: ilana başvurur, kendi başvurularını görür.</summary>
     public static readonly RoleDefinition Candidate = new(
         Name: "Candidate",
@@ -145,33 +188,76 @@ public static class Roles
                 CustomClaimTypes.DownloadDocuments,
         }
     );
+    public static readonly RoleDefinition PipelineManager = new(
+        Name: "PipelineManager",
+        Description: "Değerlendirme aşamalarını yöneten kişi",
+        AllowedClaims: new[]
+        {
+            CustomClaimTypes.ConfigurePipeline,
+            CustomClaimTypes.ViewJobPosting,
+            CustomClaimTypes.ViewApplications,
+        }
+    );
+
+    public static readonly RoleDefinition CommissionAssigner = new(
+        Name: "CommissionAssigner",
+        Description: "Komisyon üyelerini atayabilir",
+        AllowedClaims: new[]
+        {
+            CustomClaimTypes.AssignCommission,
+            CustomClaimTypes.ViewJobPosting,
+            CustomClaimTypes.ViewApplications,
+        }
+    );
+
+    public static readonly RoleDefinition ApplicationScorer = new(
+        Name: "ApplicationScorer",
+        Description: "Başvurulara puan verebilir",
+        AllowedClaims: new[]
+        {
+            CustomClaimTypes.ScoreApplications,
+            CustomClaimTypes.ViewApplications,
+        }
+    );
 
     public static readonly RoleDefinition[] All =
-    {
-            Admin,
-            TenantManager,
-            UnitManager,
-            HumanResources,
-            Recruiter,
-            Approver,
-            Candidate
+        {
+        Admin,
+        TenantManager,
+        UnitManager,
+        HumanResources,
+        Recruiter,
+        Approver,
+        CommissionManager,
+        CommissionMember,
+        PipelineManager,
+        CommissionAssigner,
+        ApplicationScorer,
+        Candidate
     };
+
     public static readonly string[] AllCustomClaimTypes =
-    {
+      {
         CustomClaimTypes.CreateJobPosting,
         CustomClaimTypes.EditJobPosting,
         CustomClaimTypes.DeleteJobPosting,
         CustomClaimTypes.ViewJobPosting,
+        CustomClaimTypes.PublishJobPosting,
         CustomClaimTypes.CreateApplication,
         CustomClaimTypes.ViewApplications,
         CustomClaimTypes.ReviewApplications,
         CustomClaimTypes.ApproveApplications,
+        CustomClaimTypes.ScoreApplications,
         CustomClaimTypes.ManageUsers,
         CustomClaimTypes.ManageRoles,
         CustomClaimTypes.ManageTenants,
         CustomClaimTypes.ManageUnits,
         CustomClaimTypes.ManageTemplates,
         CustomClaimTypes.ManageFormFields,
-        CustomClaimTypes.DownloadDocuments
+        CustomClaimTypes.DownloadDocuments,
+        CustomClaimTypes.CommissionMember,
+        CustomClaimTypes.CommissionManager,
+        CustomClaimTypes.AssignCommission,
+        CustomClaimTypes.ConfigurePipeline
     };
 }
