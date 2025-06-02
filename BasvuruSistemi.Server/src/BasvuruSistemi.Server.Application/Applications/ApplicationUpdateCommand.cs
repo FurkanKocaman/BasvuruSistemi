@@ -13,8 +13,6 @@ public sealed record ApplicationUpdateCommand(
     List<FieldValueDto> fields
     ) : IRequest<Result<string>>;
 
-
-
 internal sealed class ApplicationUpdateCommandHandler(
     IApplicationRepository applicationRepository,
     IApplicationFieldValueRepository applicationFieldValueRepository,

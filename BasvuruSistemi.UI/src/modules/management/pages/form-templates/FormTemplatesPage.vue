@@ -247,7 +247,9 @@ const changePage = (pageNumber: number) => {
                   <td class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200">
                     <span class="cursor-pointer">{{ formTemplate.name }}</span>
                   </td>
-                  <td class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200">
+                  <td
+                    class="py-3 px-2 border-r dark:border-gray-700/30 border-gray-200 truncate max-w-40"
+                  >
                     {{ formTemplate.description ?? "-" }}
                   </td>
                   <td class="py-3 px-2 border-r text-sm dark:border-gray-700/30 border-gray-200">

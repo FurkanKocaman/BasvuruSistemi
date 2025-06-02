@@ -18,6 +18,7 @@ internal sealed class GetEvaluationStageByIdQueryHandler(
         var evaluationStage = await evaluationStageRepository
             .Where(p => p.Id == request.Id && !p.IsDeleted)
             .Include(p => p.EvaluationForms)
+                .ThenInclude(p => p.Fields)
             .FirstOrDefaultAsync(cancellationToken);
 
         if(evaluationStage is null)

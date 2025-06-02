@@ -17,6 +17,9 @@ public sealed class GetApplicationsByUserQueryResponse
 {
     public Guid Id { get; set; }
 
+    public Guid JobPostingId { get; set; }
+    public int Type {  get; set; }
+
     public string Title { get; set; } = default!;
     public string? Unit { get; set; } = default!;
     public DateTimeOffset AppliedDate { get; set; }
@@ -24,8 +27,6 @@ public sealed class GetApplicationsByUserQueryResponse
     public DateTimeOffset? ReviewDate { get; set; }
     public string? ReviewDescription { get; set; }
     public string? Reviewer { get;set; } = default!;
-
-
 }
 
 internal sealed class GetApplicationsByUserQueryHandler(
@@ -54,6 +55,9 @@ internal sealed class GetApplicationsByUserQueryHandler(
         var response = pagedApplications.Select(application => new GetApplicationsByUserQueryResponse
         {
             Id = application.Id,
+            JobPostingId = application.JobPostingId,
+            Type = 0,
+
             Title = application.JobPosting.Title,
             Unit = application.JobPosting.Unit != null ? application.JobPosting.Unit.Name : null,
             AppliedDate = application.AppliedDate,

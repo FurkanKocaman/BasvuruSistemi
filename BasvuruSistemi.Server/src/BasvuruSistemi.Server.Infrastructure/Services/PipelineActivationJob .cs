@@ -38,6 +38,19 @@ internal sealed class PipelineActivationJob : IPipelineActivationJob
             if (pipeline is null)
                 return;
 
+            var previousPipeline = await _pipelineRepo
+                .WhereWithTracking(p => p.JobPostingId == pipeline.JobPostingId && p.OrderInPipeline == pipeline.OrderInPipeline-1)
+                .Include(p => p.ApplicationEvaluations)
+                .FirstOrDefaultAsync();
+
+            if(previousPipeline is not null && previousPipeline.ApplicationEvaluations.Any())
+            {
+                if(previousPipeline.ApplicationEvaluations.Any(p => p.Status == EvaluationStatus.Pending) || previousPipeline.Status == EvaluationStatus.Pending)
+                {
+                    return;
+                }
+            }
+
             var commission = pipeline.ResponsibleCommission;
 
             if (commission != null)
@@ -63,6 +76,7 @@ internal sealed class PipelineActivationJob : IPipelineActivationJob
 
     public async Task DeactivatePipelineStage(Guid pipelineStageId)
     {
+
         var pipeline = await _pipelineRepo
             .WhereWithTracking(p => p.Id == pipelineStageId)
             .Include(p => p.JobPosting)
@@ -70,8 +84,14 @@ internal sealed class PipelineActivationJob : IPipelineActivationJob
             .Include(p => p.ResponsibleCommission)
                 .ThenInclude(p => p.CommissionMembers)
             .FirstOrDefaultAsync();
+
         if (pipeline != null)
         {
+            if (pipeline.ApplicationEvaluations.Any(p => p.Status == EvaluationStatus.Pending) || pipeline.Status == EvaluationStatus.Pending)
+            {
+                return;
+            }
+
             var commission = pipeline.ResponsibleCommission;
 
             if (commission != null)
@@ -93,6 +113,4 @@ internal sealed class PipelineActivationJob : IPipelineActivationJob
             await _unitOfWork.SaveChangesAsync();
         }
     }
-
-
 }

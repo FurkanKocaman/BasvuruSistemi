@@ -15,13 +15,38 @@ class ApplicationService {
       );
       if (res.status == 200) {
         this.toastSore.addToast({
-          message: res.data.data,
+          message: "Başvuru oluşturuldu",
           type: "success",
           duration: 5000,
         });
       } else {
         this.toastSore.addToast({
-          message: res.data.data,
+          message: "Hata oluştu",
+          type: "error",
+          duration: 5000,
+        });
+      }
+      return res.data;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+  async upteApplication(request: ApplicationCreateRequest): Promise<Result<string>> {
+    try {
+      const res = await api.put<Result<string>>(
+        `${import.meta.env.VITE_API_URL}/applications/${request.applicationId}`,
+        request
+      );
+      if (res.status == 200) {
+        this.toastSore.addToast({
+          message: "Başvuru güncellendi",
+          type: "success",
+          duration: 5000,
+        });
+      } else {
+        this.toastSore.addToast({
+          message: "Hata oluştu",
           type: "error",
           duration: 5000,
         });
@@ -69,7 +94,7 @@ class ApplicationService {
       const res = await api.get(
         `${import.meta.env.VITE_API_URL}/api/applications-by-user?page=${page}&pageSize=${pageSize}`
       );
-
+      console.log(res);
       return await res.data;
     } catch (err) {
       console.log(err);
@@ -91,6 +116,21 @@ class ApplicationService {
       return res.data;
     } catch (err) {
       console.error(err);
+      throw err;
+    }
+  }
+
+  async getApplicationForUpdate(id: string): Promise<{
+    jobPostingId: string;
+    type: number;
+    fieldValues: { id: string; type: number; value?: string }[];
+  }> {
+    try {
+      const res = await api.get(`${import.meta.env.VITE_API_URL}/api/applications/${id}/values`);
+
+      return await res.data;
+    } catch (err) {
+      console.log(err);
       throw err;
     }
   }

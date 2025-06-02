@@ -242,6 +242,16 @@ public class AppController(ISender sender) : ControllerBase
         return Ok(response);
     }
 
+    [HttpGet("applications/{id}/values")]
+    [Authorize()]
+    public async Task<ActionResult<GetApplicationForUpdateQueryResponse>> GetApplicationForUpdate(
+    Guid id,
+    CancellationToken cancellationToken = default)
+    {
+        var response = await sender.Send(new GetApplicationForUpdateQuery(id), cancellationToken);
+        return StatusCode(response.StatusCode, response.Data);
+    }
+
     [HttpGet("applications-by-user")]
     [Authorize()]
     public async Task<ActionResult<GetApplicationsByUserQueryResponse>> GetApplicationByUser(

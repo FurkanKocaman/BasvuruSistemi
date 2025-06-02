@@ -354,13 +354,8 @@ router.addRoute({
 });
 
 router.beforeEach((to, from, next) => {
-  const accessToken = localStorage.getItem("accessToken");
-
   document.title = to.meta.title ? `${to.meta.title} | Başvuru Sistemi` : "Başvuru Sistemi";
-
-  if (to.matched.some((record) => record.meta.requiresAuth) && !accessToken) {
-    next({ name: "login", query: { returnUrl: to.fullPath } });
-  } else if (to.matched.some((record) => record.meta.requireTenant) && !Cookies.get("tenantId")) {
+  if (to.matched.some((record) => record.meta.requireTenant) && !Cookies.get("tenantId")) {
     next({ name: "tenants", query: { returnUrl: to.fullPath } });
   } else {
     next();

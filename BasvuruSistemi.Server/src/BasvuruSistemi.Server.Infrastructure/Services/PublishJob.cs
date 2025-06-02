@@ -10,7 +10,7 @@ internal sealed class PublishJob(
     public async Task Close(Guid jobPostingId)
     {
         var jobPosting = await jobPostingRepository.FirstOrDefaultAsync(p => p.Id == jobPostingId);
-        if (jobPosting is null || jobPosting.Status == Domain.Enums.JobPostingStatus.Published)
+        if (jobPosting is null || jobPosting.Status == Domain.Enums.JobPostingStatus.Closed)
             return;
 
         jobPosting.Close();

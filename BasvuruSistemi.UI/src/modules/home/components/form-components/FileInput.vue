@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, defineEmits } from "vue";
+import { defineProps, defineEmits, ref, watch } from "vue";
 
 interface Props {
   modelValue: File | null;
@@ -15,6 +15,17 @@ interface Props {
 const props = defineProps<Props>();
 const emit = defineEmits(["update:modelValue"]);
 
+const fileInput = ref<HTMLInputElement | null>(null);
+const selectedFileName = ref<string | null>(props.modelValue?.name ?? null);
+
+// ModelValue değişirse adını güncelle (örneğin dışarıdan set edilirse)
+watch(
+  () => props.modelValue,
+  (newFile) => {
+    selectedFileName.value = newFile?.name ?? null;
+  }
+);
+
 const handleFileChange = (event: Event) => {
   const file = (event.target as HTMLInputElement).files?.[0] || null;
 
@@ -23,6 +34,7 @@ const handleFileChange = (event: Event) => {
     return;
   }
 
+  selectedFileName.value = file?.name ?? null;
   emit("update:modelValue", file);
 };
 </script>
@@ -32,7 +44,9 @@ const handleFileChange = (event: Event) => {
     <label for="file" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
       {{ field.label }} <span v-if="field.isRequired" class="text-red-500">*</span>
     </label>
+
     <input
+      ref="fileInput"
       id="file"
       type="file"
       :accept="field.allowedFileTypes"
@@ -40,5 +54,9 @@ const handleFileChange = (event: Event) => {
       @change="handleFileChange"
       class="w-full file:px-3 file:py-2 file:border-0 file:bg-indigo-600 file:text-white file:rounded-md dark:file:bg-indigo-500 text-gray-800 dark:text-gray-200"
     />
+
+    <div v-if="selectedFileName" class="mt-2 text-sm text-gray-600 dark:text-gray-300">
+      Seçili dosya: <a :href="selectedFileName" target="_blank">{{ selectedFileName }}</a>
+    </div>
   </div>
 </template>

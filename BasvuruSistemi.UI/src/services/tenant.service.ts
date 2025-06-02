@@ -15,13 +15,11 @@ export async function fetchTenants(): Promise<Tenant[] | undefined> {
 
 export async function refreshJwtByTenant() {
   try {
-    console.log("refreshing");
     const res = await api.get<Result<LoginResponse>>(
       `${import.meta.env.VITE_API_URL}/tenants/refresh`
     );
     localStorage.setItem("accessToken", res.data.data.accessToken);
     localStorage.setItem("refreshToken", res.data.data.refreshToken);
-    console.log(res);
   } catch (err) {
     console.error(err);
   }

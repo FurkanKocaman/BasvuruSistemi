@@ -8,6 +8,7 @@ import ConfirmModal from "@/components/ConfirmModal.vue";
 import { getApplicationStatusOptionByValue } from "@/models/constants/application-status";
 import { useToastStore } from "@/modules/toast/store/toast.store";
 import { useVisiblePages } from "@/services/pagination.service";
+import { useRouter } from "vue-router";
 
 const applications = ref<ApplicationByUserModel[]>([]);
 const page = ref(1);
@@ -23,6 +24,8 @@ const visiblePages = useVisiblePages(totalPages, page);
 const toastStore = useToastStore();
 
 const confirmModal = ref();
+
+const router = useRouter();
 
 onMounted(() => {
   getApplications();
@@ -72,6 +75,14 @@ const withdrawApplication = async (application: ApplicationByUserModel) => {
     await applicationService.withdrawnApplication(application.id);
     getApplications();
   }
+};
+
+const navigateApplicationEdit = async (id: string, jobId: string, type: number) => {
+  router.push({
+    name: "JobApplication",
+    params: { id: jobId },
+    query: { type: type, applicationId: id },
+  });
 };
 </script>
 <template>
@@ -253,7 +264,17 @@ const withdrawApplication = async (application: ApplicationByUserModel) => {
             </td>
 
             <td class="py-3 px-2">
-              <button class="cursor-pointer mr-2 group" title="Düzenle">
+              <button
+                class="cursor-pointer mr-2 group"
+                title="Düzenle"
+                @click="
+                  navigateApplicationEdit(
+                    application.id,
+                    application.jobPostingId,
+                    application.type
+                  )
+                "
+              >
                 <FileSearch
                   class="size-6 stroke-gray-600 dark:stroke-gray-400 dark:group-hover:stroke-sky-600 group-hover:stroke-sky-600"
                 />

@@ -1,6 +1,9 @@
 export interface ApplicationByUserModel {
   id: string;
 
+  jobPostingId: string;
+  type: number;
+
   title: string;
   unit?: string;
   appliedDate: string;

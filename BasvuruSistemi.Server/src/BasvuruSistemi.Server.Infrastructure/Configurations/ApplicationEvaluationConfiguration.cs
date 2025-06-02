@@ -27,7 +27,7 @@ internal sealed class ApplicationEvaluationConfiguration : IEntityTypeConfigurat
 
         builder
             .HasOne(ae => ae.JobPostingEvaluationPipelineStage)
-            .WithMany()
+            .WithMany(p => p.ApplicationEvaluations)
             .HasForeignKey(ae => ae.JobPostingEvaluationPipelineStageId)
             .OnDelete(DeleteBehavior.NoAction);
 

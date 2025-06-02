@@ -1,4 +1,5 @@
 ﻿using BasvuruSistemi.Server.Domain.Abstractions;
+using BasvuruSistemi.Server.Domain.ApplicationEvaluations;
 using BasvuruSistemi.Server.Domain.Comissions;
 using BasvuruSistemi.Server.Domain.Enums;
 using BasvuruSistemi.Server.Domain.Evaluations;
@@ -30,6 +31,8 @@ public sealed class JobPostingEvaluationPipelineStage : Entity
 
     public string? HangfireStartJobId { get; set; }
     public string? HangfireEndJobId { get; set; }
+
+    public ICollection<ApplicationEvaluation> ApplicationEvaluations { get; private set; } = new List<ApplicationEvaluation>();
 
     private JobPostingEvaluationPipelineStage() { }
     public JobPostingEvaluationPipelineStage(Guid jobPostingId, Guid evaluationStageId, Guid responsibleCommissionId, int orderInPipeline, bool isMandatory = true, Guid? evaluationFormId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)

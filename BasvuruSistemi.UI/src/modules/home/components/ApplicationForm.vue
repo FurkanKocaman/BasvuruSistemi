@@ -3,7 +3,7 @@ import { ref, onMounted, defineProps, defineComponent } from "vue";
 import { GetActiveJobPostingsQueryResponse } from "../models/active-job-posting.model";
 import formTemplateService from "@/modules/management/services/form-template.service";
 import { getComponentByFieldType } from "../services/getComponentByField.service";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { FormFieldResponse } from "@/modules/management/models/form-filed-response.model";
 import { FieldValueModel } from "../models/field-value.model";
 import { ApplicationCreateRequest } from "../models/application-create.model";
@@ -15,6 +15,9 @@ const props = defineProps<{
 }>();
 
 const router = useRouter();
+const route = useRoute();
+
+const applicationId = route.query.applicationId;
 
 const values = ref<Record<string, any>>({});
 
@@ -24,6 +27,8 @@ const request = ref<ApplicationCreateRequest>({
   jobPostingId: "",
   fieldValues: [],
 });
+
+const existingFiles = ref<Record<string, any>>({});
 
 defineComponent({
   name: "ApplicationForm",
@@ -44,15 +49,42 @@ const getFormTemplate = async () => {
       res.fields.forEach((element) => {
         values.value[element.id] = undefined;
       });
+      if (applicationId) {
+        getApplicationFieldValues(applicationId.toString());
+      }
     }
   }
 };
 
-onMounted(() => {
+onMounted(async () => {
   if (props.job) {
     getFormTemplate();
   }
 });
+
+const getApplicationFieldValues = async (id: string) => {
+  const res = await applicationService.getApplicationForUpdate(id);
+  if (res) {
+    res.fieldValues.forEach(async (element) => {
+      if (element.type == 6 || element.type == 13 || element.type == 15 || element.type == 16) {
+        if (element.value) {
+          const file = await urlToFile(element.value);
+
+          values.value[element.id] = file;
+          existingFiles.value[element.id] = file;
+        }
+      } else {
+        values.value[element.id] = element.value;
+      }
+    });
+  }
+};
+
+async function urlToFile(url: string): Promise<File> {
+  const response = await fetch(url);
+  const blob = await response.blob();
+  return new File([blob], url);
+}
 
 const goBack = () => {
   router.back();
@@ -63,7 +95,7 @@ const submitForm = async () => {
   for (const field of fields.value) {
     if (field.type === 6 || field.type === 13 || field.type === 15 || field.type === 16) {
       const file = values.value[field.id];
-      if (file && props.job) {
+      if (file && props.job && existingFiles.value[field.id] != file) {
         try {
           const res = await applicationService.uploadFileByField(props.job.id, field.id, file);
           if (res.statusCode === 200) {
@@ -81,7 +113,8 @@ const submitForm = async () => {
       }
     }
     if (field.type === 3) {
-      values.value[field.id] = values.value[field.id].join(", ");
+      if (Array.isArray(values.value[field.id]))
+        values.value[field.id] = values.value[field.id].join(", ");
     }
     if (field.isRequired && !values.value[field.id]) {
       isError = true;
@@ -104,8 +137,12 @@ const submitForm = async () => {
   if (isError) {
     return;
   } else {
-    console.log("Request", request);
-    await applicationService.createApplication(request.value);
+    if (applicationId != undefined) {
+      request.value.applicationId = applicationId.toString();
+      await applicationService.upteApplication(request.value);
+    } else {
+      await applicationService.createApplication(request.value);
+    }
 
     router.push("/jobs");
   }
@@ -129,7 +166,7 @@ const submitForm = async () => {
       </div>
     </div>
 
-    <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
+    <div v-if="applicationId" class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
       <button
         type="button"
         @click="goBack"
