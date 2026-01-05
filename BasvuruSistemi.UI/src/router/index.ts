@@ -1,5 +1,7 @@
 import Cookies from "js-cookie";
 import { createRouter, createWebHistory } from "vue-router";
+import { useUserStore } from "@/stores/user";
+import { storeToRefs } from "pinia";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -40,20 +42,20 @@ const router = createRouter({
           name: "JobApplication",
           component: () => import("@/modules/home/pages/JobApplicationPage.vue"),
           props: true,
-          meta: { title: "İlan Başvuru" },
+          meta: { title: "İlan Başvuru", requiresAuth: true },
         },
         {
           path: "posting-groups/:id/apply",
           name: "PostingGroupApplication",
           component: () => import("@/modules/home/pages/PostingGroupApplicationPage.vue"),
           props: true,
-          meta: { title: "İlan Başvuru" },
+          meta: { title: "İlan Başvuru", requiresAuth: true },
         },
         {
           path: "my-applications",
           name: "MyApplications",
           component: () => import("@/modules/home/pages/MyApplicationsPage.vue"),
-          meta: { title: "Başvurularım" },
+          meta: { title: "Başvurularım", requiresAuth: true },
         },
       ],
     },
@@ -353,13 +355,24 @@ router.addRoute({
   ],
 });
 
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   document.title = to.meta.title ? `${to.meta.title} | Başvuru Sistemi` : "Başvuru Sistemi";
+  const userStore = useUserStore();
+  const { user } = storeToRefs(userStore);
+
+  // Eğer requiresAuth varsa ve user null ise login'e yönlendir
+  if (to.matched.some((record) => record.meta.requiresAuth) && !user.value) {
+    next({ name: "login", query: { returnUrl: to.fullPath } });
+    return;
+  }
+
+  // Eğer requireTenant varsa ve tenantId yoksa tenants sayfasına yönlendir
   if (to.matched.some((record) => record.meta.requireTenant) && !Cookies.get("tenantId")) {
     next({ name: "tenants", query: { returnUrl: to.fullPath } });
-  } else {
-    next();
+    return;
   }
+
+  next();
 });
 
 export default router;

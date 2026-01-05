@@ -3,6 +3,7 @@ import { onMounted, ref, Ref } from "vue";
 import { Unit } from "../models/unit-node.model";
 import { UnitCreateModel } from "../models/unit-create.model";
 import unitService from "../services/unit.service";
+import CustomButton from "@/shared/components/CustomButton.vue";
 
 const emit = defineEmits(["onClose", "addUnit", "updateUnit"]);
 
@@ -136,14 +137,16 @@ function closeModal() {
             />
           </div>
           <div class="flex flex-row justify-end mt-5">
-            <button
-              class="px-2 py-1 border rounded-md border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 cursor-pointer hover:bg-gray-400/10 mr-5 text-sm"
+            <CustomButton
+              variant="secondary"
               @click="closeModal()"
+              size="sm"
+              class="mr-2"
             >
               İptal
-            </button>
-            <button
-              class="px-2 py-1 border rounded-md border-blue-600 dark:border-blue-700 text-gray-700 dark:text-gray-300 cursor-pointer hover:bg-blue-600 hover:text-white text-sm"
+            </CustomButton>
+            <CustomButton
+              variant="primary"
               @click="
                 () => {
                   if (props.unit) {
@@ -153,9 +156,11 @@ function closeModal() {
                   }
                 }
               "
+              size="sm"
+
             >
               {{ props.unit ? "Güncelle" : "Oluştur" }}
-            </button>
+            </CustomButton>
           </div>
         </div>
       </div>

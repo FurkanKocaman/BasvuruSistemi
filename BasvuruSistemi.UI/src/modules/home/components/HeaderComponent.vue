@@ -198,7 +198,11 @@ const notifications = ref([
           </div>
         </div>
 
-        <router-link to="/profile" class="flex items-center cursor-pointer select-none">
+        <router-link
+          v-if="userStore.user"
+          to="/profile"
+          class="flex items-center cursor-pointer select-none"
+        >
           <img
             class="size-10 rounded-full object-cover mx-2"
             :src="userStore.user?.avatarUrl ?? apiUrl + '/user.png'"
@@ -208,6 +212,14 @@ const notifications = ref([
             <span class="dark:text-gray-200 text-gray-700"> {{ userStore.user?.fullName }} </span>
             <span class="text-xs text-gray-500 dark:text-gray-400">Profil Sayfası</span>
           </div>
+        </router-link>
+
+        <router-link
+          v-if="!userStore.user"
+          to="/auth/login"
+          class="flex items-center cursor-pointer select-none"
+        >
+          <span class=" border border-gray-400 dark:border-gray-600 rounded-full px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white  ">Giriş Yap</span>
         </router-link>
       </div>
     </nav>
